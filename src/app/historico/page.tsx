@@ -38,14 +38,14 @@ export default function HistoricoPage() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight">
+            <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
               Histórico Mês a Mês
             </h1>
-            <span className="px-2.5 py-0.5 bg-[#2D8659]/10 text-[#2D8659] text-xs font-bold rounded-full">
+            <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
               Consolidado
             </span>
           </div>
-          <p className="text-sm text-[#6B645A] mt-1 font-sans max-w-2xl">
+          <p className="text-sm text-[var(--text-2)] mt-1 font-sans max-w-2xl">
             Todos os meses da planilha lado a lado, incluindo os negativos. O ROI é
             recalculado sobre a soma do período — não é a média dos ROIs mensais.
           </p>
@@ -58,7 +58,7 @@ export default function HistoricoPage() {
           disabled={loading}
           aria-label="Recarregar dados"
           title="Recarregar dados"
-          className="p-2 bg-white border border-black/[0.12] rounded-full text-[#6B645A] hover:text-[#1A1715] focus-visible:ring-2 focus-visible:ring-[#C7522A] transition-all disabled:opacity-50 shrink-0 self-start sm:self-auto"
+          className="p-2 bg-white border border-black/[0.12] rounded-full text-[var(--text-2)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all disabled:opacity-50 shrink-0 self-start sm:self-auto"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
@@ -75,7 +75,7 @@ export default function HistoricoPage() {
           <SkeletonLinhas quantidade={2} altura="h-64" />
         </>
       ) : erro ? null : meses.length === 0 ? (
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center text-[#9E9689]">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center text-[var(--text-3)]">
           <p className="text-sm font-medium">Nenhum mês encontrado na planilha.</p>
         </div>
       ) : (
@@ -84,11 +84,11 @@ export default function HistoricoPage() {
           {consolidado && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
-                <div className="flex items-center justify-between text-[#9E9689]">
+                <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     Resultado Consolidado
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-[#2D8659]/10 text-[#2D8659] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
                     <TrendingUp className="w-4 h-4" />
                   </div>
                 </div>
@@ -96,7 +96,7 @@ export default function HistoricoPage() {
                   className={`font-serif ${tamanhoDoValor(
                     formatarReaisComSinal(converter(consolidado.lucro))
                   )} tracking-tight leading-none ${
-                    consolidado.lucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                    consolidado.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                   }`}
                 >
                   <NumberFlow
@@ -109,18 +109,18 @@ export default function HistoricoPage() {
                     }}
                   />
                 </div>
-                <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
+                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
                   {formatarUnidades(consolidado.unidades)} em{" "}
                   {meses.length} {meses.length === 1 ? "mês" : "meses"}
                 </div>
               </div>
 
               <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
-                <div className="flex items-center justify-between text-[#9E9689]">
+                <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     ROI do Período
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-[#C7522A]/10 text-[#C7522A] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center">
                     <Percent className="w-4 h-4" />
                   </div>
                 </div>
@@ -128,7 +128,7 @@ export default function HistoricoPage() {
                   className={`font-serif ${tamanhoDoValor(
                     `${consolidado.roi.toFixed(2)}%`
                   )} tracking-tight leading-none ${
-                    consolidado.roi >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                    consolidado.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                   }`}
                 >
                   <NumberFlow
@@ -138,50 +138,50 @@ export default function HistoricoPage() {
                     suffix="%"
                   />
                 </div>
-                <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
+                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
                   Sobre a soma de tudo que foi apostado
                 </div>
               </div>
 
               <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
-                <div className="flex items-center justify-between text-[#9E9689]">
+                <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     Apostas
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-[#1A1715]/5 text-[#1A1715] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--text)]/5 text-[var(--text)] flex items-center justify-center">
                     <Layers className="w-4 h-4" />
                   </div>
                 </div>
                 <div
                   className={`font-serif ${tamanhoDoValor(
                     String(consolidado.apostas)
-                  )} text-[#1A1715] tracking-tight leading-none`}
+                  )} text-[var(--text)] tracking-tight leading-none`}
                 >
                   <NumberFlow value={consolidado.apostas} locales="pt-BR" />
                 </div>
-                <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
+                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
                   {consolidado.greens} Green · {consolidado.reds} Red
                   {consolidado.voids > 0 && ` · ${consolidado.voids} Void`}
                 </div>
               </div>
 
               <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
-                <div className="flex items-center justify-between text-[#9E9689]">
+                <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     Taxa de Acerto
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-[#2D8659]/10 text-[#2D8659] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
                     <Activity className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight leading-none">
+                <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
                   <NumberFlow
                     value={consolidado.taxaAcerto}
                     locales="pt-BR"
                     suffix="%"
                   />
                 </div>
-                <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
+                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
                   {mesesNegativos === 0
                     ? "Nenhum mês negativo"
                     : `${mesesNegativos} ${
@@ -195,10 +195,10 @@ export default function HistoricoPage() {
           {/* Barras mensais */}
           <div className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm">
             <div className="mb-6">
-              <h2 className="text-base font-bold text-[#1A1715] tracking-tight">
+              <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                 Resultado por mês
               </h2>
-              <p className="text-xs text-[#9E9689]">
+              <p className="text-xs text-[var(--text-3)]">
                 Barras acima da linha são lucro, abaixo são prejuízo
               </p>
             </div>
@@ -223,7 +223,7 @@ export default function HistoricoPage() {
                       <div className="h-[90px] w-full flex flex-col justify-end">
                         {positivo && (
                           <motion.div
-                            className="w-full rounded-t-md bg-[#2D8659]"
+                            className="w-full rounded-t-md bg-[var(--green)]"
                             initial={{ height: 0 }}
                             animate={{ height: `${Math.max(altura, 2)}%` }}
                             transition={{
@@ -241,7 +241,7 @@ export default function HistoricoPage() {
                       <div className="h-[90px] w-full">
                         {!positivo && (
                           <motion.div
-                            className="w-full rounded-b-md bg-[#C23B22]"
+                            className="w-full rounded-b-md bg-[var(--red)]"
                             initial={{ height: 0 }}
                             animate={{ height: `${Math.max(altura, 2)}%` }}
                             transition={{
@@ -254,12 +254,12 @@ export default function HistoricoPage() {
                       </div>
 
                       <div className="text-center">
-                        <div className="text-[10.5px] font-mono font-bold text-[#6B645A] whitespace-nowrap">
+                        <div className="text-[10.5px] font-mono font-bold text-[var(--text-2)] whitespace-nowrap">
                           {abaCurta(m.aba)}
                         </div>
                         <div
                           className={`text-[10px] font-mono font-bold whitespace-nowrap ${
-                            positivo ? "text-[#2D8659]" : "text-[#C23B22]"
+                            positivo ? "text-[var(--green)]" : "text-[var(--red)]"
                           }`}
                         >
                           {formatarUnidades(m.unidades)}
@@ -279,7 +279,7 @@ export default function HistoricoPage() {
                 <caption className="sr-only">
                   Resultados por mês: apostas, greens, reds, resultado e ROI
                 </caption>
-                <thead className="bg-[#FAF8F5] border-b border-black/[0.06] text-[#9E9689] uppercase tracking-wider text-[10px] font-bold">
+                <thead className="bg-[var(--bg-soft)] border-b border-black/[0.06] text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                   <tr>
                     <th scope="col" className="py-3 px-4">Mês</th>
                     <th scope="col" className="py-3 px-3 text-right">Apostas</th>
@@ -293,38 +293,38 @@ export default function HistoricoPage() {
                 </thead>
                 <tbody className="divide-y divide-black/[0.05]">
                   {meses.map((m) => (
-                    <tr key={m.aba} className="hover:bg-[#FAF8F5] transition-colors">
+                    <tr key={m.aba} className="hover:bg-[var(--bg-soft)] transition-colors">
                       <th
                         scope="row"
-                        className="py-3 px-4 font-bold text-[#1A1715] whitespace-nowrap"
+                        className="py-3 px-4 font-bold text-[var(--text)] whitespace-nowrap"
                       >
                         {m.aba}
                       </th>
-                      <td className="py-3 px-3 font-mono text-right text-[#6B645A]">
+                      <td className="py-3 px-3 font-mono text-right text-[var(--text-2)]">
                         {m.apostas}
                       </td>
-                      <td className="py-3 px-3 font-mono text-right text-[#2D8659] font-bold">
+                      <td className="py-3 px-3 font-mono text-right text-[var(--green)] font-bold">
                         {m.greens}
                       </td>
-                      <td className="py-3 px-3 font-mono text-right text-[#C23B22] font-bold">
+                      <td className="py-3 px-3 font-mono text-right text-[var(--red)] font-bold">
                         {m.reds}
                       </td>
-                      <td className="py-3 px-3 font-mono text-right text-[#6B645A]">
+                      <td className="py-3 px-3 font-mono text-right text-[var(--text-2)]">
                         {m.taxaAcerto.toFixed(1).replace(".", ",")}%
                       </td>
-                      <td className="py-3 px-3 font-mono text-right text-[#6B645A]">
+                      <td className="py-3 px-3 font-mono text-right text-[var(--text-2)]">
                         {m.oddMedia > 0 ? formatarOdd(m.oddMedia) : "—"}
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${
-                          m.lucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                          m.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                         }`}
                       >
                         {formatarReaisComSinal(converter(m.lucro))}
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${
-                          m.roi >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                          m.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                         }`}
                       >
                         {m.roi >= 0 ? "+" : ""}
@@ -334,38 +334,38 @@ export default function HistoricoPage() {
                   ))}
                 </tbody>
                 {consolidado && (
-                  <tfoot className="bg-[#FAF8F5] border-t-2 border-black/[0.1]">
+                  <tfoot className="bg-[var(--bg-soft)] border-t-2 border-black/[0.1]">
                     <tr>
-                      <th scope="row" className="py-3 px-4 font-bold text-[#1A1715]">
+                      <th scope="row" className="py-3 px-4 font-bold text-[var(--text)]">
                         Total
                       </th>
-                      <td className="py-3 px-3 font-mono text-right font-bold text-[#1A1715]">
+                      <td className="py-3 px-3 font-mono text-right font-bold text-[var(--text)]">
                         {consolidado.apostas}
                       </td>
-                      <td className="py-3 px-3 font-mono text-right font-bold text-[#2D8659]">
+                      <td className="py-3 px-3 font-mono text-right font-bold text-[var(--green)]">
                         {consolidado.greens}
                       </td>
-                      <td className="py-3 px-3 font-mono text-right font-bold text-[#C23B22]">
+                      <td className="py-3 px-3 font-mono text-right font-bold text-[var(--red)]">
                         {consolidado.reds}
                       </td>
-                      <td className="py-3 px-3 font-mono text-right font-bold text-[#1A1715]">
+                      <td className="py-3 px-3 font-mono text-right font-bold text-[var(--text)]">
                         {consolidado.taxaAcerto.toFixed(1).replace(".", ",")}%
                       </td>
-                      <td className="py-3 px-3 font-mono text-right font-bold text-[#1A1715]">
+                      <td className="py-3 px-3 font-mono text-right font-bold text-[var(--text)]">
                         {consolidado.oddMedia > 0
                           ? formatarOdd(consolidado.oddMedia)
                           : "—"}
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${
-                          consolidado.lucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                          consolidado.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                         }`}
                       >
                         {formatarReaisComSinal(converter(consolidado.lucro))}
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${
-                          consolidado.roi >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                          consolidado.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                         }`}
                       >
                         {consolidado.roi >= 0 ? "+" : ""}

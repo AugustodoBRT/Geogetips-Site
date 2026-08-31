@@ -1,3 +1,4 @@
+import { CORES } from "@/lib/cores";
 import { ImageResponse } from "next/og";
 import { getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
 import { computeStatsFromBets } from "@/lib/stats";
@@ -28,19 +29,19 @@ export default async function OpenGraphImage() {
         {
           rotulo: "APOSTAS",
           valor: String(stats.totalBets),
-          cor: "#1A1715",
+          cor: CORES.text,
         },
         {
           rotulo: "TAXA DE ACERTO",
           valor: `${stats.taxaAcerto.toFixed(1).replace(".", ",")}%`,
-          cor: "#1A1715",
+          cor: CORES.text,
         },
         {
           rotulo: "RESULTADO",
           valor: `${stats.totalUnidades >= 0 ? "+" : ""}${stats.totalUnidades
             .toFixed(2)
             .replace(".", ",")}u`,
-          cor: stats.totalUnidades >= 0 ? "#2D8659" : "#C23B22",
+          cor: stats.totalUnidades >= 0 ? CORES.green : CORES.red,
         },
       ]
     : [];
@@ -54,7 +55,7 @@ export default async function OpenGraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#F7F5F0",
+          background: CORES.bg,
           padding: 72,
           fontFamily: "sans-serif",
         }}
@@ -67,8 +68,8 @@ export default async function OpenGraphImage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              background: "#1A1715",
-              color: "#F7F5F0",
+              background: CORES.text,
+              color: CORES.bg,
               fontSize: 30,
               fontWeight: 700,
               borderRadius: 14,
@@ -76,7 +77,7 @@ export default async function OpenGraphImage() {
           >
             G
           </div>
-          <div style={{ fontSize: 34, color: "#1A1715", letterSpacing: -0.5 }}>
+          <div style={{ fontSize: 34, color: CORES.text, letterSpacing: -0.5 }}>
             GeogeTips
           </div>
         </div>
@@ -86,7 +87,7 @@ export default async function OpenGraphImage() {
             style={{
               fontSize: 74,
               lineHeight: 1.05,
-              color: "#1A1715",
+              color: CORES.text,
               letterSpacing: -2.5,
               maxWidth: 900,
             }}
@@ -97,7 +98,7 @@ export default async function OpenGraphImage() {
             style={{
               fontSize: 74,
               lineHeight: 1.05,
-              color: "#C7522A",
+              color: CORES.accent,
               letterSpacing: -2.5,
               fontStyle: "italic",
             }}
@@ -116,7 +117,7 @@ export default async function OpenGraphImage() {
                 <div
                   style={{
                     fontSize: 17,
-                    color: "#9E9689",
+                    color: CORES.text3,
                     letterSpacing: 2,
                     fontWeight: 600,
                   }}
@@ -130,7 +131,7 @@ export default async function OpenGraphImage() {
             ))}
           </div>
         ) : (
-          <div style={{ fontSize: 26, color: "#6B645A" }}>
+          <div style={{ fontSize: 26, color: CORES.text2 }}>
             Registro, análise e controle de banca — em dados, não achismo.
           </div>
         )}

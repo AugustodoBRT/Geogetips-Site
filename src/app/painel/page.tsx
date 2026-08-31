@@ -233,19 +233,19 @@ export default function PainelPage() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight">
+            <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
               Painel de Performance
             </h1>
             {/* Só afirma "ao vivo" quando a leitura realmente veio da planilha */}
             {!erro && !isMock && !loading && (
-              <span className="px-2.5 py-0.5 bg-[#2D8659]/10 text-[#2D8659] text-xs font-bold rounded-full">
+              <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
                 Live Data
               </span>
             )}
           </div>
-          <p className="text-sm text-[#6B645A] mt-1 font-sans">
+          <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
             Métricas consolidadas, evolução real da banca e atividades da aba{" "}
-            <span className="font-semibold text-[#1A1715]">{activeTab}</span>
+            <span className="font-semibold text-[var(--text)]">{activeTab}</span>
             {selectedDay !== "TODOS" && (
               <span> (Filtrado para o dia <strong>{selectedDay}</strong>)</span>
             )}.
@@ -261,7 +261,7 @@ export default function PainelPage() {
             id="seletor-dia"
             value={selectedDay}
             onChange={(e) => setSelectedDay(e.target.value)}
-            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[#1A1715] outline-none focus-visible:ring-2 focus-visible:ring-[#C7522A] cursor-pointer shadow-sm hover:border-black/30 transition-all"
+            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-[var(--accent)]/60 transition-all"
           >
             <option value="TODOS">Mês Completo ({allBets.length} tips)</option>
             {availableDays.map((day) => {
@@ -295,12 +295,12 @@ export default function PainelPage() {
         <SkeletonKpis quantidade={5} />
       ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
-          <div className="flex items-center justify-between text-[#9E9689]">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+          <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               {selectedDay === "TODOS" ? "Lucro Acumulado" : `Lucro em ${selectedDay}`}
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[#2D8659]/10 text-[#2D8659] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function PainelPage() {
             className={`font-serif ${tamanhoDoValor(
               formatarReaisComSinal(totalLucro)
             )} tracking-tight leading-none ${
-              totalLucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+              totalLucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
             }`}
           >
             <NumberFlow
@@ -321,17 +321,17 @@ export default function PainelPage() {
               }}
             />
           </div>
-          <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
+          <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
             {selectedDay === "TODOS"
               ? `Resultado total em ${activeTab}`
               : `Resultado obtido no dia ${selectedDay}`}
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
-          <div className="flex items-center justify-between text-[#9E9689]">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+          <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">ROI</span>
-            <div className="w-8 h-8 rounded-lg bg-[#C7522A]/10 text-[#C7522A] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center">
               <Percent className="w-4 h-4" />
             </div>
           </div>
@@ -339,7 +339,7 @@ export default function PainelPage() {
             className={`font-serif ${tamanhoDoValor(
               `${roi.toFixed(2)}%`
             )} tracking-tight leading-none ${
-              roi >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+              roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
             }`}
           >
             <NumberFlow
@@ -349,62 +349,62 @@ export default function PainelPage() {
               suffix="%"
             />
           </div>
-          <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
+          <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
             Lucro sobre o total apostado
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
-          <div className="flex items-center justify-between text-[#9E9689]">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+          <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Total de Apostas
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[#1A1715]/5 text-[#1A1715] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--text)]/5 text-[var(--text)] flex items-center justify-center">
               <Layers className="w-4 h-4" />
             </div>
           </div>
           <div
             className={`font-serif ${tamanhoDoValor(
               String(totalBets)
-            )} text-[#1A1715] tracking-tight leading-none`}
+            )} text-[var(--text)] tracking-tight leading-none`}
           >
             <NumberFlow value={totalBets} locales="pt-BR" />
           </div>
-          <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
+          <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
             {greens} Green · {reds} Red{voids > 0 && ` · ${voids} Void`}
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
-          <div className="flex items-center justify-between text-[#9E9689]">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+          <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Taxa de Assertividade
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[#2D8659]/10 text-[#2D8659] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
               <Activity className="w-4 h-4" />
             </div>
           </div>
-          <div className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight leading-none">
+          <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
             <NumberFlow value={taxaAcerto} locales="pt-BR" suffix="%" />
           </div>
-          <div className="text-xs font-medium text-[#2D8659] pt-1 border-t border-black/[0.04]">
+          <div className="text-xs font-medium text-[var(--green)] pt-1 border-t border-black/[0.04]">
             Das apostas finalizadas
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
-          <div className="flex items-center justify-between text-[#9E9689]">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+          <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Apostas Pendentes
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[#B8860B]/10 text-[#B8860B] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--amber)]/10 text-[var(--amber)] flex items-center justify-center">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="font-serif text-3xl sm:text-4xl text-[#B8860B] tracking-tight leading-none">
+          <div className="font-serif text-3xl sm:text-4xl text-[var(--amber)] tracking-tight leading-none">
             <NumberFlow value={pendentes} locales="pt-BR" />
           </div>
-          <div className="text-xs font-medium text-[#B8860B] pt-1 border-t border-black/[0.04]">
+          <div className="text-xs font-medium text-[var(--amber)] pt-1 border-t border-black/[0.04]">
             Aguardando resultado oficial
           </div>
         </div>
@@ -418,15 +418,15 @@ export default function PainelPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
             <div>
               <div className="flex items-center gap-2.5">
-                <h2 className="text-base font-bold text-[#1A1715] tracking-tight">
+                <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                   Evolução da Banca ({activeTab === "TODOS" ? "Geral" : activeTab})
                 </h2>
                 {chartData && (
                   <span
                     className={`font-mono text-xs font-bold px-2 py-0.5 rounded-full ${
                       chartData.periodGain >= 0
-                        ? "bg-[#2D8659]/10 text-[#2D8659]"
-                        : "bg-[#C23B22]/10 text-[#C23B22]"
+                        ? "bg-[var(--green)]/10 text-[var(--green)]"
+                        : "bg-[var(--red)]/10 text-[var(--red)]"
                     }`}
                   >
                     <NumberFlow
@@ -442,11 +442,11 @@ export default function PainelPage() {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[#9E9689] mt-0.5">
+              <p className="text-xs text-[var(--text-3)] mt-0.5">
                 {hoveredPoint ? (
-                  <span className="text-[#1A1715] font-medium">
+                  <span className="text-[var(--text)] font-medium">
                     Dia <strong>{hoveredPoint.date}</strong>: Acumulado{" "}
-                    <strong className={hoveredPoint.cumProfit >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"}>
+                    <strong className={hoveredPoint.cumProfit >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"}>
                       {hoveredPoint.cumProfit >= 0 ? "+" : ""}R$ {hoveredPoint.cumProfit.toFixed(2).replace(".", ",")}
                     </strong>{" "}
                     ({hoveredPoint.dayProfit >= 0 ? "+" : ""}R$ {hoveredPoint.dayProfit.toFixed(2).replace(".", ",")} no dia · {hoveredPoint.total} tips)
@@ -457,7 +457,7 @@ export default function PainelPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-1 bg-[#F7F5F0] p-1 rounded-full border border-black/[0.06] shrink-0">
+            <div className="flex items-center gap-1 bg-[var(--bg)] p-1 rounded-full border border-black/[0.06] shrink-0">
               {availablePeriods.map((p) => (
                 <button
                   key={p}
@@ -468,8 +468,8 @@ export default function PainelPage() {
                   }}
                   className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
                     period === p && selectedDay === "TODOS"
-                      ? "bg-white text-[#1A1715] shadow-sm font-bold"
-                      : "text-[#6B645A] hover:text-[#1A1715]"
+                      ? "bg-[var(--accent)] text-white shadow-sm font-bold"
+                      : "text-[var(--text-2)] hover:text-[var(--accent)]"
                   }`}
                 >
                   {p}
@@ -485,7 +485,7 @@ export default function PainelPage() {
                 {loading ? (
                   <SkeletonLinhas quantidade={1} altura="h-48" />
                 ) : (
-                  <p className="text-xs text-[#9E9689]">
+                  <p className="text-xs text-[var(--text-3)]">
                     Sem apostas com data nesta aba.
                   </p>
                 )}
@@ -512,8 +512,8 @@ export default function PainelPage() {
               >
                 <defs>
                   <linearGradient id="realChartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2D8659" stopOpacity="0.22" />
-                    <stop offset="100%" stopColor="#2D8659" stopOpacity="0.0" />
+                    <stop offset="0%" stopColor="var(--green)" stopOpacity="0.22" />
+                    <stop offset="100%" stopColor="var(--green)" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
 
@@ -530,7 +530,7 @@ export default function PainelPage() {
                   x={chartData.padLeft - 8}
                   y={chartData.padTop + 4}
                   textAnchor="end"
-                  className="text-[9.5px] font-mono fill-[#9E9689]"
+                  className="text-[9.5px] font-mono fill-[var(--text-3)]"
                 >
                   R$ {chartData.yMax > 1000 ? `${(chartData.yMax / 1000).toFixed(1)}k` : chartData.yMax.toFixed(0)}
                 </text>
@@ -551,7 +551,7 @@ export default function PainelPage() {
                         x={chartData.padLeft - 8}
                         y={chartData.zeroY + 3.5}
                         textAnchor="end"
-                        className="text-[9.5px] font-mono font-bold fill-[#9E9689]"
+                        className="text-[9.5px] font-mono font-bold fill-[var(--text-3)]"
                       >
                         R$ 0
                       </text>
@@ -582,7 +582,7 @@ export default function PainelPage() {
                   key={`line-${chartKey}`}
                   d={chartData.linePath}
                   fill="none"
-                  stroke="#2D8659"
+                  stroke="var(--green)"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -598,7 +598,7 @@ export default function PainelPage() {
                     cx={p.x}
                     cy={p.y}
                     r={chartData.points.length > 20 ? 1.5 : 3}
-                    fill={p.cumProfit >= 0 ? "#2D8659" : "#C23B22"}
+                    fill={p.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
                     initial={{ opacity: 0, scale: 0.4 }}
                     animate={{
                       opacity: chartData.points.length > 20 ? 0.6 : 0.8,
@@ -620,7 +620,7 @@ export default function PainelPage() {
                       x={chartData.points[0].x}
                       y={chartData.height - 12}
                       textAnchor="start"
-                      className="text-[10px] font-mono fill-[#9E9689]"
+                      className="text-[10px] font-mono fill-[var(--text-3)]"
                     >
                       {chartData.points[0].date}
                     </text>
@@ -630,7 +630,7 @@ export default function PainelPage() {
                         x={chartData.points[Math.floor(chartData.points.length / 2)].x}
                         y={chartData.height - 12}
                         textAnchor="middle"
-                        className="text-[10px] font-mono fill-[#9E9689]"
+                        className="text-[10px] font-mono fill-[var(--text-3)]"
                       >
                         {chartData.points[Math.floor(chartData.points.length / 2)].date}
                       </text>
@@ -640,7 +640,7 @@ export default function PainelPage() {
                       x={chartData.points[chartData.points.length - 1].x}
                       y={chartData.height - 12}
                       textAnchor="end"
-                      className="text-[10px] font-mono fill-[#9E9689]"
+                      className="text-[10px] font-mono fill-[var(--text-3)]"
                     >
                       {chartData.points[chartData.points.length - 1].date}
                     </text>
@@ -656,7 +656,7 @@ export default function PainelPage() {
                       y1={chartData.padTop}
                       x2={hoveredPoint.x}
                       y2={chartData.height - chartData.padBottom}
-                      stroke="#1A1715"
+                      stroke="var(--text)"
                       strokeWidth="1"
                       strokeDasharray="3 3"
                       opacity="0.35"
@@ -668,7 +668,7 @@ export default function PainelPage() {
                       cy={hoveredPoint.y}
                       r="7"
                       fill="none"
-                      stroke="#2D8659"
+                      stroke="var(--green)"
                       strokeWidth="2"
                       opacity="0.4"
                     />
@@ -678,8 +678,8 @@ export default function PainelPage() {
                       cx={hoveredPoint.x}
                       cy={hoveredPoint.y}
                       r="4"
-                      fill="#2D8659"
-                      stroke="#FFFFFF"
+                      fill="var(--green)"
+                      stroke="var(--bg-card)"
                       strokeWidth="2"
                     />
                   </>
@@ -692,10 +692,10 @@ export default function PainelPage() {
         {/* Breakdown by Sport */}
         <div className="lg:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4">
           <div>
-            <h2 className="text-base font-bold text-[#1A1715] tracking-tight mb-1">
+            <h2 className="text-base font-bold text-[var(--text)] tracking-tight mb-1">
               Lucro por Esporte
             </h2>
-            <p className="text-xs text-[#9E9689] mb-3">
+            <p className="text-xs text-[var(--text-3)] mb-3">
               Distribuição por modalidades cadastradas
             </p>
 
@@ -705,7 +705,7 @@ export default function PainelPage() {
                   {loading ? (
                     <SkeletonLinhas quantidade={3} altura="h-9" />
                   ) : (
-                    <p className="text-center text-xs text-[#9E9689]">
+                    <p className="text-center text-xs text-[var(--text-3)]">
                       Sem modalidades nesta aba.
                     </p>
                   )}
@@ -718,13 +718,13 @@ export default function PainelPage() {
                   >
                     <div className="flex items-center gap-2.5">
                       <SportBadge sport={sport.esporte} />
-                      <div className="text-[11px] text-[#9E9689]">
+                      <div className="text-[11px] text-[var(--text-3)]">
                         {sport.apostas} tips · {sport.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
                       </div>
                     </div>
                     <div
                       className={`font-mono text-xs font-bold ${
-                        sport.lucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                        sport.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                       }`}
                     >
                       {formatarReaisComSinal(converter(sport.lucro))}
@@ -737,7 +737,7 @@ export default function PainelPage() {
 
           <Link
             href="/estatisticas"
-            className="w-full py-2 bg-[#F7F5F0] hover:bg-[#EFECE6] text-[#1A1715] text-xs font-semibold rounded-xl text-center transition-colors flex items-center justify-center gap-1"
+            className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl text-center transition-colors flex items-center justify-center gap-1"
           >
             <span>Ver Estatísticas Completas</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -751,10 +751,10 @@ export default function PainelPage() {
         <div className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-[#1A1715] tracking-tight">
+              <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                 Últimas Apostas Registradas
               </h2>
-              <p className="text-xs text-[#9E9689]">
+              <p className="text-xs text-[var(--text-3)]">
                 {selectedDay === "TODOS"
                   ? "Atividade recente capturada do bot"
                   : `Apostas cadastradas no dia ${selectedDay}`}
@@ -763,7 +763,7 @@ export default function PainelPage() {
 
             <Link
               href="/apostas"
-              className="text-xs font-bold text-[#C7522A] hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1"
             >
               <span>Ver todas</span>
               <ArrowUpRight className="w-3 h-3" />
@@ -779,15 +779,15 @@ export default function PainelPage() {
               return (
                 <div
                   key={bet.id}
-                  className="p-3 bg-[#FAF8F5] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3 text-xs"
+                  className="p-3 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3 text-xs"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <SportBadge sport={bet.esporte} />
                     <div className="min-w-0">
-                      <div className="font-bold text-[#1A1715] truncate">
+                      <div className="font-bold text-[var(--text)] truncate">
                         {bet.partida}
                       </div>
-                      <div className="text-[11px] text-[#6B645A] truncate flex items-center gap-1.5 mt-0.5">
+                      <div className="text-[11px] text-[var(--text-2)] truncate flex items-center gap-1.5 mt-0.5">
                         <span>{bet.tip}</span>
                         <span>·</span>
                         <strong className="font-mono">@{formatarOdd(bet.odd)}</strong>
@@ -800,12 +800,12 @@ export default function PainelPage() {
                     <span
                       className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         isGreen
-                          ? "bg-[#2D8659]/10 text-[#2D8659]"
+                          ? "bg-[var(--green)]/10 text-[var(--green)]"
                           : isRed
-                          ? "bg-[#C23B22]/10 text-[#C23B22]"
+                          ? "bg-[var(--red)]/10 text-[var(--red)]"
                           : isVoid
-                          ? "bg-[#6B645A]/10 text-[#6B645A]"
-                          : "bg-[#B8860B]/10 text-[#B8860B]"
+                          ? "bg-[var(--text-2)]/10 text-[var(--text-2)]"
+                          : "bg-[var(--amber)]/10 text-[var(--amber)]"
                       }`}
                     >
                       {bet.resultado}
@@ -813,10 +813,10 @@ export default function PainelPage() {
                     <span
                       className={`font-mono font-bold text-xs ${
                         isGreen
-                          ? "text-[#2D8659]"
+                          ? "text-[var(--green)]"
                           : isRed
-                          ? "text-[#C23B22]"
-                          : "text-[#9E9689]"
+                          ? "text-[var(--red)]"
+                          : "text-[var(--text-3)]"
                       }`}
                     >
                       {bet.resultado === "PENDENTE" || isVoid
@@ -834,17 +834,17 @@ export default function PainelPage() {
         <div className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-[#1A1715] tracking-tight">
+              <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                 Ranking de Adms ({activeTab})
               </h2>
-              <p className="text-xs text-[#9E9689]">
+              <p className="text-xs text-[var(--text-3)]">
                 Quem mais gerou retorno na aba ativa
               </p>
             </div>
 
             <Link
               href="/adms"
-              className="text-xs font-bold text-[#C7522A] hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1"
             >
               <span>Detalhes</span>
               <ArrowUpRight className="w-3 h-3" />
@@ -855,10 +855,10 @@ export default function PainelPage() {
             {tipsters.slice(0, 4).map((t, idx) => (
               <div
                 key={t.nome}
-                className="p-3.5 bg-[#FAF8F5] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3"
+                className="p-3.5 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs font-bold text-[#9E9689] w-4">
+                  <span className="font-mono text-xs font-bold text-[var(--text-3)] w-4">
                     #{idx + 1}
                   </span>
                   <div
@@ -867,10 +867,10 @@ export default function PainelPage() {
                     {t.initial}
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-[#1A1715]">
+                    <div className="text-xs font-bold text-[var(--text)]">
                       {t.nome}
                     </div>
-                    <div className="text-[10.5px] text-[#9E9689]">
+                    <div className="text-[10.5px] text-[var(--text-3)]">
                       {t.totalApostas} tips · {t.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
                     </div>
                   </div>
@@ -879,12 +879,12 @@ export default function PainelPage() {
                 <div className="text-right">
                   <div
                     className={`font-mono text-xs font-bold ${
-                      t.lucroUnidades >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                      t.lucroUnidades >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                     }`}
                   >
                     {formatarUnidades(t.lucroUnidades)}
                   </div>
-                  <div className="text-[10px] text-[#9E9689] uppercase tracking-wider">
+                  <div className="text-[10px] text-[var(--text-3)] uppercase tracking-wider">
                     Unidades
                   </div>
                 </div>

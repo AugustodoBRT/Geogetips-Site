@@ -104,13 +104,13 @@ function Card({ item, indice, total, progresso }: CardProps) {
       >
         {item.icone}
       </div>
-      <h3 className="font-serif text-2xl sm:text-3xl text-[#1A1715] tracking-tight mb-3">
+      <h3 className="font-serif text-2xl sm:text-3xl text-[var(--text)] tracking-tight mb-3">
         {item.titulo}
       </h3>
-      <p className="text-[15px] sm:text-base text-[#6B645A] leading-relaxed">
+      <p className="text-[15px] sm:text-base text-[var(--text-2)] leading-relaxed">
         {item.texto}
       </p>
-      <div className="mt-6 pt-4 border-t border-black/[0.06] font-mono text-[11px] text-[#9E9689]">
+      <div className="mt-6 pt-4 border-t border-black/[0.06] font-mono text-[11px] text-[var(--text-3)]">
         {String(indice + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
       </div>
     </motion.article>
@@ -135,7 +135,7 @@ function Marcador({
   return (
     <motion.span
       style={{ scaleY: escala, opacity: opacidade }}
-      className="block w-1 h-4 rounded-full bg-[#C7522A] origin-center"
+      className="block w-1 h-4 rounded-full bg-[var(--accent)] origin-center"
     />
   );
 }
@@ -173,10 +173,10 @@ export function CarrosselProfundidade({
             >
               {item.icone}
             </div>
-            <h3 className="text-base font-bold text-[#1A1715] mb-1.5 tracking-tight">
+            <h3 className="text-base font-bold text-[var(--text)] mb-1.5 tracking-tight">
               {item.titulo}
             </h3>
-            <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
+            <p className="text-[13.5px] text-[var(--text-2)] leading-relaxed">
               {item.texto}
             </p>
             </article>
