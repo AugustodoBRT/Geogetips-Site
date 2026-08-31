@@ -1,5 +1,8 @@
 import { BetItem, TipsterStat, SportBreakdown, BookieBreakdown } from "./types";
 
+// Dados de demonstração. Só são servidos quando NEXT_PUBLIC_USE_MOCK=1 —
+// nunca como fallback silencioso de erro. Stakes calibradas para 1u = R$ 100,00.
+
 export const MOCK_BETS: BetItem[] = [
   {
     id: "bet-1",
@@ -10,10 +13,10 @@ export const MOCK_BETS: BetItem[] = [
     tip: "Ambas Marcam — Sim",
     casa: "Bet365",
     odd: 1.72,
-    valor: 4.0,
-    unidades: 2.0,
+    valor: 200.00,
+    unidades: 2.00,
     resultado: "GREEN",
-    lucro: 2.88,
+    lucro: 144.00,
   },
   {
     id: "bet-2",
@@ -24,10 +27,10 @@ export const MOCK_BETS: BetItem[] = [
     tip: "LeBron James +25.5 Pontos",
     casa: "BetPix365",
     odd: 1.85,
-    valor: 3.0,
-    unidades: 1.5,
+    valor: 150.00,
+    unidades: 1.50,
     resultado: "GREEN",
-    lucro: 2.55,
+    lucro: 127.50,
   },
   {
     id: "bet-3",
@@ -38,10 +41,10 @@ export const MOCK_BETS: BetItem[] = [
     tip: "Over 2.5 Gols",
     casa: "Betano",
     odd: 2.10,
-    valor: 2.0,
-    unidades: 1.0,
+    valor: 100.00,
+    unidades: 1.00,
     resultado: "RED",
-    lucro: -2.0,
+    lucro: -100.00,
   },
   {
     id: "bet-4",
@@ -52,10 +55,10 @@ export const MOCK_BETS: BetItem[] = [
     tip: "Stephen Curry +4.5 Cestas de 3",
     casa: "Novibet",
     odd: 2.20,
-    valor: 1.0,
-    unidades: 0.5,
+    valor: 50.00,
+    unidades: 0.50,
     resultado: "PENDENTE",
-    lucro: 0,
+    lucro: 0.00,
   },
   {
     id: "bet-5",
@@ -66,10 +69,10 @@ export const MOCK_BETS: BetItem[] = [
     tip: "ML Inter Milan",
     casa: "Bet365",
     odd: 1.95,
-    valor: 4.0,
-    unidades: 2.0,
+    valor: 200.00,
+    unidades: 2.00,
     resultado: "GREEN",
-    lucro: 3.80,
+    lucro: 190.00,
   },
   {
     id: "bet-6",
@@ -80,10 +83,10 @@ export const MOCK_BETS: BetItem[] = [
     tip: "BTTS + Over 2.5",
     casa: "Sportingbet",
     odd: 2.45,
-    valor: 2.0,
-    unidades: 1.0,
+    valor: 100.00,
+    unidades: 1.00,
     resultado: "GREEN",
-    lucro: 2.90,
+    lucro: 145.00,
   },
   {
     id: "bet-7",
@@ -94,10 +97,10 @@ export const MOCK_BETS: BetItem[] = [
     tip: "Jamal Murray -3.5 Cestas de 3 Convertidas",
     casa: "Betano",
     odd: 1.64,
-    valor: 1.5,
+    valor: 75.00,
     unidades: 0.75,
     resultado: "RED",
-    lucro: -1.5,
+    lucro: -75.00,
   },
   {
     id: "bet-8",
@@ -108,10 +111,10 @@ export const MOCK_BETS: BetItem[] = [
     tip: "ML Juventus",
     casa: "BetPix365",
     odd: 2.06,
-    valor: 1.5,
+    valor: 75.00,
     unidades: 0.75,
     resultado: "GREEN",
-    lucro: 1.59,
+    lucro: 79.50,
   },
   {
     id: "bet-9",
@@ -122,10 +125,10 @@ export const MOCK_BETS: BetItem[] = [
     tip: "Tari Eason -6.5 Rebotes",
     casa: "Novibet",
     odd: 1.64,
-    valor: 1.0,
-    unidades: 0.5,
+    valor: 50.00,
+    unidades: 0.50,
     resultado: "RED",
-    lucro: -1.0,
+    lucro: -50.00,
   },
   {
     id: "bet-10",
@@ -136,10 +139,25 @@ export const MOCK_BETS: BetItem[] = [
     tip: "Ambas Marcam — Sim",
     casa: "Esporte da Sorte",
     odd: 5.20,
-    valor: 1.5,
+    valor: 75.00,
     unidades: 0.75,
     resultado: "PENDENTE",
-    lucro: 0,
+    lucro: 0.00,
+  },
+  {
+    id: "bet-11",
+    data: "24/08/2026",
+    esporte: "Tênis",
+    tipster: "LucasPicks",
+    partida: "Alcaraz x Sinner",
+    tip: "Over 3.5 Sets",
+    casa: "Betnacional",
+    odd: 2.30,
+    valor: 100.00,
+    unidades: 1.00,
+    // Anulada: stake devolvida, fora da conta de acerto e de ROI
+    resultado: "VOID",
+    lucro: 0.00,
   },
 ];
 
@@ -151,7 +169,8 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
     initial: "M",
     taxaAcerto: 72,
     totalApostas: 148,
-    lucroUnidades: 32,
+    lucroUnidades: 0.64,
+    roi: 2.05,
   },
   {
     nome: "RafaBets",
@@ -160,7 +179,8 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
     initial: "R",
     taxaAcerto: 65,
     totalApostas: 94,
-    lucroUnidades: 18,
+    lucroUnidades: 0.36,
+    roi: 1.15,
   },
   {
     nome: "DiegoNBA",
@@ -169,7 +189,8 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
     initial: "D",
     taxaAcerto: 58,
     totalApostas: 67,
-    lucroUnidades: 8,
+    lucroUnidades: 0.16,
+    roi: 0.51,
   },
   {
     nome: "LucasPicks",
@@ -178,7 +199,8 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
     initial: "L",
     taxaAcerto: 48,
     totalApostas: 33,
-    lucroUnidades: -5,
+    lucroUnidades: -0.10,
+    roi: -0.32,
   },
 ];
 
@@ -188,21 +210,24 @@ export const MOCK_SPORTS: SportBreakdown[] = [
     icone: "soccer",
     apostas: 198,
     taxaAcerto: 66,
-    lucro: 542.8,
+    lucro: 27140.00,
+    roi: 678.50,
   },
   {
     esporte: "NBA / Basquete",
     icone: "basketball",
     apostas: 124,
     taxaAcerto: 59,
-    lucro: 278.4,
+    lucro: 13920.00,
+    roi: 348.00,
   },
   {
     esporte: "Tênis",
     icone: "tennis",
     apostas: 20,
     taxaAcerto: 60,
-    lucro: 26.0,
+    lucro: 1300.00,
+    roi: 32.50,
   },
 ];
 
@@ -212,4 +237,17 @@ export const MOCK_BOOKIES: BookieBreakdown[] = [
   { casa: "Betano", apostas: 52, percentual: 55 },
   { casa: "Novibet", apostas: 41, percentual: 43 },
   { casa: "Sportingbet", apostas: 38, percentual: 40 },
+];
+
+/**
+ * Resumo mensal de demonstração. Serve para exercitar a tela de histórico,
+ * que precisa de vários meses — o MOCK_BETS cobre só um.
+ * Inclui um mês negativo de propósito: é o caso que a tela existe para mostrar.
+ */
+export const MOCK_RESUMO_MESES = [
+  { aba: "Agosto26", apostas: 11, greens: 5, reds: 3, pendentes: 2, voids: 1, lucro: 461.0, apostado: 950.0, oddMedia: 2.28 },
+  { aba: "Julho26", apostas: 128, greens: 61, reds: 64, pendentes: 0, voids: 3, lucro: 1240.5, apostado: 12800.0, oddMedia: 2.05 },
+  { aba: "Junho26", apostas: 96, greens: 39, reds: 55, pendentes: 0, voids: 2, lucro: -880.0, apostado: 9600.0, oddMedia: 2.41 },
+  { aba: "Maio26", apostas: 143, greens: 72, reds: 68, pendentes: 0, voids: 3, lucro: 2115.75, apostado: 14300.0, oddMedia: 1.98 },
+  { aba: "Abril26", apostas: 87, greens: 41, reds: 44, pendentes: 0, voids: 2, lucro: 305.2, apostado: 8700.0, oddMedia: 2.12 },
 ];

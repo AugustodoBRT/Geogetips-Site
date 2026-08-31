@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import {
   Sparkles,
@@ -10,68 +8,180 @@ import {
   Landmark,
   BarChart3,
   Bot,
-  Zap,
-  CheckCircle2,
 } from "lucide-react";
+import { getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
+import { computeStatsFromBets, type BetStats } from "@/lib/stats";
+import { MOCK_BETS } from "@/lib/data";
+import { ABA_TODOS, VALOR_UNIDADE } from "@/lib/constants";
+import { formatarReaisComSinal } from "@/lib/format";
+import { BotaoTelegram, SecaoTelegram } from "@/components/Telegram";
+import { TextoQueCai, Revelar, EntradaSequencial } from "@/components/animacoes";
+import { CarrosselProfundidade } from "@/components/CarrosselProfundidade";
 
-export default function HomePage() {
+// Página de captação: renderizada no servidor e revalidada a cada 5 min,
+// para que os números apareçam no HTML inicial (SEO e preview de link).
+export const revalidate = 300;
+
+async function carregarStats(): Promise<BetStats | null> {
+  if (USANDO_MOCK) return computeStatsFromBets(MOCK_BETS);
+  try {
+    return computeStatsFromBets(await getBetsFromTab(ABA_TODOS));
+  } catch {
+    // Sem planilha, a home simplesmente não afirma número nenhum.
+    return null;
+  }
+}
+
+const FUNCIONALIDADES = [
+  {
+    titulo: "Registro automático",
+    texto:
+      "Cada entrada enviada no canal vira uma linha na planilha automaticamente, com partida, mercado, odd e valor. Sem digitação manual e sem esquecer nenhuma.",
+    icone: <Bot className="w-6 h-6" strokeWidth={1.75} />,
+    corIcone: "bg-[#C7522A]/10 text-[#C7522A]",
+  },
+  {
+    titulo: "Planilha Sincronizada",
+    texto:
+      "A planilha no Google Sheets continua viva e é a fonte de tudo que aparece aqui — aberta para conferência linha a linha.",
+    icone: <FileSpreadsheet className="w-6 h-6" strokeWidth={1.75} />,
+    corIcone: "bg-[#2D8659]/10 text-[#2D8659]",
+  },
+  {
+    titulo: "Análise por Adm",
+    texto:
+      "Descubra quem realmente coloca dinheiro no seu bolso e quem dá prejuízo, com acerto, volume e ROI de cada um.",
+    icone: <Target className="w-6 h-6" strokeWidth={1.75} />,
+    corIcone: "bg-[#B8860B]/10 text-[#B8860B]",
+  },
+  {
+    titulo: "Gestão de Banca",
+    texto: `Controle por unidades (1u = R$ ${VALOR_UNIDADE.toFixed(2).replace(".", ",")}), com travas de segurança e limites máximos. Ajuste a unidade para a sua banca e veja o histórico na sua escala.`,
+    icone: <Landmark className="w-6 h-6" strokeWidth={1.75} />,
+    corIcone: "bg-[#C7522A]/10 text-[#C7522A]",
+  },
+  {
+    titulo: "Estatísticas Completas",
+    texto:
+      "Lucro por esporte, casa, odds médias e ROI real — mês a mês, incluindo os meses negativos.",
+    icone: <BarChart3 className="w-6 h-6" strokeWidth={1.75} />,
+    corIcone: "bg-[#2D8659]/10 text-[#2D8659]",
+  },
+];
+
+const PASSOS = [
+  {
+    titulo: "A entrada chega",
+    texto:
+      "O adm envia o palpite no canal do Telegram, com a casa, o mercado e a odd.",
+  },
+  {
+    titulo: "Entra na planilha",
+    texto:
+      "Toda entrada é registrada na hora — green, red ou anulada. Nada fica de fora.",
+  },
+  {
+    titulo: "Você confere",
+    texto:
+      "Os números deste site saem dessa planilha, que fica aberta para consulta a qualquer momento.",
+  },
+];
+
+export default async function HomePage() {
+  const stats = await carregarStats();
+  const temNumeros = Boolean(stats && stats.totalBets > 0);
+
   return (
     <div className="w-full">
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="pt-24 pb-16 px-6 md:px-12 text-center max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#C7522A]/[0.08] border border-[#C7522A]/[0.12] rounded-full text-xs font-semibold text-[#C7522A] mb-7">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Análise · Dados · Palpites · Resultados</span>
-        </div>
+        <EntradaSequencial indice={0}>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#C7522A]/[0.08] border border-[#C7522A]/[0.12] rounded-full text-xs font-semibold text-[#C7522A] mb-7">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Análise · Dados · Palpites · Resultados</span>
+          </div>
+        </EntradaSequencial>
 
+        {/* Duas linhas separadas: a segunda cai depois e é a que carrega a ênfase */}
         <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl leading-[1.1] tracking-[-1.5px] text-[#1A1715] mb-5">
-          Seus palpites merecem <br />
-          <em className="italic text-[#C7522A] font-serif">matemática de verdade.</em>
+          <TextoQueCai
+            texto="Seus palpites merecem"
+            atraso={0.3}
+            className="block"
+          />
+          <TextoQueCai
+            texto="matemática de verdade."
+            atraso={0.75}
+            intervalo={0.07}
+            className="block italic text-[#C7522A]"
+          />
         </h1>
 
-        <p className="text-base sm:text-lg text-[#6B645A] leading-relaxed max-w-xl mx-auto mb-9 font-sans">
-          O GeoGeTips transforma dados brutos em decisões inteligentes. Registre,
-          acompanhe e analise cada aposta com a clareza de quem usa números — não achismo.
-        </p>
+        <EntradaSequencial indice={0} base={1.5}>
+          <p className="text-base sm:text-lg text-[#6B645A] leading-relaxed max-w-xl mx-auto mb-9 font-sans">
+            O GeogeTips transforma dados brutos em decisões inteligentes. Registre,
+            acompanhe e analise cada aposta com a clareza de quem usa números — não achismo.
+          </p>
+        </EntradaSequencial>
 
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/painel"
-            className="px-7 py-3 bg-[#1A1715] text-[#F7F5F0] text-sm font-semibold rounded-full hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2 shadow-xs"
-          >
-            <span>Acessar Painel</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-          <Link
-            href="/apostas"
-            className="px-7 py-3 bg-transparent text-[#1A1715] text-sm font-semibold border border-black/15 rounded-full hover:bg-[#EFECE6] active:scale-[0.98] transition-all"
-          >
-            Ver Apostas
-          </Link>
-        </div>
+        <EntradaSequencial indice={1} base={1.5}>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <BotaoTelegram />
+            <Link
+              href="/painel"
+              className="px-7 py-3 bg-transparent text-[#1A1715] text-sm font-semibold border border-black/15 rounded-full hover:bg-[#EFECE6] active:scale-[0.98] transition-all inline-flex items-center gap-2"
+            >
+              <span>Ver os resultados</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </EntradaSequencial>
+
+        <EntradaSequencial indice={2} base={1.5}>
+          <p className="text-xs text-[#9E9689] mt-5">
+            Entrada gratuita pelo Telegram · resultados abertos na planilha pública
+          </p>
+        </EntradaSequencial>
       </section>
 
-      {/* Trust Strip */}
-      <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 px-6 pb-16 text-xs text-[#9E9689] font-medium">
-        <div className="flex items-center gap-2">
-          <span className="font-mono font-bold text-[#6B645A] text-sm">342</span> apostas registradas
-        </div>
-        <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
-        <div className="flex items-center gap-2">
-          <span className="font-mono font-bold text-[#6B645A] text-sm">63,4%</span> taxa de acerto
-        </div>
-        <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
-        <div className="flex items-center gap-2">
-          <span className="font-mono font-bold text-[#6B645A] text-sm">30+</span> casas suportadas
-        </div>
-        <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
-        <div className="flex items-center gap-2">
-          <span className="font-mono font-bold text-[#6B645A] text-sm">24/7</span> bot automático
-        </div>
-      </div>
+      {/* Faixa de números — só aparece quando existe dado real para mostrar */}
+      {temNumeros && stats && (
+        <EntradaSequencial indice={3} base={1.5} className="flex flex-wrap items-center justify-center gap-6 md:gap-10 px-6 pb-16 text-xs text-[#9E9689] font-medium">
+          <div className="flex items-center gap-2">
+            <span className="font-mono font-bold text-[#6B645A] text-sm">
+              {stats.totalBets}
+            </span>
+            apostas registradas
+          </div>
+          <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
+          <div className="flex items-center gap-2">
+            <span className="font-mono font-bold text-[#6B645A] text-sm">
+              {stats.taxaAcerto.toFixed(1).replace(".", ",")}%
+            </span>
+            taxa de acerto
+          </div>
+          <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
+          <div className="flex items-center gap-2">
+            <span
+              className={`font-mono font-bold text-sm ${
+                stats.roi >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+              }`}
+            >
+              {stats.roi >= 0 ? "+" : ""}
+              {stats.roi.toFixed(2).replace(".", ",")}%
+            </span>
+            de ROI
+          </div>
+          <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
+          <div className="flex items-center gap-2">
+            <span className="font-mono font-bold text-[#6B645A] text-sm">24/7</span>
+            bot automático
+          </div>
+        </EntradaSequencial>
+      )}
 
-      {/* Product Mockup Preview */}
-      <div className="max-w-5xl mx-auto px-6 mb-20">
+      {/* Prévia do painel */}
+      <Revelar className="max-w-5xl mx-auto px-6 mb-20">
         <div className="bg-white border border-black/[0.07] rounded-2xl overflow-hidden shadow-subtle">
           <div className="h-10 bg-[#F0EDE5] border-b border-black/[0.07] flex items-center px-4 gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
@@ -82,189 +192,124 @@ export default function HomePage() {
             </div>
           </div>
           <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#FAF8F5]">
-            <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-xs">
+            <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-sm">
               <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider mb-2">
-                Lucro Total
+                Lucro Acumulado
               </div>
-              <div className="font-serif text-3xl text-[#2D8659] tracking-tight">
-                +R$ 847,20
+              <div
+                className={`font-serif text-3xl tracking-tight ${
+                  (stats?.totalLucro ?? 0) >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                }`}
+              >
+                {temNumeros && stats ? formatarReaisComSinal(stats.totalLucro) : "—"}
               </div>
-              <div className="text-xs font-medium text-[#2D8659] mt-1.5 flex items-center gap-1">
+              <div className="text-xs font-medium text-[#6B645A] mt-1.5 flex items-center gap-1">
                 <TrendingUp className="w-3.5 h-3.5" />
-                <span>↑ 12,3% este mês</span>
+                <span>
+                  {temNumeros && stats
+                    ? `${stats.totalUnidades.toFixed(2).replace(".", ",")}u acumuladas`
+                    : "histórico completo"}
+                </span>
               </div>
             </div>
 
-            <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-xs">
+            <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-sm">
               <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider mb-2">
                 Taxa de Acerto
               </div>
               <div className="font-serif text-3xl text-[#1A1715] tracking-tight">
-                63,4%
+                {temNumeros && stats
+                  ? `${stats.taxaAcerto.toFixed(1).replace(".", ",")}%`
+                  : "—"}
               </div>
-              <div className="text-xs font-medium text-[#2D8659] mt-1.5">
-                ↑ 2,1pp vs mês anterior
+              <div className="text-xs font-medium text-[#6B645A] mt-1.5">
+                {temNumeros && stats
+                  ? `${stats.greens} green · ${stats.reds} red`
+                  : "sobre apostas finalizadas"}
               </div>
             </div>
 
-            <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-xs">
+            <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-sm">
               <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider mb-2">
-                Apostas Pendentes
+                ROI
               </div>
-              <div className="font-serif text-3xl text-[#B8860B] tracking-tight">
-                7
+              <div
+                className={`font-serif text-3xl tracking-tight ${
+                  (stats?.roi ?? 0) >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                }`}
+              >
+                {temNumeros && stats
+                  ? `${stats.roi >= 0 ? "+" : ""}${stats.roi
+                      .toFixed(2)
+                      .replace(".", ",")}%`
+                  : "—"}
               </div>
-              <div className="text-xs font-medium text-[#B8860B] mt-1.5">
-                Aguardando finalização
+              <div className="text-xs font-medium text-[#6B645A] mt-1.5">
+                {temNumeros && stats
+                  ? `odd média ${stats.oddMediaGeral.toFixed(2).replace(".", ",")}`
+                  : "lucro sobre o total apostado"}
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Revelar>
 
-      {/* Bento Grid Section */}
-      <section className="max-w-5xl mx-auto px-6 mb-24">
-        <div className="text-xs font-semibold uppercase tracking-wider text-[#9E9689] mb-3">
-          Funcionalidades
-        </div>
-        <h2 className="font-serif text-3xl md:text-4xl text-[#1A1715] tracking-tight mb-10 leading-tight">
-          Tudo que você precisa, <br />
-          nada que não precisa.
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          {/* Bento Item 1 (Wide) */}
-          <div className="md:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-7 relative overflow-hidden flex flex-col justify-between hover:border-black/20 hover:-translate-y-0.5 transition-all shadow-xs group">
-            <div className="w-10 h-10 rounded-xl bg-[#C7522A]/10 text-[#C7522A] flex items-center justify-center mb-6">
-              <Bot className="w-5 h-5" strokeWidth={1.75} />
+      {/* Funcionalidades */}
+      <section className="mb-24">
+        <CarrosselProfundidade
+          itens={FUNCIONALIDADES}
+          cabecalho={
+            <div className="flex-none">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#9E9689] mb-2">
+                Funcionalidades
+              </div>
+              <h2 className="font-serif text-3xl md:text-4xl text-[#1A1715] tracking-tight leading-tight">
+                Tudo que você precisa, <br />
+                nada que não precisa.
+              </h2>
             </div>
-            <div>
-              <h3 className="text-base font-bold text-[#1A1715] mb-1.5 tracking-tight">
-                Registro Automático via Telegram
-              </h3>
-              <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
-                Envie prints de qualquer casa no Telegram. A IA (Groq LLaMA) com OCR extrai
-                partida, mercado, odd e valor de forma determinística. Sem digitação manual.
-              </p>
-            </div>
-          </div>
-
-          {/* Bento Item 2 */}
-          <div className="md:col-span-2 bg-white border border-black/[0.07] rounded-2xl p-7 relative overflow-hidden flex flex-col justify-between hover:border-black/20 hover:-translate-y-0.5 transition-all shadow-xs">
-            <div className="w-10 h-10 rounded-xl bg-[#2D8659]/10 text-[#2D8659] flex items-center justify-center mb-6">
-              <FileSpreadsheet className="w-5 h-5" strokeWidth={1.75} />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-[#1A1715] mb-1.5 tracking-tight">
-                Planilha Sincronizada
-              </h3>
-              <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
-                Sua planilha no Google Sheets continua viva e atualizada em tempo real.
-              </p>
-            </div>
-          </div>
-
-          {/* Bento Item 3 */}
-          <div className="md:col-span-2 bg-white border border-black/[0.07] rounded-2xl p-7 relative overflow-hidden flex flex-col justify-between hover:border-black/20 hover:-translate-y-0.5 transition-all shadow-xs">
-            <div className="w-10 h-10 rounded-xl bg-[#B8860B]/10 text-[#B8860B] flex items-center justify-center mb-6">
-              <Target className="w-5 h-5" strokeWidth={1.75} />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-[#1A1715] mb-1.5 tracking-tight">
-                Análise por Tipster
-              </h3>
-              <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
-                Descubra quem realmente coloca dinheiro no seu bolso e quem dá prejuízo.
-              </p>
-            </div>
-          </div>
-
-          {/* Bento Item 4 */}
-          <div className="md:col-span-2 bg-white border border-black/[0.07] rounded-2xl p-7 relative overflow-hidden flex flex-col justify-between hover:border-black/20 hover:-translate-y-0.5 transition-all shadow-xs">
-            <div className="w-10 h-10 rounded-xl bg-[#C7522A]/10 text-[#C7522A] flex items-center justify-center mb-6">
-              <Landmark className="w-5 h-5" strokeWidth={1.75} />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-[#1A1715] mb-1.5 tracking-tight">
-                Gestão de Banca
-              </h3>
-              <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
-                Controle de unidades (1u = 1%), travas de segurança e limites máximos.
-              </p>
-            </div>
-          </div>
-
-          {/* Bento Item 5 */}
-          <div className="md:col-span-2 bg-white border border-black/[0.07] rounded-2xl p-7 relative overflow-hidden flex flex-col justify-between hover:border-black/20 hover:-translate-y-0.5 transition-all shadow-xs">
-            <div className="w-10 h-10 rounded-xl bg-[#2D8659]/10 text-[#2D8659] flex items-center justify-center mb-6">
-              <BarChart3 className="w-5 h-5" strokeWidth={1.75} />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-[#1A1715] mb-1.5 tracking-tight">
-                Estatísticas Completas
-              </h3>
-              <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
-                Lucro por esporte, casa, odds médias e métricas reais de assertividade.
-              </p>
-            </div>
-          </div>
-        </div>
+          }
+        />
       </section>
 
-      {/* How it Works Section */}
+      {/* Conversão */}
+      <Revelar className="max-w-5xl mx-auto px-6 mb-24">
+        <SecaoTelegram />
+      </Revelar>
+
+      {/* Como funciona */}
       <section className="bg-white border-y border-black/[0.07] py-20 px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[#9E9689] mb-3">
-            Como Funciona
-          </div>
-          <h2 className="font-serif text-3xl md:text-4xl text-[#1A1715] tracking-tight mb-12">
-            Três passos. Sem complicação.
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div>
-              <div className="font-serif text-5xl text-[#EFECE6] leading-none mb-4 tracking-tighter">
-                01
-              </div>
-              <h3 className="text-base font-bold text-[#1A1715] mb-2 tracking-tight">
-                Receba o palpite
-              </h3>
-              <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
-                O tipster envia o print no Telegram. Pode ser qualquer formato de aposta ou casa.
-              </p>
+          <Revelar>
+            <div className="text-xs font-semibold uppercase tracking-wider text-[#9E9689] mb-3">
+              Como Funciona
             </div>
+            <h2 className="font-serif text-3xl md:text-4xl text-[#1A1715] tracking-tight mb-12">
+              Três passos. Sem complicação.
+            </h2>
+          </Revelar>
 
-            <div>
-              <div className="font-serif text-5xl text-[#EFECE6] leading-none mb-4 tracking-tighter">
-                02
-              </div>
-              <h3 className="text-base font-bold text-[#1A1715] mb-2 tracking-tight">
-                O bot faz o resto
-              </h3>
-              <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
-                OCR + Groq LLaMA processam o texto e salvam na planilha BETS automaticamente.
-              </p>
-            </div>
-
-            <div>
-              <div className="font-serif text-5xl text-[#EFECE6] leading-none mb-4 tracking-tighter">
-                03
-              </div>
-              <h3 className="text-base font-bold text-[#1A1715] mb-2 tracking-tight">
-                Acompanhe e lucre
-              </h3>
-              <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
-                Acesse este painel para ver sua evolução, filtrar apostas e entender seus números.
-              </p>
-            </div>
-          </div>
+          {/* Um Revelar por passo quebraria o <ol>, que só aceita <li> como
+              filho direto. Os três entram juntos, como um bloco. */}
+          <Revelar atraso={0.08}>
+            <ol className="grid grid-cols-1 md:grid-cols-3 gap-10 list-none p-0 m-0">
+              {PASSOS.map((passo, i) => (
+                <li key={passo.titulo}>
+                  <div className="font-serif text-5xl text-[#EFECE6] leading-none mb-4 tracking-tighter">
+                    {String(i + 1).padStart(2, "0")}
+                  </div>
+                  <h3 className="text-base font-bold text-[#1A1715] mb-2 tracking-tight">
+                    {passo.titulo}
+                  </h3>
+                  <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
+                    {passo.texto}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </Revelar>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-12 px-6 text-center text-xs text-[#9E9689]">
-        <p>geogetips — matemática para ganhar. feito com dados, não achismo.</p>
-      </footer>
     </div>
   );
 }

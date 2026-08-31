@@ -1,192 +1,195 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { BetItem, BetResult } from "@/lib/types";
-import { MOCK_BETS } from "@/lib/data";
-import { SportBadge } from "@/components/SportBadge";
-import { BookieBadge } from "@/components/BookieBadge";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import NumberFlow from "@number-flow/react";
 import {
   Search,
-  SlidersHorizontal,
-  RefreshCw,
   LayoutGrid,
   List,
   Flame,
-  TrendingUp,
   X,
   Copy,
   Check,
   Award,
   Layers,
-  ArrowUpRight,
 } from "lucide-react";
+import { BetItem, BetResult } from "@/lib/types";
+import { SportBadge } from "@/components/SportBadge";
+import { BookieBadge } from "@/components/BookieBadge";
+import { SeletorAba } from "@/components/SeletorAba";
+import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
+import { SkeletonLinhas } from "@/components/Skeleton";
+import { useBets } from "@/hooks/useBets";
+import { SecaoTelegram } from "@/components/Telegram";
+import { LinkPlanilha } from "@/components/LinkPlanilha";
+import { useUnidade } from "@/hooks/useUnidade";
+import { SeletorUnidade } from "@/components/SeletorUnidade";
+import { parseDateTimestamp } from "@/lib/date";
+import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
+import { formatarOdd, formatarReais, formatarReaisComSinal } from "@/lib/format";
 
 export default function ApostasPage() {
-  const [bets, setBets] = useState<BetItem[]>(MOCK_BETS);
-  const [tabs, setTabs] = useState<string[]>([
-    "Agosto26",
-    "Julho26",
-    "Junho26",
-    "Maio26",
-    "Abril26",
-  ]);
-  const [activeTab, setActiveTab] = useState<string>("Agosto26");
-  const [loading, setLoading] = useState<boolean>(true);
+  const {
+    bets,
+    tabs,
+    activeTab,
+    setActiveTab,
+    loading,
+    erro,
+    isMock,
+    recarregar,
+  } = useBets();
 
-  // Filters
+  const { converter } = useUnidade();
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"TODAS" | BetResult>("TODAS");
   const [sportFilter, setSportFilter] = useState("TODOS");
   const [bookieFilter, setBookieFilter] = useState("TODAS");
   const [dayFilter, setDayFilter] = useState("TODOS");
-  const [oddRangeFilter, setOddRangeFilter] = useState<"TODAS" | "BAIXA" | "MEDIA" | "ALTA">("TODAS");
+  const [oddRangeFilter, setOddRangeFilter] = useState<
+    "TODAS" | "BAIXA" | "MEDIA" | "ALTA"
+  >("TODAS");
 
-  // View mode: 'cards' or 'table'
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-
-  // Selected bet for detail drawer
   const [selectedBet, setSelectedBet] = useState<BetItem | null>(null);
   const [copied, setCopied] = useState(false);
 
-  async function fetchBets(tabName: string) {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/bets?tab=${encodeURIComponent(tabName)}`);
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        setBets(json.data);
-        if (Array.isArray(json.tabs) && json.tabs.length > 0) {
-          setTabs(json.tabs);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to load real bets:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
     setDayFilter("TODOS");
-    fetchBets(activeTab);
   }, [activeTab]);
 
-  // Unique lists for select options
-  const sports = useMemo(() => {
-    return Array.from(new Set(bets.map((b) => b.esporte))).filter(Boolean);
-  }, [bets]);
+  // Listas de filtro em ordem alfabética, para o usuário achar o item
+  const sports = useMemo(
+    () =>
+      Array.from(new Set(bets.map((b) => b.esporte)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, "pt-BR")),
+    [bets]
+  );
 
-  const bookies = useMemo(() => {
-    return Array.from(new Set(bets.map((b) => b.casa))).filter(Boolean);
-  }, [bets]);
+  const bookies = useMemo(
+    () =>
+      Array.from(new Set(bets.map((b) => b.casa)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, "pt-BR")),
+    [bets]
+  );
 
   const availableDays = useMemo(() => {
-    const dates = Array.from(new Set(bets.map((b) => b.data))).filter((d) => d && d !== "—");
+    const dates = Array.from(new Set(bets.map((b) => b.data))).filter(
+      (d) => d && d !== "—"
+    );
     dates.sort((a, b) => parseDateTimestamp(b) - parseDateTimestamp(a));
     return dates;
   }, [bets]);
 
-  // Filtered bets
   const filteredBets = useMemo(() => {
+    const termo = search.toLowerCase();
     return bets.filter((bet) => {
       const matchesSearch =
-        search === "" ||
-        bet.partida.toLowerCase().includes(search.toLowerCase()) ||
-        bet.tip.toLowerCase().includes(search.toLowerCase()) ||
-        bet.casa.toLowerCase().includes(search.toLowerCase()) ||
-        bet.tipster.toLowerCase().includes(search.toLowerCase());
+        termo === "" ||
+        bet.partida.toLowerCase().includes(termo) ||
+        bet.tip.toLowerCase().includes(termo) ||
+        bet.casa.toLowerCase().includes(termo) ||
+        bet.tipster.toLowerCase().includes(termo);
 
       const matchesStatus =
         statusFilter === "TODAS" || bet.resultado === statusFilter;
-
-      const matchesSport =
-        sportFilter === "TODOS" || bet.esporte === sportFilter;
-
-      const matchesBookie =
-        bookieFilter === "TODAS" || bet.casa === bookieFilter;
-
-      const matchesDay =
-        dayFilter === "TODOS" || bet.data === dayFilter;
+      const matchesSport = sportFilter === "TODOS" || bet.esporte === sportFilter;
+      const matchesBookie = bookieFilter === "TODAS" || bet.casa === bookieFilter;
+      const matchesDay = dayFilter === "TODOS" || bet.data === dayFilter;
 
       let matchesOdd = true;
-      if (oddRangeFilter === "BAIXA") {
-        matchesOdd = bet.odd < 1.8;
-      } else if (oddRangeFilter === "MEDIA") {
+      if (oddRangeFilter === "BAIXA") matchesOdd = bet.odd < 1.8;
+      else if (oddRangeFilter === "MEDIA")
         matchesOdd = bet.odd >= 1.8 && bet.odd <= 3.0;
-      } else if (oddRangeFilter === "ALTA") {
-        matchesOdd = bet.odd > 3.0;
-      }
+      else if (oddRangeFilter === "ALTA") matchesOdd = bet.odd > 3.0;
 
-      return matchesSearch && matchesStatus && matchesSport && matchesBookie && matchesOdd && matchesDay;
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesSport &&
+        matchesBookie &&
+        matchesOdd &&
+        matchesDay
+      );
     });
-  }, [bets, search, statusFilter, sportFilter, bookieFilter, dayFilter, oddRangeFilter]);
+  }, [
+    bets,
+    search,
+    statusFilter,
+    sportFilter,
+    bookieFilter,
+    dayFilter,
+    oddRangeFilter,
+  ]);
 
-  // Aggregate stats from filtered list
-  const totalProfit = useMemo(() => {
-    return filteredBets.reduce((acc, b) => acc + b.lucro, 0);
-  }, [filteredBets]);
+  const resumo = useMemo(() => {
+    const greens = filteredBets.filter((b) => b.resultado === "GREEN").length;
+    const reds = filteredBets.filter((b) => b.resultado === "RED").length;
+    const pendentes = filteredBets.filter((b) => b.resultado === "PENDENTE").length;
+    const voids = filteredBets.filter((b) => b.resultado === "VOID").length;
+    const lucro = converter(filteredBets.reduce((acc, b) => acc + b.lucro, 0));
+    const odd =
+      filteredBets.length > 0
+        ? filteredBets.reduce((acc, b) => acc + b.odd, 0) / filteredBets.length
+        : 0;
+    return {
+      greens,
+      reds,
+      pendentes,
+      voids,
+      lucro,
+      odd,
+      taxa: taxaDeAcerto(greens, reds),
+      // razão: independe da unidade escolhida
+      roi: calcularRoi(filteredBets),
+    };
+  }, [filteredBets, converter]);
 
-  const greenCount = useMemo(() => {
-    return filteredBets.filter((b) => b.resultado === "GREEN").length;
-  }, [filteredBets]);
-
-  const redCount = useMemo(() => {
-    return filteredBets.filter((b) => b.resultado === "RED").length;
-  }, [filteredBets]);
-
-  const pendingCount = useMemo(() => {
-    return filteredBets.filter((b) => b.resultado === "PENDENTE").length;
-  }, [filteredBets]);
-
-  const avgOdd = useMemo(() => {
-    if (filteredBets.length === 0) return "0.00";
-    const sum = filteredBets.reduce((acc, b) => acc + b.odd, 0);
-    return (sum / filteredBets.length).toFixed(2);
-  }, [filteredBets]);
-
-  // Streak calculation (consecutive greens in latest finalized bets)
   const currentStreak = useMemo(() => {
     let streak = 0;
-    const finalized = bets.filter((b) => b.resultado === "GREEN" || b.resultado === "RED");
-    for (const b of finalized) {
-      if (b.resultado === "GREEN") {
-        streak++;
-      } else {
-        break;
-      }
+    for (const b of bets.filter(
+      (x) => x.resultado === "GREEN" || x.resultado === "RED"
+    )) {
+      if (b.resultado === "GREEN") streak++;
+      else break;
     }
     return streak;
   }, [bets]);
 
-  // Top tipsters in current tab
-  const topTipsters = useMemo(() => {
-    const map = new Map<string, { total: number; greens: number; profit: number }>();
+  const topAdms = useMemo(() => {
+    const map = new Map<
+      string,
+      { total: number; greens: number; reds: number; profit: number }
+    >();
     bets.forEach((b) => {
-      const cur = map.get(b.tipster) || { total: 0, greens: 0, profit: 0 };
+      const cur = map.get(b.tipster) || { total: 0, greens: 0, reds: 0, profit: 0 };
       cur.total += 1;
       cur.profit += b.lucro;
       if (b.resultado === "GREEN") cur.greens += 1;
+      if (b.resultado === "RED") cur.reds += 1;
       map.set(b.tipster, cur);
     });
 
     return Array.from(map.entries())
-      .map(([nome, data]) => ({
+      .map(([nome, d]) => ({
         nome,
-        total: data.total,
-        profit: data.profit,
-        winRate: data.total > 0 ? Math.round((data.greens / data.total) * 100) : 0,
+        total: d.total,
+        profit: d.profit,
+        // Mesma definição da página de Adms: pendente não conta como perdida.
+        winRate: taxaDeAcerto(d.greens, d.reds),
       }))
       .sort((a, b) => b.profit - a.profit)
       .slice(0, 4);
   }, [bets]);
 
-  // Top bookies in current tab
   const topBookies = useMemo(() => {
     const map = new Map<string, number>();
     bets.forEach((b) => {
-      if (b.casa) {
-        map.set(b.casa, (map.get(b.casa) || 0) + 1);
-      }
+      if (b.casa) map.set(b.casa, (map.get(b.casa) || 0) + 1);
     });
     const max = Math.max(...Array.from(map.values()), 1);
     return Array.from(map.entries())
@@ -199,21 +202,6 @@ export default function ApostasPage() {
       .slice(0, 4);
   }, [bets]);
 
-  function parseDateTimestamp(dateStr: string): number {
-    if (!dateStr || dateStr === "—") return 0;
-    const parts = dateStr.split("/");
-    if (parts.length === 3) {
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      const year = parseInt(parts[2], 10);
-      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-        return new Date(year, month, day).getTime();
-      }
-    }
-    return 0;
-  }
-
-  // Group bets by Date, sorted descending (newest dates always at top)
   const groupedByDate = useMemo(() => {
     const map = new Map<string, BetItem[]>();
     filteredBets.forEach((bet) => {
@@ -221,58 +209,49 @@ export default function ApostasPage() {
       list.push(bet);
       map.set(bet.data, list);
     });
-
-    const entries = Array.from(map.entries());
-    entries.sort((a, b) => parseDateTimestamp(b[0]) - parseDateTimestamp(a[0]));
-    return entries;
+    return Array.from(map.entries()).sort(
+      (a, b) => parseDateTimestamp(b[0]) - parseDateTimestamp(a[0])
+    );
   }, [filteredBets]);
 
-  function handleCopyBet(bet: BetItem) {
-    const text = `${bet.partida} - ${bet.tip} @${bet.odd.toFixed(2)} (${bet.casa})`;
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const fecharDetalhe = useCallback(() => setSelectedBet(null), []);
+
+  async function handleCopyBet(bet: BetItem) {
+    const texto = `${bet.partida} - ${bet.tip} @${formatarOdd(bet.odd)} (${bet.casa})`;
+    try {
+      await navigator.clipboard.writeText(texto);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard indisponível (contexto inseguro ou permissão negada)
+    }
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header with Month Selector */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight">
-              Feed de Apostas
-            </h1>
-            <span className="px-2.5 py-0.5 bg-[#2D8659]/10 text-[#2D8659] text-xs font-bold rounded-full">
-              Live Sheets
-            </span>
-          </div>
+          <h1 className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight">
+            Feed de Apostas
+          </h1>
           <p className="text-sm text-[#6B645A] mt-1 font-sans">
-            Feed cronológico lido em tempo real da aba{" "}
+            Feed cronológico lido da aba{" "}
             <span className="font-semibold text-[#1A1715]">{activeTab}</span>.
           </p>
+          <LinkPlanilha className="mt-2" />
         </div>
 
-        {/* Tab / Month Selector & View Toggle */}
-        <div className="flex items-center gap-2.5">
-          <select
-            value={activeTab}
-            onChange={(e) => setActiveTab(e.target.value)}
-            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[#1A1715] outline-none cursor-pointer shadow-xs hover:border-black/30 transition-all"
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div
+            className="flex items-center bg-white border border-black/[0.12] rounded-full p-0.5 shadow-sm"
+            role="group"
+            aria-label="Modo de visualização"
           >
-            <option value="TODOS">Todos os Meses (Geral)</option>
-            {tabs.map((tab) => (
-              <option key={tab} value={tab}>
-                Aba: {tab}
-              </option>
-            ))}
-          </select>
-
-          {/* View Mode Toggle: Cards vs Table */}
-          <div className="flex items-center bg-white border border-black/[0.12] rounded-full p-0.5 shadow-xs">
             <button
+              type="button"
               onClick={() => setViewMode("cards")}
-              title="Modo Cartões"
+              aria-pressed={viewMode === "cards"}
+              aria-label="Visualizar em cartões"
               className={`p-1.5 rounded-full transition-all ${
                 viewMode === "cards"
                   ? "bg-[#1A1715] text-white"
@@ -282,8 +261,10 @@ export default function ApostasPage() {
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
             <button
+              type="button"
               onClick={() => setViewMode("table")}
-              title="Modo Tabela Compacta"
+              aria-pressed={viewMode === "table"}
+              aria-label="Visualizar em tabela"
               className={`p-1.5 rounded-full transition-all ${
                 viewMode === "table"
                   ? "bg-[#1A1715] text-white"
@@ -294,119 +275,168 @@ export default function ApostasPage() {
             </button>
           </div>
 
-          <button
-            onClick={() => fetchBets(activeTab)}
-            disabled={loading}
-            title="Recarregar dados da planilha"
-            className="p-2 bg-white border border-black/[0.12] rounded-full text-[#6B645A] hover:text-[#1A1715] hover:border-black/30 transition-all disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          </button>
+          <SeletorAba
+            tabs={tabs}
+            activeTab={activeTab}
+            onChange={setActiveTab}
+            onRecarregar={recarregar}
+            loading={loading}
+            id="seletor-apostas"
+          />
         </div>
       </div>
 
-      {/* Top 4 Summary Cards */}
+      {(isMock || erro) && (
+        <div className="space-y-4 mb-6">
+          {isMock && <AvisoMock />}
+          {erro && <AvisoErro mensagem={erro} onTentarNovamente={recarregar} />}
+        </div>
+      )}
+
+      <div className="mb-6">
+        <SeletorUnidade />
+      </div>
+
+      {/* Resumo do filtro atual */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-xs">
+        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider">
             Lucro do Filtro
           </div>
           <div
             className={`font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight ${
-              totalProfit >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+              resumo.lucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
             }`}
           >
-            {totalProfit >= 0 ? "+" : ""}R${" "}
-            {totalProfit.toFixed(2).replace(".", ",")}
+            <NumberFlow
+              value={resumo.lucro}
+              locales="pt-BR"
+              format={{ style: "currency", currency: "BRL", signDisplay: "always" }}
+            />
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-xs">
+        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider">
             Green / Red
           </div>
-          <div className="font-mono text-xl sm:text-2xl font-bold text-[#1A1715] mt-1 tracking-tight">
-            <span className="text-[#2D8659]">{greenCount}</span>{" "}
+          <div className="font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight">
+            <span className="text-[#2D8659]">{resumo.greens}</span>{" "}
             <span className="text-[#9E9689] font-normal text-sm">/</span>{" "}
-            <span className="text-[#C23B22]">{redCount}</span>
+            <span className="text-[#C23B22]">{resumo.reds}</span>
+            {resumo.voids > 0 && (
+              <span className="text-[#6B645A] text-sm font-normal">
+                {" "}· {resumo.voids} void
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-xs">
+        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider">
             Taxa Parcial
           </div>
           <div className="font-mono text-xl sm:text-2xl font-bold text-[#1A1715] mt-1 tracking-tight">
-            {greenCount + redCount > 0
-              ? `${((greenCount / (greenCount + redCount)) * 100).toFixed(1)}%`
-              : "—"}
+            {resumo.greens + resumo.reds > 0 ? (
+              <NumberFlow value={resumo.taxa} locales="pt-BR" suffix="%" />
+            ) : (
+              "—"
+            )}
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-xs">
+        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider">
-            Odd Média
+            ROI do Filtro
           </div>
-          <div className="font-mono text-xl sm:text-2xl font-bold text-[#1A1715] mt-1 tracking-tight">
-            {avgOdd.replace(".", ",")}
+          <div
+            className={`font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight ${
+              resumo.roi >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+            }`}
+          >
+            {resumo.greens + resumo.reds > 0 ? (
+              <NumberFlow
+                value={resumo.roi}
+                locales="pt-BR"
+                format={{ signDisplay: "always", maximumFractionDigits: 2 }}
+                suffix="%"
+              />
+            ) : (
+              "—"
+            )}
+          </div>
+          <div className="text-[10.5px] text-[#9E9689] mt-0.5">
+            odd média {resumo.odd > 0 ? formatarOdd(resumo.odd) : "—"}
           </div>
         </div>
       </div>
 
-      {/* Split Screen Grid (65% Feed + 35% Insights Sidebar) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Main Column: Feed (7 of 12 cols = ~60-65%) */}
         <div className="lg:col-span-8 space-y-6">
-          {/* Toolbar & Filters */}
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 shadow-xs space-y-3">
-            {/* Top row: Search and Status pills */}
+          {/* Filtros */}
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 shadow-sm space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-[200px]">
-                <Search className="w-4 h-4 text-[#9E9689] absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search
+                  className="w-4 h-4 text-[#9E9689] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  aria-hidden="true"
+                />
+                <label htmlFor="busca-apostas" className="sr-only">
+                  Buscar apostas
+                </label>
                 <input
-                  type="text"
-                  placeholder="Buscar partida, mercado, casa, tipster..."
+                  id="busca-apostas"
+                  type="search"
+                  placeholder="Buscar partida, mercado, casa, adm..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full bg-[#F7F5F0] border border-black/[0.06] rounded-full pl-9 pr-3.5 py-1.5 text-xs text-[#1A1715] placeholder:text-[#9E9689] outline-none focus:border-[#C7522A] transition-colors"
                 />
               </div>
 
-              {/* Status Pills */}
-              <div className="flex items-center gap-1 flex-wrap">
-                {(["TODAS", "GREEN", "RED", "PENDENTE"] as const).map((status) => {
+              <div
+                className="flex items-center gap-1 flex-wrap"
+                role="group"
+                aria-label="Filtrar por resultado"
+              >
+                {(["TODAS", "GREEN", "RED", "VOID", "PENDENTE"] as const).map((status) => {
                   const isActive = statusFilter === status;
+                  const rotulos = {
+                    TODAS: "Todas",
+                    GREEN: "Green",
+                    RED: "Red",
+                    VOID: "Void",
+                    PENDENTE: "Pendente",
+                  } as const;
                   return (
                     <button
                       key={status}
+                      type="button"
                       onClick={() => setStatusFilter(status)}
+                      aria-pressed={isActive}
                       className={`px-3 py-1.5 text-[11px] font-semibold rounded-full border transition-all ${
                         isActive
                           ? "bg-[#1A1715] text-white border-[#1A1715]"
                           : "bg-white text-[#6B645A] border-black/[0.08] hover:border-black/20 hover:text-[#1A1715]"
                       }`}
                     >
-                      {status === "TODAS"
-                        ? "Todas"
-                        : status === "GREEN"
-                        ? "Green"
-                        : status === "RED"
-                        ? "Red"
-                        : "Pendente"}
+                      {rotulos[status]}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Bottom row: Secondary dropdowns & Odd ranges */}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-black/[0.05]">
               <div className="flex items-center gap-2 flex-wrap">
-                {/* Day of Month Selector */}
+                <label htmlFor="filtro-dia" className="sr-only">
+                  Filtrar por dia
+                </label>
                 <select
+                  id="filtro-dia"
                   value={dayFilter}
                   onChange={(e) => setDayFilter(e.target.value)}
-                  className="bg-[#F7F5F0] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-bold text-[#1A1715] outline-none cursor-pointer hover:border-black/20 transition-colors"
+                  className="bg-[#F7F5F0] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-bold text-[#1A1715] outline-none focus-visible:ring-2 focus-visible:ring-[#C7522A] cursor-pointer hover:border-black/20 transition-colors"
                 >
                   <option value="TODOS">Todos os Dias ({bets.length})</option>
                   {availableDays.map((day) => {
@@ -419,10 +449,14 @@ export default function ApostasPage() {
                   })}
                 </select>
 
+                <label htmlFor="filtro-esporte" className="sr-only">
+                  Filtrar por esporte
+                </label>
                 <select
+                  id="filtro-esporte"
                   value={sportFilter}
                   onChange={(e) => setSportFilter(e.target.value)}
-                  className="bg-[#F7F5F0] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-semibold text-[#6B645A] outline-none cursor-pointer hover:border-black/20 transition-colors"
+                  className="bg-[#F7F5F0] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-semibold text-[#6B645A] outline-none focus-visible:ring-2 focus-visible:ring-[#C7522A] cursor-pointer hover:border-black/20 transition-colors"
                 >
                   <option value="TODOS">Todos os Esportes</option>
                   {sports.map((s) => (
@@ -432,10 +466,14 @@ export default function ApostasPage() {
                   ))}
                 </select>
 
+                <label htmlFor="filtro-casa" className="sr-only">
+                  Filtrar por casa de apostas
+                </label>
                 <select
+                  id="filtro-casa"
                   value={bookieFilter}
                   onChange={(e) => setBookieFilter(e.target.value)}
-                  className="bg-[#F7F5F0] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-semibold text-[#6B645A] outline-none cursor-pointer hover:border-black/20 transition-colors"
+                  className="bg-[#F7F5F0] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-semibold text-[#6B645A] outline-none focus-visible:ring-2 focus-visible:ring-[#C7522A] cursor-pointer hover:border-black/20 transition-colors"
                 >
                   <option value="TODAS">Todas as Casas</option>
                   {bookies.map((b) => (
@@ -446,22 +484,27 @@ export default function ApostasPage() {
                 </select>
               </div>
 
-              {/* Odd Range Filter Pills */}
-              <div className="flex items-center gap-1">
+              <div
+                className="flex items-center gap-1"
+                role="group"
+                aria-label="Filtrar por faixa de odd"
+              >
                 <span className="text-[11px] font-medium text-[#9E9689] mr-1">
                   Odd:
                 </span>
                 {(
                   [
                     { label: "Todas", val: "TODAS" },
-                    { label: "< 1.8", val: "BAIXA" },
-                    { label: "1.8 - 3.0", val: "MEDIA" },
-                    { label: "> 3.0", val: "ALTA" },
+                    { label: "< 1,8", val: "BAIXA" },
+                    { label: "1,8 – 3,0", val: "MEDIA" },
+                    { label: "> 3,0", val: "ALTA" },
                   ] as const
                 ).map((range) => (
                   <button
                     key={range.val}
+                    type="button"
                     onClick={() => setOddRangeFilter(range.val)}
+                    aria-pressed={oddRangeFilter === range.val}
                     className={`px-2 py-0.5 text-[10.5px] font-semibold rounded-full border transition-all ${
                       oddRangeFilter === range.val
                         ? "bg-[#C7522A] text-white border-[#C7522A]"
@@ -475,167 +518,183 @@ export default function ApostasPage() {
             </div>
           </div>
 
-          {/* Feed Content */}
+          {/* Feed */}
           {loading ? (
-            <div className="bg-white border border-black/[0.07] rounded-2xl p-12 text-center text-[#9E9689]">
-              <RefreshCw className="w-7 h-7 mx-auto mb-3 animate-spin text-[#C7522A]" />
-              <p className="text-sm font-medium">
-                Carregando apostas da aba {activeTab}...
-              </p>
-            </div>
-          ) : groupedByDate.length === 0 ? (
-            <div className="bg-white border border-black/[0.07] rounded-2xl p-12 text-center text-[#9E9689]">
-              <SlidersHorizontal className="w-8 h-8 mx-auto mb-3 opacity-40" />
-              <p className="text-sm font-medium">
-                Nenhuma aposta encontrada com os filtros selecionados.
+            <SkeletonLinhas quantidade={6} altura="h-20" />
+          ) : erro ? null : filteredBets.length === 0 ? (
+            <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center">
+              <p className="text-sm font-medium text-[#9E9689]">
+                {bets.length === 0
+                  ? `Nenhuma aposta registrada na aba ${activeTab}.`
+                  : "Nenhuma aposta corresponde aos filtros."}
               </p>
             </div>
           ) : viewMode === "cards" ? (
-            /* Cards View (Redesigned 2-line harmonious cards) */
             <div className="space-y-6">
-              {groupedByDate.map(([data, dayBets]) => {
-                const dayProfit = dayBets.reduce((acc, b) => acc + b.lucro, 0);
-
+              {groupedByDate.map(([date, dayBets]) => {
+                const lucroDia = dayBets.reduce((acc, b) => acc + b.lucro, 0);
                 return (
-                  <div key={data} className="space-y-2.5">
-                    {/* Date Header */}
-                    <div className="flex items-center gap-3 px-1">
-                      <span className="text-xs font-bold text-[#1A1715] tracking-tight">
-                        {data}
-                      </span>
-                      <span className="text-[11px] font-medium text-[#9E9689]">
-                        ({dayBets.length} {dayBets.length === 1 ? "aposta" : "apostas"})
+                  <motion.section key={date} layout className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-xs font-mono font-bold text-[#1A1715]">
+                        {date}
+                      </h2>
+                      <span className="text-[11px] text-[#9E9689]">
+                        ({dayBets.length}{" "}
+                        {dayBets.length === 1 ? "aposta" : "apostas"})
                       </span>
                       <div className="flex-1 h-px bg-black/[0.06]" />
                       <span
-                        className={`font-mono text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                          dayProfit >= 0
-                            ? "bg-[#2D8659]/[0.08] text-[#2D8659]"
-                            : "bg-[#C23B22]/[0.08] text-[#C23B22]"
+                        className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                          lucroDia >= 0
+                            ? "bg-[#2D8659]/10 text-[#2D8659]"
+                            : "bg-[#C23B22]/10 text-[#C23B22]"
                         }`}
                       >
-                        {dayProfit >= 0 ? "+" : ""}R${" "}
-                        {dayProfit.toFixed(2).replace(".", ",")}
+                        {formatarReaisComSinal(converter(lucroDia))}
                       </span>
                     </div>
 
-                    {/* Cards */}
-                    <div className="space-y-2">
+                    <AnimatePresence mode="popLayout" initial={false}>
                       {dayBets.map((bet) => {
                         const isGreen = bet.resultado === "GREEN";
                         const isRed = bet.resultado === "RED";
+                        const isVoid = bet.resultado === "VOID";
 
                         return (
-                          <div
+                          <motion.button
                             key={bet.id}
+                            layout
+                            initial={{ opacity: 0, scale: 0.97 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.97 }}
+                            transition={{ duration: 0.2 }}
+                            type="button"
                             onClick={() => setSelectedBet(bet)}
-                            className="bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-xs hover:border-black/25 hover:shadow-card transition-all cursor-pointer grid grid-cols-[5px_1fr] group"
+                            aria-label={`Ver detalhes: ${bet.partida}, ${bet.tip}`}
+                            className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm hover:border-black/25 hover:shadow-card focus-visible:ring-2 focus-visible:ring-[#C7522A] transition-colors cursor-pointer grid grid-cols-[5px_1fr] group mb-2"
                           >
-                            {/* Stripe */}
                             <div
-                              className={`w-[5px] ${
+                              className={
                                 isGreen
                                   ? "bg-[#2D8659]"
                                   : isRed
                                   ? "bg-[#C23B22]"
+                                  : isVoid
+                                  ? "bg-[#9E9689]"
                                   : "bg-[#B8860B]"
-                              }`}
+                              }
                             />
 
-                            <div className="p-3.5 sm:p-4 space-y-2">
-                              {/* Line 1: Sport Badge + Match Name + Bookie Badge + Odd + Stake */}
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                  <SportBadge sport={bet.esporte} />
-                                  <span className="text-[13.5px] font-bold text-[#1A1715] truncate tracking-tight group-hover:text-[#C7522A] transition-colors">
-                                    {bet.partida}
-                                  </span>
-                                  <BookieBadge bookie={bet.casa} />
-                                </div>
-
-                                {/* Compact Odd & Stake Block */}
-                                <div className="flex items-center gap-3 shrink-0 text-xs font-mono">
-                                  <span className="font-bold text-[#1A1715] bg-[#F7F5F0] px-2 py-0.5 rounded border border-black/[0.04]">
-                                    @{bet.odd.toFixed(2).replace(".", ",")}
-                                  </span>
-                                  <span className="text-[#6B645A] font-medium hidden sm:inline-block">
-                                    R$ {bet.valor.toFixed(2).replace(".", ",")}
-                                  </span>
-                                </div>
+                            <div className="p-3.5 sm:p-4 space-y-2 min-w-0">
+                              {/* Linha 1 — quebra no mobile em vez de ser cortada */}
+                              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                                <SportBadge sport={bet.esporte} />
+                                <span className="text-[13.5px] font-bold text-[#1A1715] tracking-tight group-hover:text-[#C7522A] transition-colors min-w-0 flex-1 truncate">
+                                  {bet.partida}
+                                </span>
+                                <BookieBadge bookie={bet.casa} />
                               </div>
 
-                              {/* Line 2: Tip/Market description + Tipster Badge + Status & Profit */}
-                              <div className="flex items-center justify-between gap-3 pt-1 border-t border-black/[0.04]">
-                                <div className="flex items-center gap-2 min-w-0 text-xs text-[#6B645A]">
-                                  <span className="truncate font-medium">{bet.tip}</span>
-                                  {bet.tipster && bet.tipster !== "Geral" && (
-                                    <span className="shrink-0 text-[10px] text-[#9E9689] px-1.5 py-0.2 bg-[#F7F5F0] rounded">
-                                      {bet.tipster}
-                                    </span>
-                                  )}
-                                </div>
+                              {/* Linha 2 — odd, valor, status e lucro sempre visíveis */}
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1.5 border-t border-black/[0.04]">
+                                {/* No mobile a tip ocupa a linha inteira; a
+                                    partir de sm divide espaço com o resto. */}
+                                <span className="text-xs text-[#6B645A] font-medium w-full sm:w-auto sm:min-w-0 sm:flex-1 truncate">
+                                  {bet.tip}
+                                </span>
 
-                                <div className="flex items-center gap-2 shrink-0">
-                                  <span
-                                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${
-                                      isGreen
-                                        ? "bg-[#2D8659]/10 text-[#2D8659]"
-                                        : isRed
-                                        ? "bg-[#C23B22]/10 text-[#C23B22]"
-                                        : "bg-[#B8860B]/10 text-[#B8860B]"
-                                    }`}
-                                  >
-                                    {bet.resultado}
+                                {bet.tipster && bet.tipster !== "Geral" && (
+                                  <span className="text-[10px] text-[#9E9689] px-1.5 py-0.5 bg-[#F7F5F0] rounded shrink-0">
+                                    {bet.tipster}
                                   </span>
+                                )}
 
-                                  <span
-                                    className={`font-mono text-xs font-bold min-w-[65px] text-right ${
-                                      isGreen
-                                        ? "text-[#2D8659]"
-                                        : isRed
-                                        ? "text-[#C23B22]"
-                                        : "text-[#9E9689]"
-                                    }`}
-                                  >
-                                    {isGreen
-                                      ? `+R$ ${bet.lucro.toFixed(2).replace(".", ",")}`
+                                <span className="text-xs font-mono font-bold text-[#1A1715] bg-[#F7F5F0] px-2 py-0.5 rounded border border-black/[0.04] shrink-0">
+                                  @{formatarOdd(bet.odd)}
+                                </span>
+
+                                <span className="text-xs font-mono text-[#6B645A] shrink-0">
+                                  {formatarReais(converter(bet.valor))}
+                                </span>
+
+                                <span
+                                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider shrink-0 ${
+                                    isGreen
+                                      ? "bg-[#2D8659]/10 text-[#2D8659]"
                                       : isRed
-                                      ? `-R$ ${Math.abs(bet.lucro).toFixed(2).replace(".", ",")}`
-                                      : "—"}
-                                  </span>
-                                </div>
+                                      ? "bg-[#C23B22]/10 text-[#C23B22]"
+                                      : isVoid
+                                      ? "bg-[#6B645A]/10 text-[#6B645A]"
+                                      : "bg-[#B8860B]/10 text-[#B8860B]"
+                                  }`}
+                                >
+                                  {bet.resultado}
+                                </span>
+
+                                <span
+                                  className={`font-mono text-xs font-bold shrink-0 ${
+                                    isGreen
+                                      ? "text-[#2D8659]"
+                                      : isRed
+                                      ? "text-[#C23B22]"
+                                      : "text-[#9E9689]"
+                                  }`}
+                                >
+                                  {bet.resultado === "PENDENTE" || isVoid
+                                    ? "—"
+                                    : formatarReaisComSinal(converter(bet.lucro))}
+                                </span>
                               </div>
                             </div>
-                          </div>
+                          </motion.button>
                         );
                       })}
-                    </div>
-                  </div>
+                    </AnimatePresence>
+                  </motion.section>
                 );
               })}
             </div>
           ) : (
-            /* Table View (Compact Density) */
-            <div className="bg-white border border-black/[0.07] rounded-2xl overflow-hidden shadow-xs">
+            <div className="bg-white border border-black/[0.07] rounded-2xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
+                  <caption className="sr-only">
+                    Apostas registradas na aba {activeTab}
+                  </caption>
                   <thead className="bg-[#FAF8F5] border-b border-black/[0.06] text-[#9E9689] uppercase tracking-wider text-[10px] font-bold">
                     <tr>
-                      <th className="py-3 px-4">Data</th>
-                      <th className="py-3 px-3">Esporte</th>
-                      <th className="py-3 px-4">Partida / Mercado</th>
-                      <th className="py-3 px-3">Casa</th>
-                      <th className="py-3 px-3 text-right">Odd</th>
-                      <th className="py-3 px-3 text-right">Valor</th>
-                      <th className="py-3 px-3 text-center">Status</th>
-                      <th className="py-3 px-4 text-right">Lucro</th>
+                      <th scope="col" className="py-3 px-4">
+                        Data
+                      </th>
+                      <th scope="col" className="py-3 px-3">
+                        Esporte
+                      </th>
+                      <th scope="col" className="py-3 px-4">
+                        Partida / Mercado
+                      </th>
+                      <th scope="col" className="py-3 px-3">
+                        Casa
+                      </th>
+                      <th scope="col" className="py-3 px-3 text-right">
+                        Odd
+                      </th>
+                      <th scope="col" className="py-3 px-3 text-right">
+                        Valor
+                      </th>
+                      <th scope="col" className="py-3 px-3 text-center">
+                        Status
+                      </th>
+                      <th scope="col" className="py-3 px-4 text-right">
+                        Lucro
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-black/[0.05]">
                     {filteredBets.map((bet) => {
                       const isGreen = bet.resultado === "GREEN";
                       const isRed = bet.resultado === "RED";
-
+                      const isVoid = bet.resultado === "VOID";
                       return (
                         <tr
                           key={bet.id}
@@ -648,7 +707,7 @@ export default function ApostasPage() {
                           <td className="py-2.5 px-3">
                             <SportBadge sport={bet.esporte} />
                           </td>
-                          <td className="py-2.5 px-4 max-w-xs truncate">
+                          <td className="py-2.5 px-4 max-w-xs">
                             <div className="font-bold text-[#1A1715] truncate">
                               {bet.partida}
                             </div>
@@ -660,10 +719,10 @@ export default function ApostasPage() {
                             <BookieBadge bookie={bet.casa} />
                           </td>
                           <td className="py-2.5 px-3 font-mono font-bold text-right text-[#1A1715]">
-                            {bet.odd.toFixed(2).replace(".", ",")}
+                            {formatarOdd(bet.odd)}
                           </td>
-                          <td className="py-2.5 px-3 font-mono text-right text-[#6B645A]">
-                            R$ {bet.valor.toFixed(2).replace(".", ",")}
+                          <td className="py-2.5 px-3 font-mono text-right text-[#6B645A] whitespace-nowrap">
+                            {formatarReais(converter(bet.valor))}
                           </td>
                           <td className="py-2.5 px-3 text-center">
                             <span
@@ -672,6 +731,8 @@ export default function ApostasPage() {
                                   ? "bg-[#2D8659]/10 text-[#2D8659]"
                                   : isRed
                                   ? "bg-[#C23B22]/10 text-[#C23B22]"
+                                  : isVoid
+                                  ? "bg-[#6B645A]/10 text-[#6B645A]"
                                   : "bg-[#B8860B]/10 text-[#B8860B]"
                               }`}
                             >
@@ -687,11 +748,9 @@ export default function ApostasPage() {
                                 : "text-[#9E9689]"
                             }`}
                           >
-                            {isGreen
-                              ? `+R$ ${bet.lucro.toFixed(2).replace(".", ",")}`
-                              : isRed
-                              ? `-R$ ${Math.abs(bet.lucro).toFixed(2).replace(".", ",")}`
-                              : "—"}
+                            {bet.resultado === "PENDENTE" || isVoid
+                              ? "—"
+                              : formatarReaisComSinal(converter(bet.lucro))}
                           </td>
                         </tr>
                       );
@@ -703,228 +762,369 @@ export default function ApostasPage() {
           )}
         </div>
 
-        {/* Right Insights Column (4 of 12 cols = ~35-40%) - Sticky */}
+        {/* Coluna lateral */}
         <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24">
-          {/* Card 1: Streak & Momentum */}
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-xs">
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#9E9689]">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#9E9689]">
                 Momento Atual
-              </span>
-              <Flame className="w-4 h-4 text-[#C7522A]" />
+              </h2>
+              <Flame className="w-4 h-4 text-[#C7522A]" aria-hidden="true" />
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-[#C7522A]/10 text-[#C7522A] flex items-center justify-center font-bold text-base gap-1 shrink-0">
-                <Flame className="w-5 h-5 text-[#C7522A]" strokeWidth={2} />
+              <motion.div
+                key={currentStreak}
+                initial={{ scale: 0.85 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 420, damping: 18 }}
+                className="w-12 h-12 rounded-xl bg-[#C7522A]/10 text-[#C7522A] flex items-center justify-center font-bold text-base gap-1 shrink-0"
+              >
+                <Flame className="w-5 h-5" strokeWidth={2} aria-hidden="true" />
                 <span className="font-mono text-lg">{currentStreak}</span>
-              </div>
+              </motion.div>
               <div>
-                <div className="text-sm font-bold text-[#1A1715]">
+                <p className="text-sm font-bold text-[#1A1715]">
                   {currentStreak > 0
-                    ? `${currentStreak} Greens Consecutivos`
-                    : "Em busca do próximo Green"}
-                </div>
-                <div className="text-xs text-[#6B645A]">
-                  {pendingCount} apostas em andamento hoje
-                </div>
+                    ? `${currentStreak} ${
+                        currentStreak === 1
+                          ? "green consecutivo"
+                          : "greens consecutivos"
+                      }`
+                    : "Em busca do próximo green"}
+                </p>
+                <p className="text-xs text-[#6B645A]">
+                  {resumo.pendentes}{" "}
+                  {resumo.pendentes === 1
+                    ? "aposta em aberto"
+                    : "apostas em aberto"}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Card 2: Top Tipsters Ranking */}
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-xs space-y-3">
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#9E9689]">
-                Top Tipsters ({activeTab})
-              </span>
-              <Award className="w-4 h-4 text-[#2D8659]" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#9E9689]">
+                Top Adms ({activeTab})
+              </h2>
+              <Award className="w-4 h-4 text-[#2D8659]" aria-hidden="true" />
             </div>
 
             <div className="divide-y divide-black/[0.05]">
-              {topTipsters.map((tipster, i) => (
-                <div key={tipster.nome} className="py-2.5 flex items-center justify-between first:pt-0 last:pb-0">
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-mono text-xs font-bold text-[#9E9689] w-4">
-                      #{i + 1}
-                    </span>
-                    <div>
-                      <div className="text-xs font-bold text-[#1A1715]">
-                        {tipster.nome}
-                      </div>
-                      <div className="text-[10.5px] text-[#9E9689]">
-                        {tipster.total} tips · {tipster.winRate}% win
+              {topAdms.length === 0 ? (
+                <p className="text-xs text-[#9E9689] py-2">
+                  Sem adms nesta aba.
+                </p>
+              ) : (
+                topAdms.map((adm, i) => (
+                  <div
+                    key={adm.nome}
+                    className="py-2.5 flex items-center justify-between gap-3 first:pt-0 last:pb-0"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="font-mono text-xs font-bold text-[#9E9689] w-4 shrink-0">
+                        #{i + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-[#1A1715] truncate">
+                          {adm.nome}
+                        </div>
+                        <div className="text-[10.5px] text-[#9E9689]">
+                          {adm.total} tips ·{" "}
+                          {adm.winRate.toFixed(1).replace(".", ",")}% acerto
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <span
-                    className={`font-mono text-xs font-bold ${
-                      tipster.profit >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
-                    }`}
-                  >
-                    {tipster.profit >= 0 ? "+" : ""}R${" "}
-                    {tipster.profit.toFixed(2).replace(".", ",")}
-                  </span>
-                </div>
-              ))}
+                    <span
+                      className={`font-mono text-xs font-bold shrink-0 ${
+                        adm.profit >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                      }`}
+                    >
+                      {formatarReaisComSinal(converter(adm.profit))}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
-          {/* Card 3: Top Bookies Volume */}
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-xs space-y-3">
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#9E9689]">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#9E9689]">
                 Concentração por Casa
-              </span>
-              <Layers className="w-4 h-4 text-[#6B645A]" />
+              </h2>
+              <Layers className="w-4 h-4 text-[#6B645A]" aria-hidden="true" />
             </div>
 
             <div className="space-y-2.5">
-              {topBookies.map((b) => (
-                <div key={b.casa} className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-[#1A1715]">{b.casa}</span>
-                    <span className="font-mono text-[#6B645A] text-[11px]">
-                      {b.count} tips
-                    </span>
+              {topBookies.length === 0 ? (
+                <p className="text-xs text-[#9E9689]">Sem casas nesta aba.</p>
+              ) : (
+                topBookies.map((b) => (
+                  <div key={b.casa} className="space-y-1">
+                    <div className="flex justify-between text-xs font-semibold gap-2">
+                      <span className="text-[#1A1715] truncate">{b.casa}</span>
+                      <span className="font-mono text-[#6B645A] text-[11px] shrink-0">
+                        {b.count} tips
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-[#EFECE6] rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full bg-[#1A1715]"
+                        initial={{ width: "0%" }}
+                        animate={{ width: `${b.percent}%` }}
+                        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-1.5 bg-[#EFECE6] rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-[#1A1715]"
-                      style={{ width: `${b.percent}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Modal / Drawer of Selected Bet Details */}
-      {selectedBet && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white border border-black/[0.1] rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-black/[0.06]">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${
-                    selectedBet.resultado === "GREEN"
-                      ? "bg-[#2D8659]/10 text-[#2D8659]"
-                      : selectedBet.resultado === "RED"
-                      ? "bg-[#C23B22]/10 text-[#C23B22]"
-                      : "bg-[#B8860B]/10 text-[#B8860B]"
-                  }`}
-                >
-                  {selectedBet.resultado}
-                </span>
-                <span className="text-xs text-[#9E9689] font-mono">
-                  ID: {selectedBet.id}
-                </span>
-              </div>
+      <div className="mt-8">
+        <SecaoTelegram />
+      </div>
 
-              <button
-                onClick={() => setSelectedBet(null)}
-                className="p-1 rounded-full text-[#6B645A] hover:bg-[#EFECE6] transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      <DetalheAposta
+        bet={selectedBet}
+        onFechar={fecharDetalhe}
+        onCopiar={handleCopyBet}
+        copiado={copied}
+        converter={converter}
+      />
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+interface DetalheApostaProps {
+  bet: BetItem | null;
+  onFechar: () => void;
+  onCopiar: (bet: BetItem) => void;
+  copiado: boolean;
+  converter: (v: number) => number;
+}
+
+function DetalheAposta({
+  bet,
+  onFechar,
+  onCopiar,
+  copiado,
+  converter,
+}: DetalheApostaProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const focoAnterior = useRef<HTMLElement | null>(null);
+
+  // onFechar muda de identidade a cada render do pai. Guardar numa ref evita
+  // que o efeito abaixo reexecute e desfaça a própria trava de scroll.
+  const fecharRef = useRef(onFechar);
+  useEffect(() => {
+    fecharRef.current = onFechar;
+  }, [onFechar]);
+
+  const aberto = Boolean(bet);
+
+  useEffect(() => {
+    if (!aberto) return;
+
+    focoAnterior.current = document.activeElement as HTMLElement;
+    const overflowAnterior = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        fecharRef.current();
+        return;
+      }
+      // Mantém o foco preso dentro do diálogo
+      if (e.key === "Tab" && dialogRef.current) {
+        const focaveis = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focaveis.length === 0) return;
+        const primeiro = focaveis[0];
+        const ultimo = focaveis[focaveis.length - 1];
+
+        if (e.shiftKey && document.activeElement === primeiro) {
+          e.preventDefault();
+          ultimo.focus();
+        } else if (!e.shiftKey && document.activeElement === ultimo) {
+          e.preventDefault();
+          primeiro.focus();
+        }
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    requestAnimationFrame(() => dialogRef.current?.focus());
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = overflowAnterior;
+      focoAnterior.current?.focus?.();
+    };
+  }, [aberto]);
+
+  // Sem AnimatePresence aqui de propósito: com ela, o overlay de tela cheia
+  // ficava no DOM com opacity 0 após fechar e engolia todos os cliques da
+  // página. Desmontar direto é determinístico; a animação de entrada continua.
+  if (!bet) return null;
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.16 }}
+      onClick={onFechar}
+    >
+      <motion.div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-detalhe-aposta"
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 420, damping: 32 }}
+        className="bg-white border border-black/[0.1] rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 outline-none max-h-[90vh] overflow-y-auto"
+      >
+        <div className="flex items-center justify-between pb-3 border-b border-black/[0.06]">
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${
+                bet.resultado === "GREEN"
+                  ? "bg-[#2D8659]/10 text-[#2D8659]"
+                  : bet.resultado === "RED"
+                  ? "bg-[#C23B22]/10 text-[#C23B22]"
+                  : "bg-[#B8860B]/10 text-[#B8860B]"
+              }`}
+            >
+              {bet.resultado}
+            </span>
+            <span className="text-xs text-[#9E9689] font-mono truncate">
+              ID: {bet.id}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={onFechar}
+            aria-label="Fechar detalhes"
+            className="p-1 rounded-full text-[#6B645A] hover:bg-[#EFECE6] focus-visible:ring-2 focus-visible:ring-[#C7522A] transition-colors shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider">
+              Partida / Confronto
+            </div>
+            <h2
+              id="titulo-detalhe-aposta"
+              className="text-base font-bold text-[#1A1715] mt-0.5"
+            >
+              {bet.partida}
+            </h2>
+          </div>
+
+          <div>
+            <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider">
+              Mercado / Tip
+            </div>
+            <p className="text-sm font-medium text-[#6B645A] mt-0.5 bg-[#FAF8F5] p-3 rounded-xl border border-black/[0.04]">
+              {bet.tip}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-3 bg-[#F7F5F0] rounded-xl text-center">
+              <div className="text-[10px] uppercase tracking-wider text-[#9E9689] font-bold">
+                Odd
+              </div>
+              <div className="font-mono text-base font-bold text-[#1A1715] mt-0.5">
+                {formatarOdd(bet.odd)}
+              </div>
             </div>
 
-            {/* Modal Body */}
-            <div className="space-y-4">
-              <div>
-                <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider">
-                  Partida / Confronto
-                </div>
-                <div className="text-base font-bold text-[#1A1715] mt-0.5">
-                  {selectedBet.partida}
-                </div>
+            <div className="p-3 bg-[#F7F5F0] rounded-xl text-center">
+              <div className="text-[10px] uppercase tracking-wider text-[#9E9689] font-bold">
+                Valor
               </div>
-
-              <div>
-                <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider">
-                  Mercado / Tip
-                </div>
-                <div className="text-sm font-medium text-[#6B645A] mt-0.5 bg-[#FAF8F5] p-3 rounded-xl border border-black/[0.04]">
-                  {selectedBet.tip}
-                </div>
+              <div className="font-mono text-base font-bold text-[#1A1715] mt-0.5">
+                {formatarReais(bet.valor)}
               </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div className="p-3 bg-[#F7F5F0] rounded-xl text-center">
-                  <div className="text-[10px] uppercase tracking-wider text-[#9E9689] font-bold">
-                    Odd
-                  </div>
-                  <div className="font-mono text-base font-bold text-[#1A1715] mt-0.5">
-                    {selectedBet.odd.toFixed(2).replace(".", ",")}
-                  </div>
-                </div>
-
-                <div className="p-3 bg-[#F7F5F0] rounded-xl text-center">
-                  <div className="text-[10px] uppercase tracking-wider text-[#9E9689] font-bold">
-                    Valor
-                  </div>
-                  <div className="font-mono text-base font-bold text-[#1A1715] mt-0.5">
-                    R$ {selectedBet.valor.toFixed(2).replace(".", ",")}
-                  </div>
-                </div>
-
-                <div className="p-3 bg-[#F7F5F0] rounded-xl text-center">
-                  <div className="text-[10px] uppercase tracking-wider text-[#9E9689] font-bold">
-                    Lucro / Perda
-                  </div>
-                  <div
-                    className={`font-mono text-base font-bold mt-0.5 ${
-                      selectedBet.lucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
-                    }`}
-                  >
-                    {selectedBet.lucro >= 0 ? "+" : ""}R${" "}
-                    {selectedBet.lucro.toFixed(2).replace(".", ",")}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between text-xs text-[#6B645A] pt-2 gap-2">
-                <div className="flex items-center gap-2">
-                  <span>Esporte:</span>
-                  <SportBadge sport={selectedBet.esporte} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>Casa:</span>
-                  <BookieBadge bookie={selectedBet.casa} />
-                </div>
-                <span>
-                  Tipster: <strong className="text-[#1A1715]">{selectedBet.tipster}</strong>
-                </span>
-                <span>
-                  Data: <strong className="text-[#1A1715]">{selectedBet.data}</strong>
-                </span>
+              <div className="text-[10px] text-[#9E9689] mt-0.5">
+                {bet.unidades.toFixed(2).replace(".", ",")}u
               </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="pt-3 border-t border-black/[0.06] flex items-center justify-between">
-              <button
-                onClick={() => handleCopyBet(selectedBet)}
-                className="px-4 py-2 bg-[#F7F5F0] text-[#1A1715] text-xs font-semibold rounded-full hover:bg-[#EFECE6] transition-all flex items-center gap-1.5"
+            <div className="p-3 bg-[#F7F5F0] rounded-xl text-center">
+              <div className="text-[10px] uppercase tracking-wider text-[#9E9689] font-bold">
+                Lucro / Perda
+              </div>
+              <div
+                className={`font-mono text-base font-bold mt-0.5 ${
+                  bet.lucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                }`}
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-[#2D8659]" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? "Copiado!" : "Copiar Tip"}</span>
-              </button>
-
-              <button
-                onClick={() => setSelectedBet(null)}
-                className="px-5 py-2 bg-[#1A1715] text-white text-xs font-semibold rounded-full hover:opacity-90 transition-all"
-              >
-                Fechar
-              </button>
+                {bet.resultado === "PENDENTE"
+                  ? "—"
+                  : formatarReaisComSinal(bet.lucro)}
+              </div>
             </div>
           </div>
+
+          <div className="flex flex-wrap items-center justify-between text-xs text-[#6B645A] pt-2 gap-2">
+            <div className="flex items-center gap-2">
+              <span>Esporte:</span>
+              <SportBadge sport={bet.esporte} />
+            </div>
+            <div className="flex items-center gap-2">
+              <span>Casa:</span>
+              <BookieBadge bookie={bet.casa} />
+            </div>
+            <span>
+              Adm: <strong className="text-[#1A1715]">{bet.tipster}</strong>
+            </span>
+            <span>
+              Data: <strong className="text-[#1A1715]">{bet.data}</strong>
+            </span>
+          </div>
         </div>
-      )}
-    </div>
+
+        <div className="pt-3 border-t border-black/[0.06] flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => onCopiar(bet)}
+            className="px-4 py-2 bg-[#F7F5F0] text-[#1A1715] text-xs font-semibold rounded-full hover:bg-[#EFECE6] focus-visible:ring-2 focus-visible:ring-[#C7522A] transition-all flex items-center gap-1.5"
+          >
+            {copiado ? (
+              <Check className="w-3.5 h-3.5 text-[#2D8659]" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
+            <span>{copiado ? "Copiado!" : "Copiar tip"}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onFechar}
+            className="px-5 py-2 bg-[#1A1715] text-white text-xs font-semibold rounded-full hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#C7522A] transition-all"
+          >
+            Fechar
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }

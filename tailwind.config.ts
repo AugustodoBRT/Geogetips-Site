@@ -47,6 +47,15 @@ const config: Config = {
       borderRadius: {
         pill: "100px",
       },
+      keyframes: {
+        shimmer: {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
+      },
+      animation: {
+        shimmer: "shimmer 1.6s ease-in-out infinite",
+      },
       boxShadow: {
         subtle: "0 1px 2px rgba(0,0,0,0.03), 0 8px 32px rgba(0,0,0,0.05)",
         card: "0 2px 12px rgba(0,0,0,0.04)",

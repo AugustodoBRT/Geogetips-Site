@@ -1,20 +1,23 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import NumberFlow from "@number-flow/react";
 import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
-import { BetItem } from "@/lib/types";
-import {
-  TrendingUp,
-  Activity,
-  Clock,
-  Layers,
-  RefreshCw,
-  Award,
-  ArrowUpRight,
-  ShieldCheck,
-  Zap,
-} from "lucide-react";
+import { SeletorAba } from "@/components/SeletorAba";
+import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
+import { SkeletonKpis, SkeletonLinhas } from "@/components/Skeleton";
+import { useBets } from "@/hooks/useBets";
+import { SecaoTelegram } from "@/components/Telegram";
+import { LinkPlanilha } from "@/components/LinkPlanilha";
+import { useUnidade } from "@/hooks/useUnidade";
+import { SeletorUnidade } from "@/components/SeletorUnidade";
+import { parseDateTimestamp } from "@/lib/date";
+import { ABA_TODOS } from "@/lib/constants";
+import { formatarOdd, formatarReaisComSinal, formatarUnidades } from "@/lib/format";
+import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
+import { TrendingUp, Activity, Clock, Layers, Percent, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 interface DayPoint {
@@ -28,70 +31,39 @@ interface DayPoint {
 }
 
 export default function PainelPage() {
+  const {
+    bets: allBets,
+    stats,
+    tabs,
+    activeTab,
+    setActiveTab,
+    loading,
+    erro,
+    isMock,
+    recarregar,
+  } = useBets();
+
+  const { converter } = useUnidade();
+
   const [period, setPeriod] = useState<"7D" | "30D" | "90D" | "120D" | "Tudo">("30D");
-  const [tabs, setTabs] = useState<string[]>([
-    "Agosto26",
-    "Julho26",
-    "Junho26",
-    "Maio26",
-    "Abril26",
-  ]);
-  const [activeTab, setActiveTab] = useState<string>("Agosto26");
   const [selectedDay, setSelectedDay] = useState<string>("TODOS");
-  const [stats, setStats] = useState<any>(null);
-  const [allBets, setAllBets] = useState<BetItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [hoveredPoint, setHoveredPoint] = useState<any | null>(null);
+  const [hoveredPoint, setHoveredPoint] = useState<(DayPoint & { x: number; y: number }) | null>(
+    null
+  );
 
-  // Dynamic period options: 30D, 90D, 120D, Tudo for all tabs; 7D, 30D, 90D, Tudo for single month
-  const availablePeriods: readonly ("7D" | "30D" | "90D" | "120D" | "Tudo")[] = useMemo(() => {
-    if (activeTab === "TODOS") {
-      return ["30D", "90D", "120D", "Tudo"] as const;
-    }
-    return ["7D", "30D", "90D", "Tudo"] as const;
-  }, [activeTab]);
-
-  function parseDateTimestamp(dateStr: string): number {
-    if (!dateStr || dateStr === "—") return 0;
-    const parts = dateStr.split("/");
-    if (parts.length === 3) {
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      const year = parseInt(parts[2], 10);
-      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-        return new Date(year, month, day).getTime();
-      }
-    }
-    return 0;
-  }
-
-  async function loadData(tab: string) {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/bets?tab=${encodeURIComponent(tab)}`);
-      const json = await res.json();
-      if (json.success) {
-        setStats(json.stats);
-        if (Array.isArray(json.tabs)) setTabs(json.tabs);
-        if (Array.isArray(json.data)) {
-          setAllBets(json.data);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  // Todas as abas cobrem período maior, então a janela padrão muda junto
+  const availablePeriods: readonly ("7D" | "30D" | "90D" | "120D" | "Tudo")[] = useMemo(
+    () =>
+      activeTab === ABA_TODOS
+        ? (["30D", "90D", "120D", "Tudo"] as const)
+        : (["7D", "30D", "90D", "Tudo"] as const),
+    [activeTab]
+  );
 
   useEffect(() => {
     setSelectedDay("TODOS");
-    if (activeTab === "TODOS") {
-      setPeriod("Tudo");
-    } else {
-      setPeriod("30D");
-    }
-    loadData(activeTab);
+    setHoveredPoint(null);
+    setPeriod(activeTab === ABA_TODOS ? "Tudo" : "30D");
   }, [activeTab]);
 
   // Extract unique available days for the current tab
@@ -122,7 +94,7 @@ export default function PainelPage() {
         reds: 0,
         total: 0,
       };
-      current.dayProfit += b.lucro;
+      current.dayProfit += converter(b.lucro);
       current.total += 1;
       if (b.resultado === "GREEN") current.greens += 1;
       if (b.resultado === "RED") current.reds += 1;
@@ -147,7 +119,7 @@ export default function PainelPage() {
         total: d.total,
       };
     });
-  }, [allBets]);
+  }, [allBets, converter]);
 
   // Filter points according to selected period (or if a specific day is selected, focus on it)
   const chartPoints = useMemo(() => {
@@ -223,22 +195,28 @@ export default function PainelPage() {
     };
   }, [chartPoints]);
 
+  // Re-triggers the draw-in animation only when the dataset itself changes
+  const chartKey = `${activeTab}-${period}-${selectedDay}-${chartPoints.length}`;
+
   // Current scope bets (all bets in month or filtered by selectedDay)
   const scopedBets = useMemo(() => {
     if (selectedDay === "TODOS") return allBets;
     return allBets.filter((b) => b.data === selectedDay);
   }, [allBets, selectedDay]);
 
-  const totalLucro = useMemo(() => {
-    return scopedBets.reduce((acc, b) => acc + b.lucro, 0);
-  }, [scopedBets]);
+  const totalLucro = useMemo(
+    () => converter(scopedBets.reduce((acc, b) => acc + b.lucro, 0)),
+    [scopedBets, converter]
+  );
 
   const totalBets = scopedBets.length;
   const greens = scopedBets.filter((b) => b.resultado === "GREEN").length;
   const reds = scopedBets.filter((b) => b.resultado === "RED").length;
   const pendentes = scopedBets.filter((b) => b.resultado === "PENDENTE").length;
-  const taxaAcerto =
-    greens + reds > 0 ? Math.round((greens / (greens + reds)) * 100) : 0;
+  const voids = scopedBets.filter((b) => b.resultado === "VOID").length;
+  const taxaAcerto = taxaDeAcerto(greens, reds);
+  // ROI é razão: não muda com a unidade do visitante
+  const roi = useMemo(() => calcularRoi(scopedBets), [scopedBets]);
 
   const sports = stats?.sports ?? [];
   const tipsters = stats?.tipsters ?? [];
@@ -253,9 +231,12 @@ export default function PainelPage() {
             <h1 className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight">
               Painel de Performance
             </h1>
-            <span className="px-2.5 py-0.5 bg-[#2D8659]/10 text-[#2D8659] text-xs font-bold rounded-full">
-              Live Data
-            </span>
+            {/* Só afirma "ao vivo" quando a leitura realmente veio da planilha */}
+            {!erro && !isMock && !loading && (
+              <span className="px-2.5 py-0.5 bg-[#2D8659]/10 text-[#2D8659] text-xs font-bold rounded-full">
+                Live Data
+              </span>
+            )}
           </div>
           <p className="text-sm text-[#6B645A] mt-1 font-sans">
             Métricas consolidadas, evolução real da banca e atividades da aba{" "}
@@ -264,14 +245,18 @@ export default function PainelPage() {
               <span> (Filtrado para o dia <strong>{selectedDay}</strong>)</span>
             )}.
           </p>
+          <LinkPlanilha className="mt-2" />
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Day of Month Selector */}
+          <label htmlFor="seletor-dia" className="sr-only">
+            Filtrar por dia
+          </label>
           <select
+            id="seletor-dia"
             value={selectedDay}
             onChange={(e) => setSelectedDay(e.target.value)}
-            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[#1A1715] outline-none cursor-pointer shadow-xs hover:border-black/30 transition-all"
+            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[#1A1715] outline-none focus-visible:ring-2 focus-visible:ring-[#C7522A] cursor-pointer shadow-sm hover:border-black/30 transition-all"
           >
             <option value="TODOS">Mês Completo ({allBets.length} tips)</option>
             {availableDays.map((day) => {
@@ -284,34 +269,28 @@ export default function PainelPage() {
             })}
           </select>
 
-          {/* Month / Tab Selector */}
-          <select
-            value={activeTab}
-            onChange={(e) => setActiveTab(e.target.value)}
-            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[#1A1715] outline-none cursor-pointer shadow-xs hover:border-black/30 transition-all"
-          >
-            <option value="TODOS">Todos os Meses (Geral)</option>
-            {tabs.map((tab) => (
-              <option key={tab} value={tab}>
-                Aba: {tab}
-              </option>
-            ))}
-          </select>
-
-          <button
-            onClick={() => loadData(activeTab)}
-            disabled={loading}
-            title="Recarregar dados"
-            className="p-2 bg-white border border-black/[0.12] rounded-full text-[#6B645A] hover:text-[#1A1715] transition-all disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          </button>
+          <SeletorAba
+            tabs={tabs}
+            activeTab={activeTab}
+            onChange={setActiveTab}
+            onRecarregar={recarregar}
+            loading={loading}
+            id="seletor-painel"
+          />
         </div>
       </div>
 
-      {/* 4 Wide KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all space-y-3">
+      {isMock && <AvisoMock />}
+      {erro && <AvisoErro mensagem={erro} onTentarNovamente={recarregar} />}
+
+      <SeletorUnidade />
+
+      {/* 5 KPIs */}
+      {loading ? (
+        <SkeletonKpis quantidade={5} />
+      ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
           <div className="flex items-center justify-between text-[#9E9689]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               {selectedDay === "TODOS" ? "Lucro Acumulado" : `Lucro em ${selectedDay}`}
@@ -325,8 +304,15 @@ export default function PainelPage() {
               totalLucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
             }`}
           >
-            {totalLucro >= 0 ? "+" : ""}R${" "}
-            {totalLucro.toFixed(2).replace(".", ",")}
+            <NumberFlow
+              value={totalLucro}
+              locales="pt-BR"
+              format={{
+                style: "currency",
+                currency: "BRL",
+                signDisplay: "always",
+              }}
+            />
           </div>
           <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
             {selectedDay === "TODOS"
@@ -335,7 +321,31 @@ export default function PainelPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all space-y-3">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
+          <div className="flex items-center justify-between text-[#9E9689]">
+            <span className="text-[11px] font-bold uppercase tracking-wider">ROI</span>
+            <div className="w-8 h-8 rounded-lg bg-[#C7522A]/10 text-[#C7522A] flex items-center justify-center">
+              <Percent className="w-4 h-4" />
+            </div>
+          </div>
+          <div
+            className={`font-serif text-3xl sm:text-4xl tracking-tight leading-none ${
+              roi >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+            }`}
+          >
+            <NumberFlow
+              value={roi}
+              locales="pt-BR"
+              format={{ signDisplay: "always", maximumFractionDigits: 2 }}
+              suffix="%"
+            />
+          </div>
+          <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
+            Lucro sobre o total apostado
+          </div>
+        </div>
+
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
           <div className="flex items-center justify-between text-[#9E9689]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Total de Apostas
@@ -345,14 +355,14 @@ export default function PainelPage() {
             </div>
           </div>
           <div className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight leading-none">
-            {totalBets}
+            <NumberFlow value={totalBets} locales="pt-BR" />
           </div>
           <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
-            {greens} Green · {reds} Red
+            {greens} Green · {reds} Red{voids > 0 && ` · ${voids} Void`}
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all space-y-3">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
           <div className="flex items-center justify-between text-[#9E9689]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Taxa de Assertividade
@@ -362,14 +372,14 @@ export default function PainelPage() {
             </div>
           </div>
           <div className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight leading-none">
-            {taxaAcerto}%
+            <NumberFlow value={taxaAcerto} locales="pt-BR" suffix="%" />
           </div>
           <div className="text-xs font-medium text-[#2D8659] pt-1 border-t border-black/[0.04]">
             Das apostas finalizadas
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all space-y-3">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
           <div className="flex items-center justify-between text-[#9E9689]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Apostas Pendentes
@@ -379,18 +389,19 @@ export default function PainelPage() {
             </div>
           </div>
           <div className="font-serif text-3xl sm:text-4xl text-[#B8860B] tracking-tight leading-none">
-            {pendentes}
+            <NumberFlow value={pendentes} locales="pt-BR" />
           </div>
           <div className="text-xs font-medium text-[#B8860B] pt-1 border-t border-black/[0.04]">
             Aguardando resultado oficial
           </div>
         </div>
       </div>
+      )}
 
       {/* Middle Section: Real Dynamic Chart (8 cols) + Sport Breakdown (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Real Chart Box */}
-        <div className="lg:col-span-8 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-xs flex flex-col justify-between relative overflow-hidden">
+        <div className="lg:col-span-8 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
             <div>
               <div className="flex items-center gap-2.5">
@@ -405,8 +416,16 @@ export default function PainelPage() {
                         : "bg-[#C23B22]/10 text-[#C23B22]"
                     }`}
                   >
-                    {chartData.periodGain >= 0 ? "+" : ""}R${" "}
-                    {chartData.periodGain.toFixed(2).replace(".", ",")} ({period})
+                    <NumberFlow
+                      value={chartData.periodGain}
+                      locales="pt-BR"
+                      format={{
+                        style: "currency",
+                        currency: "BRL",
+                        signDisplay: "always",
+                      }}
+                    />{" "}
+                    ({period})
                   </span>
                 )}
               </div>
@@ -436,7 +455,7 @@ export default function PainelPage() {
                   }}
                   className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
                     period === p && selectedDay === "TODOS"
-                      ? "bg-white text-[#1A1715] shadow-xs font-bold"
+                      ? "bg-white text-[#1A1715] shadow-sm font-bold"
                       : "text-[#6B645A] hover:text-[#1A1715]"
                   }`}
                 >
@@ -449,8 +468,14 @@ export default function PainelPage() {
           {/* SVG Canvas Area */}
           <div className="h-56 sm:h-60 w-full relative">
             {!chartData || chartData.points.length === 0 ? (
-              <div className="w-full h-full flex items-center justify-center text-xs text-[#9E9689]">
-                Carregando dados da curva da banca...
+              <div className="w-full h-full flex items-center justify-center">
+                {loading ? (
+                  <SkeletonLinhas quantidade={1} altura="h-48" />
+                ) : (
+                  <p className="text-xs text-[#9E9689]">
+                    Sem apostas com data nesta aba.
+                  </p>
+                )}
               </div>
             ) : (
               <svg
@@ -530,27 +555,48 @@ export default function PainelPage() {
                 />
 
                 {/* Gradient Area */}
-                <path d={chartData.areaPath} fill="url(#realChartGrad)" />
+                <motion.path
+                  key={`area-${chartKey}`}
+                  d={chartData.areaPath}
+                  fill="url(#realChartGrad)"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.45 }}
+                />
 
                 {/* Main Stroke Line */}
-                <path
+                <motion.path
+                  key={`line-${chartKey}`}
                   d={chartData.linePath}
                   fill="none"
                   stroke="#2D8659"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.9, ease: [0.32, 0.72, 0, 1] }}
                 />
 
                 {/* Data Points on Line (Subtle dots) */}
-                {chartData.points.map((p) => (
-                  <circle
-                    key={p.date}
+                {chartData.points.map((p, i) => (
+                  <motion.circle
+                    key={`${chartKey}-${p.date}`}
                     cx={p.x}
                     cy={p.y}
                     r={chartData.points.length > 20 ? 1.5 : 3}
                     fill={p.cumProfit >= 0 ? "#2D8659" : "#C23B22"}
-                    opacity={chartData.points.length > 20 ? 0.6 : 0.8}
+                    initial={{ opacity: 0, scale: 0.4 }}
+                    animate={{
+                      opacity: chartData.points.length > 20 ? 0.6 : 0.8,
+                      scale: 1,
+                    }}
+                    transition={{
+                      duration: 0.25,
+                      delay:
+                        0.15 +
+                        (i / Math.max(chartData.points.length - 1, 1)) * 0.75,
+                    }}
                   />
                 ))}
 
@@ -631,7 +677,7 @@ export default function PainelPage() {
         </div>
 
         {/* Breakdown by Sport */}
-        <div className="lg:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4">
+        <div className="lg:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4">
           <div>
             <h2 className="text-base font-bold text-[#1A1715] tracking-tight mb-1">
               Lucro por Esporte
@@ -642,11 +688,17 @@ export default function PainelPage() {
 
             <div className="divide-y divide-black/[0.05] max-h-[220px] overflow-y-auto pr-1">
               {sports.length === 0 ? (
-                <div className="py-8 text-center text-xs text-[#9E9689]">
-                  Carregando modalidades...
+                <div className="py-4">
+                  {loading ? (
+                    <SkeletonLinhas quantidade={3} altura="h-9" />
+                  ) : (
+                    <p className="text-center text-xs text-[#9E9689]">
+                      Sem modalidades nesta aba.
+                    </p>
+                  )}
                 </div>
               ) : (
-                sports.map((sport: any) => (
+                sports.map((sport) => (
                   <div
                     key={sport.esporte}
                     className="py-2.5 flex items-center justify-between first:pt-0 last:pb-0"
@@ -654,7 +706,7 @@ export default function PainelPage() {
                     <div className="flex items-center gap-2.5">
                       <SportBadge sport={sport.esporte} />
                       <div className="text-[11px] text-[#9E9689]">
-                        {sport.apostas} tips · {sport.taxaAcerto}% acerto
+                        {sport.apostas} tips · {sport.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
                       </div>
                     </div>
                     <div
@@ -662,8 +714,7 @@ export default function PainelPage() {
                         sport.lucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
                       }`}
                     >
-                      {sport.lucro >= 0 ? "+" : ""}R${" "}
-                      {sport.lucro.toFixed(2).replace(".", ",")}
+                      {formatarReaisComSinal(converter(sport.lucro))}
                     </div>
                   </div>
                 ))
@@ -681,10 +732,10 @@ export default function PainelPage() {
         </div>
       </div>
 
-      {/* Bottom Section: Recent Activity Stream (6 cols) + Top Tipsters Leaderboard (6 cols) */}
+      {/* Bottom Section: Recent Activity Stream (6 cols) + Top Adms Leaderboard (6 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Bets Stream */}
-        <div className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-xs space-y-4">
+        <div className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-[#1A1715] tracking-tight">
@@ -710,6 +761,7 @@ export default function PainelPage() {
             {recentBets.map((bet) => {
               const isGreen = bet.resultado === "GREEN";
               const isRed = bet.resultado === "RED";
+              const isVoid = bet.resultado === "VOID";
 
               return (
                 <div
@@ -725,7 +777,7 @@ export default function PainelPage() {
                       <div className="text-[11px] text-[#6B645A] truncate flex items-center gap-1.5 mt-0.5">
                         <span>{bet.tip}</span>
                         <span>·</span>
-                        <strong className="font-mono">@{bet.odd}</strong>
+                        <strong className="font-mono">@{formatarOdd(bet.odd)}</strong>
                         {bet.casa && <BookieBadge bookie={bet.casa} className="scale-90 origin-left" />}
                       </div>
                     </div>
@@ -738,6 +790,8 @@ export default function PainelPage() {
                           ? "bg-[#2D8659]/10 text-[#2D8659]"
                           : isRed
                           ? "bg-[#C23B22]/10 text-[#C23B22]"
+                          : isVoid
+                          ? "bg-[#6B645A]/10 text-[#6B645A]"
                           : "bg-[#B8860B]/10 text-[#B8860B]"
                       }`}
                     >
@@ -752,11 +806,9 @@ export default function PainelPage() {
                           : "text-[#9E9689]"
                       }`}
                     >
-                      {isGreen
-                        ? `+R$ ${bet.lucro.toFixed(2).replace(".", ",")}`
-                        : isRed
-                        ? `-R$ ${Math.abs(bet.lucro).toFixed(2).replace(".", ",")}`
-                        : "—"}
+                      {bet.resultado === "PENDENTE" || isVoid
+                        ? "—"
+                        : formatarReaisComSinal(converter(bet.lucro))}
                     </span>
                   </div>
                 </div>
@@ -765,12 +817,12 @@ export default function PainelPage() {
           </div>
         </div>
 
-        {/* Top Tipsters Box */}
-        <div className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-xs space-y-4">
+        {/* Top Adms Box */}
+        <div className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-[#1A1715] tracking-tight">
-                Ranking de Tipsters ({activeTab})
+                Ranking de Adms ({activeTab})
               </h2>
               <p className="text-xs text-[#9E9689]">
                 Quem mais gerou retorno na aba ativa
@@ -778,7 +830,7 @@ export default function PainelPage() {
             </div>
 
             <Link
-              href="/tipsters"
+              href="/adms"
               className="text-xs font-bold text-[#C7522A] hover:underline flex items-center gap-1"
             >
               <span>Detalhes</span>
@@ -787,7 +839,7 @@ export default function PainelPage() {
           </div>
 
           <div className="space-y-3">
-            {tipsters.slice(0, 4).map((t: any, idx: number) => (
+            {tipsters.slice(0, 4).map((t, idx) => (
               <div
                 key={t.nome}
                 className="p-3.5 bg-[#FAF8F5] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3"
@@ -806,7 +858,7 @@ export default function PainelPage() {
                       {t.nome}
                     </div>
                     <div className="text-[10.5px] text-[#9E9689]">
-                      {t.totalApostas} tips · {t.taxaAcerto}% acerto
+                      {t.totalApostas} tips · {t.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
                     </div>
                   </div>
                 </div>
@@ -817,8 +869,7 @@ export default function PainelPage() {
                       t.lucroUnidades >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
                     }`}
                   >
-                    {t.lucroUnidades >= 0 ? "+" : ""}
-                    {t.lucroUnidades}u
+                    {formatarUnidades(t.lucroUnidades)}
                   </div>
                   <div className="text-[10px] text-[#9E9689] uppercase tracking-wider">
                     Unidades
@@ -829,6 +880,7 @@ export default function PainelPage() {
           </div>
         </div>
       </div>
+      <SecaoTelegram />
     </div>
   );
 }

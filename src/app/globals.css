@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
 :root {
   --bg: #F7F5F0;
   --bg-card: #FFFFFF;
@@ -28,9 +26,6 @@
   --amber: #B8860B;
   --amber-soft: rgba(184, 134, 11, 0.08);
 
-  --font-serif: 'DM Serif Display', Georgia, serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
 }
 
 html {
@@ -44,6 +39,24 @@ body {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   line-height: 1.6;
+}
+
+/* Digits must not change width while they animate/refresh */
+.font-mono,
+.font-serif,
+[data-numeric] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 ::selection {
