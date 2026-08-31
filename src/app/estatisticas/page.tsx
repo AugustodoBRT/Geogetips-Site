@@ -49,13 +49,13 @@ export default function EstatisticasPage() {
   const maiorLucroAbs = Math.max(...sports.map((s) => Math.abs(s.lucro)), 1);
 
   const segmentos = [
-    { chave: "green", valor: greens, cor: "#2D8659", offset: 0 },
-    { chave: "red", valor: reds, cor: "#C23B22", offset: greens },
-    { chave: "pend", valor: pendings, cor: "#B8860B", offset: greens + reds },
+    { chave: "green", valor: greens, cor: "var(--green)", offset: 0 },
+    { chave: "red", valor: reds, cor: "var(--red)", offset: greens },
+    { chave: "pend", valor: pendings, cor: "var(--amber)", offset: greens + reds },
     {
       chave: "void",
       valor: voids,
-      cor: "#9E9689",
+      cor: "var(--text-3)",
       offset: greens + reds + pendings,
     },
   ];
@@ -65,16 +65,16 @@ export default function EstatisticasPage() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight">
+            <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
               Estatísticas &amp; Padrões
             </h1>
-            <span className="px-2.5 py-0.5 bg-[#2D8659]/10 text-[#2D8659] text-xs font-bold rounded-full">
+            <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
               Analytics
             </span>
           </div>
-          <p className="text-sm text-[#6B645A] mt-1 font-sans">
+          <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
             Distribuição de resultados, médias de odd e concentração por casa na aba{" "}
-            <span className="font-semibold text-[#1A1715]">{activeTab}</span>.
+            <span className="font-semibold text-[var(--text)]">{activeTab}</span>.
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
@@ -103,14 +103,14 @@ export default function EstatisticasPage() {
             <div className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-[#1A1715] tracking-tight">
+                  <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                     Distribuição de Resultados ({activeTab})
                   </h2>
-                  <p className="text-xs text-[#9E9689]">
+                  <p className="text-xs text-[var(--text-3)]">
                     Proporção entre Green, Red e Pendentes
                   </p>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-[#2D8659]/10 text-[#2D8659] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
                   <PieChart className="w-4 h-4" />
                 </div>
               </div>
@@ -128,7 +128,7 @@ export default function EstatisticasPage() {
                       cy="60"
                       r={RAIO}
                       fill="none"
-                      stroke="#EFECE6"
+                      stroke="var(--bg-tinted)"
                       strokeWidth="12"
                     />
                     {segmentos.map((seg) =>
@@ -154,10 +154,10 @@ export default function EstatisticasPage() {
                     )}
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-serif text-3xl text-[#1A1715] tracking-tight leading-none">
+                    <span className="font-serif text-3xl text-[var(--text)] tracking-tight leading-none">
                       <NumberFlow value={totalBets} locales="pt-BR" />
                     </span>
-                    <span className="text-[10.5px] uppercase tracking-wider text-[#9E9689] font-bold mt-1">
+                    <span className="text-[10.5px] uppercase tracking-wider text-[var(--text-3)] font-bold mt-1">
                       Apostas
                     </span>
                   </div>
@@ -165,11 +165,11 @@ export default function EstatisticasPage() {
 
                 <div className="space-y-3 w-full sm:w-auto">
                   {[
-                    { rotulo: "Green (Vitórias)", n: greens, cor: "#2D8659" },
-                    { rotulo: "Red (Perdas)", n: reds, cor: "#C23B22" },
-                    { rotulo: "Pendente", n: pendings, cor: "#B8860B" },
+                    { rotulo: "Green (Vitórias)", n: greens, cor: "var(--green)" },
+                    { rotulo: "Red (Perdas)", n: reds, cor: "var(--red)" },
+                    { rotulo: "Pendente", n: pendings, cor: "var(--amber)" },
                     ...(voids > 0
-                      ? [{ rotulo: "Void (anulada)", n: voids, cor: "#9E9689" }]
+                      ? [{ rotulo: "Void (anulada)", n: voids, cor: "var(--text-3)" }]
                       : []),
                   ].map((linha) => (
                     <div
@@ -180,7 +180,7 @@ export default function EstatisticasPage() {
                         borderColor: `${linha.cor}26`,
                       }}
                     >
-                      <div className="flex items-center gap-2 text-xs font-bold text-[#1A1715]">
+                      <div className="flex items-center gap-2 text-xs font-bold text-[var(--text)]">
                         <div
                           className="w-2.5 h-2.5 rounded-full"
                           style={{ backgroundColor: linha.cor }}
@@ -203,14 +203,14 @@ export default function EstatisticasPage() {
             <div className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-[#1A1715] tracking-tight">
+                  <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                     Médias de Odd ({activeTab})
                   </h2>
-                  <p className="text-xs text-[#9E9689]">
+                  <p className="text-xs text-[var(--text-3)]">
                     Comparativo entre apostas ganhas e perdidas
                   </p>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-[#1A1715]/5 text-[#1A1715] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[var(--text)]/5 text-[var(--text)] flex items-center justify-center">
                   <Hash className="w-4 h-4" />
                 </div>
               </div>
@@ -221,19 +221,19 @@ export default function EstatisticasPage() {
                     titulo: "Apostas com GREEN",
                     sub: `${greens} ${greens === 1 ? "tip acertada" : "tips acertadas"}`,
                     valor: stats?.oddMediaGreen ?? 0,
-                    cor: "#2D8659",
+                    cor: "var(--green)",
                   },
                   {
                     titulo: "Apostas com RED",
                     sub: `${reds} ${reds === 1 ? "tip perdida" : "tips perdidas"}`,
                     valor: stats?.oddMediaRed ?? 0,
-                    cor: "#C23B22",
+                    cor: "var(--red)",
                   },
                   {
                     titulo: "Média Geral",
                     sub: `${totalBets} ${totalBets === 1 ? "tip no total" : "tips no total"}`,
                     valor: stats?.oddMediaGeral ?? 0,
-                    cor: "#C7522A",
+                    cor: "var(--accent)",
                   },
                 ].map((bloco) => (
                   <div
@@ -251,7 +251,7 @@ export default function EstatisticasPage() {
                       >
                         {bloco.titulo}
                       </div>
-                      <div className="text-[11px] text-[#9E9689] mt-0.5 font-medium">
+                      <div className="text-[11px] text-[var(--text-3)] mt-0.5 font-medium">
                         {bloco.sub}
                       </div>
                     </div>
@@ -283,21 +283,21 @@ export default function EstatisticasPage() {
             <div className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-[#1A1715] tracking-tight">
+                  <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                     Lucro por Modalidade Esportiva
                   </h2>
-                  <p className="text-xs text-[#9E9689]">
+                  <p className="text-xs text-[var(--text-3)]">
                     Rentabilidade por esporte na aba {activeTab}
                   </p>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-[#C7522A]/10 text-[#C7522A] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center">
                   <BarChart2 className="w-4 h-4" />
                 </div>
               </div>
 
               <div className="space-y-4">
                 {sports.length === 0 ? (
-                  <p className="text-xs text-[#9E9689]">
+                  <p className="text-xs text-[var(--text-3)]">
                     Sem dados de categoria na aba.
                   </p>
                 ) : (
@@ -311,20 +311,20 @@ export default function EstatisticasPage() {
                           <SportBadge sport={sport.esporte} />
                           <span
                             className={`font-mono flex items-baseline gap-2 ${
-                              positivo ? "text-[#2D8659]" : "text-[#C23B22]"
+                              positivo ? "text-[var(--green)]" : "text-[var(--red)]"
                             }`}
                           >
                             {formatarReaisComSinal(converter(sport.lucro))}
-                            <span className="text-[10.5px] text-[#9E9689] font-medium">
+                            <span className="text-[10.5px] text-[var(--text-3)] font-medium">
                               ROI {sport.roi >= 0 ? "+" : ""}
                               {sport.roi.toFixed(1).replace(".", ",")}%
                             </span>
                           </span>
                         </div>
-                        <div className="h-2 bg-[#EFECE6] rounded-full overflow-hidden">
+                        <div className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
                           <motion.div
                             className={`h-full rounded-full ${
-                              positivo ? "bg-[#2D8659]" : "bg-[#C23B22]"
+                              positivo ? "bg-[var(--green)]" : "bg-[var(--red)]"
                             }`}
                             initial={{ width: "0%" }}
                             animate={{ width: `${Math.max(largura, 2)}%` }}
@@ -342,33 +342,33 @@ export default function EstatisticasPage() {
             <div className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-[#1A1715] tracking-tight">
+                  <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                     Top Casas de Apostas
                   </h2>
-                  <p className="text-xs text-[#9E9689]">
+                  <p className="text-xs text-[var(--text-3)]">
                     Volume de palpites por plataforma cadastrada
                   </p>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-[#1A1715]/5 text-[#1A1715] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[var(--text)]/5 text-[var(--text)] flex items-center justify-center">
                   <Layers className="w-4 h-4" />
                 </div>
               </div>
 
               <div className="space-y-3.5">
                 {bookies.length === 0 ? (
-                  <p className="text-xs text-[#9E9689]">Sem dados de casas na aba.</p>
+                  <p className="text-xs text-[var(--text-3)]">Sem dados de casas na aba.</p>
                 ) : (
                   bookies.map((b) => (
                     <div key={b.casa} className="space-y-1.5">
                       <div className="flex justify-between items-center text-xs font-semibold gap-3">
                         <BookieBadge bookie={b.casa} />
-                        <span className="font-mono text-[#6B645A] text-xs">
+                        <span className="font-mono text-[var(--text-2)] text-xs">
                           {b.apostas} {b.apostas === 1 ? "aposta" : "apostas"}
                         </span>
                       </div>
-                      <div className="h-2 bg-[#EFECE6] rounded-full overflow-hidden">
+                      <div className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
                         <motion.div
-                          className="h-full rounded-full bg-[#1A1715]"
+                          className="h-full rounded-full bg-[var(--text)]"
                           initial={{ width: "0%" }}
                           animate={{ width: `${b.percentual}%` }}
                           transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}

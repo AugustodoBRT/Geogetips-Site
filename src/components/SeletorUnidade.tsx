@@ -34,17 +34,17 @@ export function SeletorUnidade() {
     >
       <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="w-9 h-9 rounded-lg bg-[#2D8659]/10 text-[#2D8659] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center shrink-0">
             <Coins className="w-4 h-4" aria-hidden="true" />
           </div>
           <div className="min-w-0">
             <h2
               id="titulo-unidade"
-              className="text-sm font-bold text-[#1A1715] tracking-tight"
+              className="text-sm font-bold text-[var(--text)] tracking-tight"
             >
               Quanto vale 1 unidade para você?
             </h2>
-            <p className="text-xs text-[#6B645A] mt-0.5">
+            <p className="text-xs text-[var(--text-2)] mt-0.5">
               A unidade do grupo é {formatarReais(VALOR_UNIDADE)}. Coloque a sua e
               todos os valores passam para a sua banca — o ROI e a taxa de acerto
               não mudam.
@@ -62,8 +62,8 @@ export function SeletorUnidade() {
                 aria-pressed={unidade === v}
                 className={`px-2.5 py-1 text-[11px] font-bold rounded-full border transition-all ${
                   unidade === v
-                    ? "bg-[#1A1715] text-white border-[#1A1715]"
-                    : "bg-white text-[#6B645A] border-black/[0.08] hover:border-black/25 hover:text-[#1A1715]"
+                    ? "bg-[var(--text)] text-white border-[var(--text)]"
+                    : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-black/25 hover:text-[var(--text)]"
                 }`}
               >
                 {v}
@@ -77,7 +77,7 @@ export function SeletorUnidade() {
             </label>
             <div className="relative">
               <span
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#9E9689] pointer-events-none"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--text-3)] pointer-events-none"
                 aria-hidden="true"
               >
                 R$
@@ -97,7 +97,7 @@ export function SeletorUnidade() {
                     aplicar((e.target as HTMLInputElement).value);
                   }
                 }}
-                className="w-28 bg-[#F7F5F0] border border-black/[0.1] rounded-full pl-9 pr-3 py-1.5 text-xs font-bold font-mono text-[#1A1715] outline-none focus:border-[#C7522A] focus-visible:ring-2 focus-visible:ring-[#C7522A] transition-colors"
+                className="w-28 bg-[var(--bg)] border border-black/[0.1] rounded-full pl-9 pr-3 py-1.5 text-xs font-bold font-mono text-[var(--text)] outline-none focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
               />
             </div>
 
@@ -107,7 +107,7 @@ export function SeletorUnidade() {
                 onClick={restaurarPadrao}
                 title="Voltar para a unidade do grupo"
                 aria-label="Voltar para a unidade do grupo"
-                className="p-1.5 rounded-full text-[#6B645A] hover:bg-[#EFECE6] hover:text-[#1A1715] focus-visible:ring-2 focus-visible:ring-[#C7522A] transition-colors"
+                className="p-1.5 rounded-full text-[var(--text-2)] hover:bg-[var(--bg-tinted)] hover:text-[var(--text)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
@@ -119,17 +119,17 @@ export function SeletorUnidade() {
       {personalizada && (
         <div className="mt-3 pt-3 border-t border-black/[0.05] flex items-start gap-2.5">
           <AlertTriangle
-            className="w-3.5 h-3.5 text-[#B8860B] mt-0.5 shrink-0"
+            className="w-3.5 h-3.5 text-[var(--amber)] mt-0.5 shrink-0"
             aria-hidden="true"
           />
-          <p className="text-[11.5px] text-[#6B645A] leading-relaxed">
-            <strong className="text-[#B8860B] font-bold">
+          <p className="text-[11.5px] text-[var(--text-2)] leading-relaxed">
+            <strong className="text-[var(--amber)] font-bold">
               Simulação aproximada, não resultado exato.
             </strong>{" "}
             O histórico real foi operado a {formatarReais(VALOR_UNIDADE)} por
             unidade, e o recálculo para {formatarReais(unidade)} apenas escala os
             valores proporcionalmente. Ele{" "}
-            <strong className="text-[#1A1715]">
+            <strong className="text-[var(--text)]">
               não considera limites de aposta nem a liquidez
             </strong>{" "}
             de cada mercado: em stakes maiores a casa pode não aceitar o valor

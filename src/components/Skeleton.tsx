@@ -2,7 +2,7 @@ export function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`bg-gradient-to-r from-[#EFECE6] via-[#F5F3EE] to-[#EFECE6] bg-[length:200%_100%] animate-shimmer rounded-lg ${className}`}
+      className={`bg-gradient-to-r from-[var(--bg-tinted)] via-[var(--bg-shimmer)] to-[var(--bg-tinted)] bg-[length:200%_100%] animate-shimmer rounded-lg ${className}`}
     />
   );
 }

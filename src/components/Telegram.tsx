@@ -37,11 +37,11 @@ interface BotaoTelegramProps {
 
 const ESTILOS = {
   primario:
-    "px-7 py-3 bg-[#1A1715] text-[#F7F5F0] text-sm font-semibold rounded-full hover:opacity-90 active:scale-[0.98] shadow-sm",
+    "px-7 py-3 bg-[var(--text)] text-[var(--bg)] text-sm font-semibold rounded-full hover:opacity-90 active:scale-[0.98] shadow-sm",
   secundario:
-    "px-7 py-3 bg-transparent text-[#1A1715] text-sm font-semibold border border-black/15 rounded-full hover:bg-[#EFECE6] active:scale-[0.98]",
+    "px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-black/15 rounded-full hover:bg-[var(--bg-tinted)] active:scale-[0.98]",
   compacto:
-    "px-4 py-2 bg-[#1A1715] text-[#F7F5F0] text-xs font-bold rounded-full hover:opacity-90 active:scale-[0.98] shadow-sm",
+    "px-4 py-2 bg-[var(--text)] text-[var(--bg)] text-xs font-bold rounded-full hover:opacity-90 active:scale-[0.98] shadow-sm",
 } as const;
 
 export function BotaoTelegram({
@@ -54,7 +54,7 @@ export function BotaoTelegram({
       href={TELEGRAM_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-2 transition-all focus-visible:ring-2 focus-visible:ring-[#C7522A] ${ESTILOS[variante]} ${className}`}
+      className={`inline-flex items-center gap-2 transition-all focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${ESTILOS[variante]} ${className}`}
     >
       <IconeTelegram className={variante === "compacto" ? "w-3.5 h-3.5" : "w-4 h-4"} />
       <span>{rotulo}</span>
@@ -74,7 +74,7 @@ const BENEFICIOS = [
  */
 export function SecaoTelegram() {
   return (
-    <section className="bg-[#1A1715] text-[#F7F5F0] rounded-2xl px-7 py-9 sm:px-10 sm:py-11">
+    <section className="bg-[var(--text)] text-[var(--bg)] rounded-2xl px-7 py-9 sm:px-10 sm:py-11">
       <div className="max-w-3xl">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-bold uppercase tracking-wider mb-5">
           <IconeTelegram className="w-3.5 h-3.5" />
@@ -86,7 +86,7 @@ export function SecaoTelegram() {
           <br />O grupo também.
         </h2>
 
-        <p className="text-sm text-[#F7F5F0]/70 leading-relaxed mb-7 max-w-xl">
+        <p className="text-sm text-[var(--bg)]/70 leading-relaxed mb-7 max-w-xl">
           Tudo que você vê neste site sai das mesmas entradas que são enviadas no
           canal. Entre, acompanhe por alguns dias e confira os resultados na
           planilha antes de decidir qualquer coisa.
@@ -94,9 +94,9 @@ export function SecaoTelegram() {
 
         <ul className="space-y-2.5 mb-8 list-none p-0">
           {BENEFICIOS.map((b) => (
-            <li key={b} className="flex items-start gap-2.5 text-sm text-[#F7F5F0]/85">
+            <li key={b} className="flex items-start gap-2.5 text-sm text-[var(--bg)]/85">
               <span
-                className="w-1.5 h-1.5 rounded-full bg-[#2D8659] mt-2 shrink-0"
+                className="w-1.5 h-1.5 rounded-full bg-[var(--green)] mt-2 shrink-0"
                 aria-hidden="true"
               />
               <span>{b}</span>
@@ -109,7 +109,7 @@ export function SecaoTelegram() {
             href={TELEGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-7 py-3 bg-[#F7F5F0] text-[#1A1715] text-sm font-bold rounded-full hover:opacity-90 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white transition-all"
+            className="inline-flex items-center gap-2 px-7 py-3 bg-[var(--bg)] text-[var(--text)] text-sm font-bold rounded-full hover:opacity-90 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white transition-all"
           >
             <IconeTelegram className="w-4 h-4" />
             <span>Entrar no grupo grátis</span>
@@ -120,7 +120,7 @@ export function SecaoTelegram() {
             href={PLANILHA_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 border border-white/25 text-[#F7F5F0] text-sm font-semibold rounded-full hover:bg-white/10 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 border border-white/25 text-[var(--bg)] text-sm font-semibold rounded-full hover:bg-white/10 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white transition-all"
           >
             <Table2 className="w-4 h-4" />
             <span>Conferir a planilha</span>
@@ -128,7 +128,7 @@ export function SecaoTelegram() {
           </a>
         </div>
 
-        <p className="text-[11px] text-[#F7F5F0]/45 mt-4">
+        <p className="text-[11px] text-[var(--bg)]/45 mt-4">
           @vemproGeogeTips · planilha aberta em modo somente leitura · 18+
         </p>
       </div>

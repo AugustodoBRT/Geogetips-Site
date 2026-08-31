@@ -47,20 +47,20 @@ export default function Navigation() {
     <>
       <nav
         aria-label="Navegação principal"
-        className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between bg-[#F7F5F0]/90 backdrop-blur-md border-b border-black/[0.07]"
+        className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between bg-[var(--bg)]/90 backdrop-blur-md border-b border-black/[0.07]"
       >
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-[32px] h-[32px] bg-[#1A1715] rounded-xl flex items-center justify-center text-[#F7F5F0] font-bold text-sm tracking-tight transition-transform group-hover:scale-95 shadow-sm">
+            <div className="w-[32px] h-[32px] bg-[var(--text)] rounded-xl flex items-center justify-center text-[var(--bg)] font-bold text-sm tracking-tight transition-transform group-hover:scale-95 shadow-sm">
               G
             </div>
-            <span className="font-serif text-xl tracking-tight text-[#1A1715]">
+            <span className="font-serif text-xl tracking-tight text-[var(--text)]">
               GeogeTips
             </span>
           </Link>
 
           {/* Desktop */}
-          <div className="hidden md:flex items-center gap-1.5 bg-[#FAF8F5] p-1 rounded-full border border-black/[0.05]">
+          <div className="hidden md:flex items-center gap-1.5 bg-[var(--bg-soft)] p-1 rounded-full border border-black/[0.05]">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -69,7 +69,7 @@ export default function Navigation() {
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={`relative px-4 py-1.5 text-xs font-bold rounded-full transition-colors duration-150 ${
-                    isActive ? "text-[#1A1715]" : "text-[#6B645A] hover:text-[#1A1715]"
+                    isActive ? "text-[var(--text)]" : "text-[var(--text-2)] hover:text-[var(--text)]"
                   }`}
                 >
                   {isActive && (
@@ -99,7 +99,7 @@ export default function Navigation() {
               aria-expanded={aberto}
               aria-controls="menu-mobile"
               aria-label={aberto ? "Fechar menu" : "Abrir menu"}
-              className="md:hidden p-2 -mr-1 rounded-full text-[#1A1715] hover:bg-black/[0.05] active:scale-95 transition-all"
+              className="md:hidden p-2 -mr-1 rounded-full text-[var(--text)] hover:bg-black/[0.05] active:scale-95 transition-all"
             >
               {aberto ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -122,7 +122,7 @@ export default function Navigation() {
           />
           <motion.div
             id="menu-mobile"
-            className="fixed top-16 left-0 right-0 z-40 md:hidden bg-[#F7F5F0] border-b border-black/[0.08] shadow-subtle px-4 py-3"
+            className="fixed top-16 left-0 right-0 z-40 md:hidden bg-[var(--bg)] border-b border-black/[0.08] shadow-subtle px-4 py-3"
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 36 }}
@@ -137,8 +137,8 @@ export default function Navigation() {
                       aria-current={isActive ? "page" : undefined}
                       className={`block px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
                         isActive
-                          ? "bg-white text-[#1A1715] shadow-sm"
-                          : "text-[#6B645A] hover:bg-white/60 hover:text-[#1A1715]"
+                          ? "bg-white text-[var(--text)] shadow-sm"
+                          : "text-[var(--text-2)] hover:bg-white/60 hover:text-[var(--text)]"
                       }`}
                     >
                       {item.label}
@@ -152,7 +152,7 @@ export default function Navigation() {
               href={TELEGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 flex items-center justify-center gap-2 px-4 py-3 bg-[#1A1715] text-[#F7F5F0] rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.98] transition-all"
+              className="mt-2 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--text)] text-[var(--bg)] rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.98] transition-all"
             >
               <IconeTelegram className="w-4 h-4" />
               <span>Entrar no grupo grátis</span>

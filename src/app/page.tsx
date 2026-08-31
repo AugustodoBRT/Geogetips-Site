@@ -38,34 +38,34 @@ const FUNCIONALIDADES = [
     texto:
       "Cada entrada enviada no canal vira uma linha na planilha automaticamente, com partida, mercado, odd e valor. Sem digitação manual e sem esquecer nenhuma.",
     icone: <Bot className="w-6 h-6" strokeWidth={1.75} />,
-    corIcone: "bg-[#C7522A]/10 text-[#C7522A]",
+    corIcone: "bg-[var(--accent)]/10 text-[var(--accent)]",
   },
   {
     titulo: "Planilha Sincronizada",
     texto:
       "A planilha no Google Sheets continua viva e é a fonte de tudo que aparece aqui — aberta para conferência linha a linha.",
     icone: <FileSpreadsheet className="w-6 h-6" strokeWidth={1.75} />,
-    corIcone: "bg-[#2D8659]/10 text-[#2D8659]",
+    corIcone: "bg-[var(--green)]/10 text-[var(--green)]",
   },
   {
     titulo: "Análise por Adm",
     texto:
       "Descubra quem realmente coloca dinheiro no seu bolso e quem dá prejuízo, com acerto, volume e ROI de cada um.",
     icone: <Target className="w-6 h-6" strokeWidth={1.75} />,
-    corIcone: "bg-[#B8860B]/10 text-[#B8860B]",
+    corIcone: "bg-[var(--amber)]/10 text-[var(--amber)]",
   },
   {
     titulo: "Gestão de Banca",
     texto: `Controle por unidades (1u = R$ ${VALOR_UNIDADE.toFixed(2).replace(".", ",")}), com travas de segurança e limites máximos. Ajuste a unidade para a sua banca e veja o histórico na sua escala.`,
     icone: <Landmark className="w-6 h-6" strokeWidth={1.75} />,
-    corIcone: "bg-[#C7522A]/10 text-[#C7522A]",
+    corIcone: "bg-[var(--accent)]/10 text-[var(--accent)]",
   },
   {
     titulo: "Estatísticas Completas",
     texto:
       "Lucro por esporte, casa, odds médias e ROI real — mês a mês, incluindo os meses negativos.",
     icone: <BarChart3 className="w-6 h-6" strokeWidth={1.75} />,
-    corIcone: "bg-[#2D8659]/10 text-[#2D8659]",
+    corIcone: "bg-[var(--green)]/10 text-[var(--green)]",
   },
 ];
 
@@ -96,14 +96,14 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="pt-24 pb-16 px-6 md:px-12 text-center max-w-4xl mx-auto">
         <EntradaSequencial indice={0}>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#C7522A]/[0.08] border border-[#C7522A]/[0.12] rounded-full text-xs font-semibold text-[#C7522A] mb-7">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[var(--accent)]/[0.08] border border-[var(--accent)]/[0.12] rounded-full text-xs font-semibold text-[var(--accent)] mb-7">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Análise · Dados · Palpites · Resultados</span>
           </div>
         </EntradaSequencial>
 
         {/* Duas linhas separadas: a segunda cai depois e é a que carrega a ênfase */}
-        <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl leading-[1.1] tracking-[-1.5px] text-[#1A1715] mb-5">
+        <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl leading-[1.1] tracking-[-1.5px] text-[var(--text)] mb-5">
           <TextoQueCai
             texto="Seus palpites merecem"
             atraso={0.3}
@@ -113,12 +113,12 @@ export default async function HomePage() {
             texto="matemática de verdade."
             atraso={0.75}
             intervalo={0.07}
-            className="block italic text-[#C7522A]"
+            className="block italic text-[var(--accent)]"
           />
         </h1>
 
         <EntradaSequencial indice={0} base={1.5}>
-          <p className="text-base sm:text-lg text-[#6B645A] leading-relaxed max-w-xl mx-auto mb-9 font-sans">
+          <p className="text-base sm:text-lg text-[var(--text-2)] leading-relaxed max-w-xl mx-auto mb-9 font-sans">
             O GeogeTips transforma dados brutos em decisões inteligentes. Registre,
             acompanhe e analise cada aposta com a clareza de quem usa números — não achismo.
           </p>
@@ -129,7 +129,7 @@ export default async function HomePage() {
             <BotaoTelegram />
             <Link
               href="/painel"
-              className="px-7 py-3 bg-transparent text-[#1A1715] text-sm font-semibold border border-black/15 rounded-full hover:bg-[#EFECE6] active:scale-[0.98] transition-all inline-flex items-center gap-2"
+              className="px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-black/15 rounded-full hover:bg-[var(--bg-tinted)] active:scale-[0.98] transition-all inline-flex items-center gap-2"
             >
               <span>Ver os resultados</span>
               <ArrowRight className="w-4 h-4" />
@@ -138,7 +138,7 @@ export default async function HomePage() {
         </EntradaSequencial>
 
         <EntradaSequencial indice={2} base={1.5}>
-          <p className="text-xs text-[#9E9689] mt-5">
+          <p className="text-xs text-[var(--text-3)] mt-5">
             Entrada gratuita pelo Telegram · resultados abertos na planilha pública
           </p>
         </EntradaSequencial>
@@ -146,16 +146,16 @@ export default async function HomePage() {
 
       {/* Faixa de números — só aparece quando existe dado real para mostrar */}
       {temNumeros && stats && (
-        <EntradaSequencial indice={3} base={1.5} className="flex flex-wrap items-center justify-center gap-6 md:gap-10 px-6 pb-16 text-xs text-[#9E9689] font-medium">
+        <EntradaSequencial indice={3} base={1.5} className="flex flex-wrap items-center justify-center gap-6 md:gap-10 px-6 pb-16 text-xs text-[var(--text-3)] font-medium">
           <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-[#6B645A] text-sm">
+            <span className="font-mono font-bold text-[var(--text-2)] text-sm">
               {stats.totalBets}
             </span>
             apostas registradas
           </div>
           <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
           <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-[#6B645A] text-sm">
+            <span className="font-mono font-bold text-[var(--text-2)] text-sm">
               {stats.taxaAcerto.toFixed(1).replace(".", ",")}%
             </span>
             taxa de acerto
@@ -164,7 +164,7 @@ export default async function HomePage() {
           <div className="flex items-center gap-2">
             <span
               className={`font-mono font-bold text-sm ${
-                stats.roi >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                stats.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
               }`}
             >
               {stats.roi >= 0 ? "+" : ""}
@@ -174,7 +174,7 @@ export default async function HomePage() {
           </div>
           <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
           <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-[#6B645A] text-sm">24/7</span>
+            <span className="font-mono font-bold text-[var(--text-2)] text-sm">24/7</span>
             bot automático
           </div>
         </EntradaSequencial>
@@ -183,27 +183,27 @@ export default async function HomePage() {
       {/* Prévia do painel */}
       <Revelar className="max-w-5xl mx-auto px-6 mb-20">
         <div className="bg-white border border-black/[0.07] rounded-2xl overflow-hidden shadow-subtle">
-          <div className="h-10 bg-[#F0EDE5] border-b border-black/[0.07] flex items-center px-4 gap-1.5">
+          <div className="h-10 bg-[var(--bg-warm)] border-b border-black/[0.07] flex items-center px-4 gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
             <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
             <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
-            <div className="ml-4 px-3 py-1 bg-white/70 rounded-md text-[11px] font-mono text-[#6B645A] border border-black/[0.04]">
+            <div className="ml-4 px-3 py-1 bg-white/70 rounded-md text-[11px] font-mono text-[var(--text-2)] border border-black/[0.04]">
               geogetips.app/painel
             </div>
           </div>
-          <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#FAF8F5]">
+          <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--bg-soft)]">
             <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-sm">
-              <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider mb-2">
+              <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
                 Lucro Acumulado
               </div>
               <div
                 className={`font-serif text-3xl tracking-tight ${
-                  (stats?.totalLucro ?? 0) >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                  (stats?.totalLucro ?? 0) >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                 }`}
               >
                 {temNumeros && stats ? formatarReaisComSinal(stats.totalLucro) : "—"}
               </div>
-              <div className="text-xs font-medium text-[#6B645A] mt-1.5 flex items-center gap-1">
+              <div className="text-xs font-medium text-[var(--text-2)] mt-1.5 flex items-center gap-1">
                 <TrendingUp className="w-3.5 h-3.5" />
                 <span>
                   {temNumeros && stats
@@ -214,15 +214,15 @@ export default async function HomePage() {
             </div>
 
             <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-sm">
-              <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider mb-2">
+              <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
                 Taxa de Acerto
               </div>
-              <div className="font-serif text-3xl text-[#1A1715] tracking-tight">
+              <div className="font-serif text-3xl text-[var(--text)] tracking-tight">
                 {temNumeros && stats
                   ? `${stats.taxaAcerto.toFixed(1).replace(".", ",")}%`
                   : "—"}
               </div>
-              <div className="text-xs font-medium text-[#6B645A] mt-1.5">
+              <div className="text-xs font-medium text-[var(--text-2)] mt-1.5">
                 {temNumeros && stats
                   ? `${stats.greens} green · ${stats.reds} red`
                   : "sobre apostas finalizadas"}
@@ -230,12 +230,12 @@ export default async function HomePage() {
             </div>
 
             <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-sm">
-              <div className="text-[11px] font-semibold text-[#9E9689] uppercase tracking-wider mb-2">
+              <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
                 ROI
               </div>
               <div
                 className={`font-serif text-3xl tracking-tight ${
-                  (stats?.roi ?? 0) >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
+                  (stats?.roi ?? 0) >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                 }`}
               >
                 {temNumeros && stats
@@ -244,7 +244,7 @@ export default async function HomePage() {
                       .replace(".", ",")}%`
                   : "—"}
               </div>
-              <div className="text-xs font-medium text-[#6B645A] mt-1.5">
+              <div className="text-xs font-medium text-[var(--text-2)] mt-1.5">
                 {temNumeros && stats
                   ? `odd média ${stats.oddMediaGeral.toFixed(2).replace(".", ",")}`
                   : "lucro sobre o total apostado"}
@@ -260,10 +260,10 @@ export default async function HomePage() {
           itens={FUNCIONALIDADES}
           cabecalho={
             <div className="flex-none">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#9E9689] mb-2">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-3)] mb-2">
                 Funcionalidades
               </div>
-              <h2 className="font-serif text-3xl md:text-4xl text-[#1A1715] tracking-tight leading-tight">
+              <h2 className="font-serif text-3xl md:text-4xl text-[var(--text)] tracking-tight leading-tight">
                 Tudo que você precisa, <br />
                 nada que não precisa.
               </h2>
@@ -281,10 +281,10 @@ export default async function HomePage() {
       <section className="bg-white border-y border-black/[0.07] py-20 px-6">
         <div className="max-w-5xl mx-auto">
           <Revelar>
-            <div className="text-xs font-semibold uppercase tracking-wider text-[#9E9689] mb-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-3)] mb-3">
               Como Funciona
             </div>
-            <h2 className="font-serif text-3xl md:text-4xl text-[#1A1715] tracking-tight mb-12">
+            <h2 className="font-serif text-3xl md:text-4xl text-[var(--text)] tracking-tight mb-12">
               Três passos. Sem complicação.
             </h2>
           </Revelar>
@@ -295,13 +295,13 @@ export default async function HomePage() {
             <ol className="grid grid-cols-1 md:grid-cols-3 gap-10 list-none p-0 m-0">
               {PASSOS.map((passo, i) => (
                 <li key={passo.titulo}>
-                  <div className="font-serif text-5xl text-[#EFECE6] leading-none mb-4 tracking-tighter">
+                  <div className="font-serif text-5xl text-[var(--bg-tinted)] leading-none mb-4 tracking-tighter">
                     {String(i + 1).padStart(2, "0")}
                   </div>
-                  <h3 className="text-base font-bold text-[#1A1715] mb-2 tracking-tight">
+                  <h3 className="text-base font-bold text-[var(--text)] mb-2 tracking-tight">
                     {passo.titulo}
                   </h3>
-                  <p className="text-[13.5px] text-[#6B645A] leading-relaxed">
+                  <p className="text-[13.5px] text-[var(--text-2)] leading-relaxed">
                     {passo.texto}
                   </p>
                 </li>

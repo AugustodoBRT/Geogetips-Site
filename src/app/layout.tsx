@@ -1,3 +1,4 @@
+import { CORES } from "@/lib/cores";
 import type { Metadata, Viewport } from "next";
 import { DM_Serif_Display, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -71,7 +72,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F7F5F0",
+  themeColor: CORES.bg,
   width: "device-width",
   initialScale: 1,
 };
@@ -86,7 +87,7 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${dmSerif.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="antialiased min-h-screen flex flex-col bg-[#F7F5F0] text-[#1A1715]">
+      <body className="antialiased min-h-screen flex flex-col bg-[var(--bg)] text-[var(--text)]">
         {/* Os elementos animados saem do servidor com opacity 0, e só o JS os
             revela. Sem JS o título da home ficaria invisível — isto garante
             que a página continue legível de qualquer forma. */}
@@ -101,7 +102,7 @@ export default function RootLayout({
         </noscript>
         <a
           href="#conteudo"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[#1A1715] focus:text-[#F7F5F0] focus:rounded-full focus:text-xs focus:font-bold"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[var(--text)] focus:text-[var(--bg)] focus:rounded-full focus:text-xs focus:font-bold"
         >
           Pular para o conteúdo
         </a>
