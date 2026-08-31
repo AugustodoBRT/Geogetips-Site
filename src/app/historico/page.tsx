@@ -12,7 +12,12 @@ import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useResumoMensal } from "@/hooks/useResumoMensal";
 import { useUnidade } from "@/hooks/useUnidade";
 import { abaCurta } from "@/lib/constants";
-import { formatarOdd, formatarReaisComSinal, formatarUnidades } from "@/lib/format";
+import {
+  formatarOdd,
+  formatarReaisComSinal,
+  formatarUnidades,
+  tamanhoDoValor,
+} from "@/lib/format";
 
 export default function HistoricoPage() {
   const { meses, consolidado, loading, erro, isMock, recarregar } = useResumoMensal();
@@ -88,7 +93,9 @@ export default function HistoricoPage() {
                   </div>
                 </div>
                 <div
-                  className={`font-serif text-3xl sm:text-4xl tracking-tight leading-none ${
+                  className={`font-serif ${tamanhoDoValor(
+                    formatarReaisComSinal(converter(consolidado.lucro))
+                  )} tracking-tight leading-none ${
                     consolidado.lucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
                   }`}
                 >
@@ -118,7 +125,9 @@ export default function HistoricoPage() {
                   </div>
                 </div>
                 <div
-                  className={`font-serif text-3xl sm:text-4xl tracking-tight leading-none ${
+                  className={`font-serif ${tamanhoDoValor(
+                    `${consolidado.roi.toFixed(2)}%`
+                  )} tracking-tight leading-none ${
                     consolidado.roi >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
                   }`}
                 >
@@ -143,7 +152,11 @@ export default function HistoricoPage() {
                     <Layers className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight leading-none">
+                <div
+                  className={`font-serif ${tamanhoDoValor(
+                    String(consolidado.apostas)
+                  )} text-[#1A1715] tracking-tight leading-none`}
+                >
                   <NumberFlow value={consolidado.apostas} locales="pt-BR" />
                 </div>
                 <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
