@@ -58,7 +58,7 @@ export default function HistoricoPage() {
           disabled={loading}
           aria-label="Recarregar dados"
           title="Recarregar dados"
-          className="p-2 bg-white border border-black/[0.12] rounded-full text-[var(--text-2)] hover:text-[var(--text)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all disabled:opacity-50 shrink-0 self-start sm:self-auto"
+          className="p-2 bg-white border border-black/[0.12] rounded-full text-[var(--text-2)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all disabled:opacity-50 shrink-0 self-start sm:self-auto"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>

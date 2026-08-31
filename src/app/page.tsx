@@ -129,7 +129,7 @@ export default async function HomePage() {
             <BotaoTelegram />
             <Link
               href="/painel"
-              className="px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-black/15 rounded-full hover:bg-[var(--bg-tinted)] active:scale-[0.98] transition-all inline-flex items-center gap-2"
+              className="px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-black/15 rounded-full hover:border-[var(--accent)] hover:text-[var(--accent)] active:scale-[0.98] transition-all inline-flex items-center gap-2"
             >
               <span>Ver os resultados</span>
               <ArrowRight className="w-4 h-4" />

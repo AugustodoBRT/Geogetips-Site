@@ -55,7 +55,7 @@ export default function Navigation() {
               G
             </div>
             <span className="font-serif text-xl tracking-tight text-[var(--text)]">
-              GeogeTips
+              Geoge<span className="text-[var(--accent)]">Tips</span>
             </span>
           </Link>
 
@@ -69,7 +69,7 @@ export default function Navigation() {
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={`relative px-4 py-1.5 text-xs font-bold rounded-full transition-colors duration-150 ${
-                    isActive ? "text-[var(--text)]" : "text-[var(--text-2)] hover:text-[var(--text)]"
+                    isActive ? "text-[var(--text)]" : "text-[var(--text-2)] hover:text-[var(--accent)]"
                   }`}
                 >
                   {isActive && (
@@ -138,7 +138,7 @@ export default function Navigation() {
                       className={`block px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
                         isActive
                           ? "bg-white text-[var(--text)] shadow-sm"
-                          : "text-[var(--text-2)] hover:bg-white/60 hover:text-[var(--text)]"
+                          : "text-[var(--text-2)] hover:bg-white/60 hover:text-[var(--accent)]"
                       }`}
                     >
                       {item.label}
@@ -152,7 +152,7 @@ export default function Navigation() {
               href={TELEGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--text)] text-[var(--bg)] rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.98] transition-all"
+              className="mt-2 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent)] text-white rounded-xl text-sm font-bold hover:bg-[var(--accent-hover)] active:scale-[0.98] transition-all"
             >
               <IconeTelegram className="w-4 h-4" />
               <span>Entrar no grupo grátis</span>

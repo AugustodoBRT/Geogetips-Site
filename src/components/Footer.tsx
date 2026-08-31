@@ -21,7 +21,7 @@ export function Footer() {
               G
             </div>
             <span className="font-serif text-lg tracking-tight text-[var(--text)]">
-              GeogeTips
+              Geoge<span className="text-[var(--accent)]">Tips</span>
             </span>
           </div>
 
@@ -50,7 +50,7 @@ export function Footer() {
               href={PLANILHA_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-2)] hover:text-[var(--text)] transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] transition-colors"
             >
               <Table2 className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Planilha pública</span>
@@ -63,7 +63,7 @@ export function Footer() {
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="text-xs font-semibold text-[var(--text-2)] hover:text-[var(--text)] transition-colors"
+                    className="text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] transition-colors"
                   >
                     {l.label}
                   </Link>

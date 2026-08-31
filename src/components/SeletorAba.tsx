@@ -30,7 +30,7 @@ export function SeletorAba({
         id={id}
         value={activeTab}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-black/30 transition-all"
+        className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-[var(--accent)]/60 transition-all"
       >
         <option value={ABA_TODOS}>Todos os Meses (Geral)</option>
         {[...tabs]
@@ -48,7 +48,7 @@ export function SeletorAba({
         disabled={loading}
         aria-label="Recarregar dados"
         title="Recarregar dados"
-        className="p-2 bg-white border border-black/[0.12] rounded-full text-[var(--text-2)] hover:text-[var(--text)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all disabled:opacity-50"
+        className="p-2 bg-white border border-black/[0.12] rounded-full text-[var(--text-2)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all disabled:opacity-50"
       >
         <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
       </button>

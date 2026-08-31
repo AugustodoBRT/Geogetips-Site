@@ -37,11 +37,11 @@ interface BotaoTelegramProps {
 
 const ESTILOS = {
   primario:
-    "px-7 py-3 bg-[var(--text)] text-[var(--bg)] text-sm font-semibold rounded-full hover:opacity-90 active:scale-[0.98] shadow-sm",
+    "px-7 py-3 bg-[var(--accent)] text-white text-sm font-semibold rounded-full hover:bg-[var(--accent-hover)] active:scale-[0.98] shadow-sm",
   secundario:
-    "px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-black/15 rounded-full hover:bg-[var(--bg-tinted)] active:scale-[0.98]",
+    "px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-black/15 rounded-full hover:border-[var(--accent)] hover:text-[var(--accent)] active:scale-[0.98]",
   compacto:
-    "px-4 py-2 bg-[var(--text)] text-[var(--bg)] text-xs font-bold rounded-full hover:opacity-90 active:scale-[0.98] shadow-sm",
+    "px-4 py-2 bg-[var(--accent)] text-white text-xs font-bold rounded-full hover:bg-[var(--accent-hover)] active:scale-[0.98] shadow-sm",
 } as const;
 
 export function BotaoTelegram({
@@ -74,8 +74,15 @@ const BENEFICIOS = [
  */
 export function SecaoTelegram() {
   return (
-    <section className="bg-[var(--text)] text-[var(--bg)] rounded-2xl px-7 py-9 sm:px-10 sm:py-11">
-      <div className="max-w-3xl">
+    <section className="relative overflow-hidden bg-[var(--marca)] text-[var(--bg)] rounded-2xl px-7 py-9 sm:px-10 sm:py-11">
+      {/* Brilho radial roxo, como na arte da marca. Roxo aqui só funciona como
+          chão: sobre este preto ele dá 3,01:1, insuficiente para texto. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-1/3 left-1/4 h-[140%] w-[70%] rounded-full opacity-25 blur-3xl"
+        style={{ background: "radial-gradient(closest-side, var(--accent), transparent)" }}
+      />
+      <div className="relative max-w-3xl">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-bold uppercase tracking-wider mb-5">
           <IconeTelegram className="w-3.5 h-3.5" />
           <span>Grupo gratuito</span>

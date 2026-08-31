@@ -254,8 +254,8 @@ export default function ApostasPage() {
               aria-label="Visualizar em cartões"
               className={`p-1.5 rounded-full transition-all ${
                 viewMode === "cards"
-                  ? "bg-[var(--text)] text-white"
-                  : "text-[var(--text-2)] hover:text-[var(--text)]"
+                  ? "bg-[var(--accent)] text-white"
+                  : "text-[var(--text-2)] hover:text-[var(--accent)]"
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
@@ -267,8 +267,8 @@ export default function ApostasPage() {
               aria-label="Visualizar em tabela"
               className={`p-1.5 rounded-full transition-all ${
                 viewMode === "table"
-                  ? "bg-[var(--text)] text-white"
-                  : "text-[var(--text-2)] hover:text-[var(--text)]"
+                  ? "bg-[var(--accent)] text-white"
+                  : "text-[var(--text-2)] hover:text-[var(--accent)]"
               }`}
             >
               <List className="w-3.5 h-3.5" />
@@ -416,8 +416,8 @@ export default function ApostasPage() {
                       aria-pressed={isActive}
                       className={`px-3 py-1.5 text-[11px] font-semibold rounded-full border transition-all ${
                         isActive
-                          ? "bg-[var(--text)] text-white border-[var(--text)]"
-                          : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-black/20 hover:text-[var(--text)]"
+                          ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                          : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
                       }`}
                     >
                       {rotulos[status]}
@@ -436,7 +436,7 @@ export default function ApostasPage() {
                   id="filtro-dia"
                   value={dayFilter}
                   onChange={(e) => setDayFilter(e.target.value)}
-                  className="bg-[var(--bg)] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-black/20 transition-colors"
+                  className="bg-[var(--bg)] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-[var(--accent)]/60 transition-colors"
                 >
                   <option value="TODOS">Todos os Dias ({bets.length})</option>
                   {availableDays.map((day) => {
@@ -456,7 +456,7 @@ export default function ApostasPage() {
                   id="filtro-esporte"
                   value={sportFilter}
                   onChange={(e) => setSportFilter(e.target.value)}
-                  className="bg-[var(--bg)] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-semibold text-[var(--text-2)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-black/20 transition-colors"
+                  className="bg-[var(--bg)] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-semibold text-[var(--text-2)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-[var(--accent)]/60 transition-colors"
                 >
                   <option value="TODOS">Todos os Esportes</option>
                   {sports.map((s) => (
@@ -473,7 +473,7 @@ export default function ApostasPage() {
                   id="filtro-casa"
                   value={bookieFilter}
                   onChange={(e) => setBookieFilter(e.target.value)}
-                  className="bg-[var(--bg)] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-semibold text-[var(--text-2)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-black/20 transition-colors"
+                  className="bg-[var(--bg)] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-semibold text-[var(--text-2)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-[var(--accent)]/60 transition-colors"
                 >
                   <option value="TODAS">Todas as Casas</option>
                   {bookies.map((b) => (
@@ -508,7 +508,7 @@ export default function ApostasPage() {
                     className={`px-2 py-0.5 text-[10.5px] font-semibold rounded-full border transition-all ${
                       oddRangeFilter === range.val
                         ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                        : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-black/20"
+                        : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
                     }`}
                   >
                     {range.label}
@@ -572,7 +572,7 @@ export default function ApostasPage() {
                             type="button"
                             onClick={() => setSelectedBet(bet)}
                             aria-label={`Ver detalhes: ${bet.partida}, ${bet.tip}`}
-                            className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm hover:border-black/25 hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors cursor-pointer grid grid-cols-[5px_1fr] group mb-2"
+                            className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm hover:border-[var(--accent)]/60 hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors cursor-pointer grid grid-cols-[5px_1fr] group mb-2"
                           >
                             <div
                               className={

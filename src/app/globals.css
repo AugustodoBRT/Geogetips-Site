@@ -10,6 +10,10 @@
   --bg-soft: #FCFBFD;
   --bg-shimmer: #F3F0F7;
 
+  /* Preto da marca, para as faixas escuras. Mais escuro e mais violeta que
+     --text, que é cor de tinta e não de superfície. */
+  --marca: #0A0714;
+
   --border: rgba(0, 0, 0, 0.07);
   --border-strong: rgba(0, 0, 0, 0.12);
 

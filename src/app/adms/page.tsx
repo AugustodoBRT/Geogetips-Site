@@ -77,7 +77,7 @@ export default function AdmsPage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.28, delay: Math.min(index * 0.05, 0.3) }}
-                className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm hover:border-black/20 hover:shadow-card transition-colors space-y-5 flex flex-col justify-between"
+                className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm transition-colors space-y-5 flex flex-col justify-between"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3.5 min-w-0">

@@ -261,7 +261,7 @@ export default function PainelPage() {
             id="seletor-dia"
             value={selectedDay}
             onChange={(e) => setSelectedDay(e.target.value)}
-            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-black/30 transition-all"
+            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-[var(--accent)]/60 transition-all"
           >
             <option value="TODOS">Mês Completo ({allBets.length} tips)</option>
             {availableDays.map((day) => {
@@ -295,7 +295,7 @@ export default function PainelPage() {
         <SkeletonKpis quantidade={5} />
       ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               {selectedDay === "TODOS" ? "Lucro Acumulado" : `Lucro em ${selectedDay}`}
@@ -328,7 +328,7 @@ export default function PainelPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">ROI</span>
             <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center">
@@ -354,7 +354,7 @@ export default function PainelPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Total de Apostas
@@ -375,7 +375,7 @@ export default function PainelPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Taxa de Assertividade
@@ -392,7 +392,7 @@ export default function PainelPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm hover:border-black/20 transition-all space-y-3">
+        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Apostas Pendentes
@@ -468,8 +468,8 @@ export default function PainelPage() {
                   }}
                   className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
                     period === p && selectedDay === "TODOS"
-                      ? "bg-white text-[var(--text)] shadow-sm font-bold"
-                      : "text-[var(--text-2)] hover:text-[var(--text)]"
+                      ? "bg-[var(--accent)] text-white shadow-sm font-bold"
+                      : "text-[var(--text-2)] hover:text-[var(--accent)]"
                   }`}
                 >
                   {p}
