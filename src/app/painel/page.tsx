@@ -15,7 +15,12 @@ import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { parseDateTimestamp } from "@/lib/date";
 import { ABA_TODOS } from "@/lib/constants";
-import { formatarOdd, formatarReaisComSinal, formatarUnidades } from "@/lib/format";
+import {
+  formatarOdd,
+  formatarReaisComSinal,
+  formatarUnidades,
+  tamanhoDoValor,
+} from "@/lib/format";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
 import { TrendingUp, Activity, Clock, Layers, Percent, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
@@ -300,7 +305,9 @@ export default function PainelPage() {
             </div>
           </div>
           <div
-            className={`font-serif text-3xl sm:text-4xl tracking-tight leading-none ${
+            className={`font-serif ${tamanhoDoValor(
+              formatarReaisComSinal(totalLucro)
+            )} tracking-tight leading-none ${
               totalLucro >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
             }`}
           >
@@ -329,7 +336,9 @@ export default function PainelPage() {
             </div>
           </div>
           <div
-            className={`font-serif text-3xl sm:text-4xl tracking-tight leading-none ${
+            className={`font-serif ${tamanhoDoValor(
+              `${roi.toFixed(2)}%`
+            )} tracking-tight leading-none ${
               roi >= 0 ? "text-[#2D8659]" : "text-[#C23B22]"
             }`}
           >
@@ -354,7 +363,11 @@ export default function PainelPage() {
               <Layers className="w-4 h-4" />
             </div>
           </div>
-          <div className="font-serif text-3xl sm:text-4xl text-[#1A1715] tracking-tight leading-none">
+          <div
+            className={`font-serif ${tamanhoDoValor(
+              String(totalBets)
+            )} text-[#1A1715] tracking-tight leading-none`}
+          >
             <NumberFlow value={totalBets} locales="pt-BR" />
           </div>
           <div className="text-xs font-medium text-[#6B645A] pt-1 border-t border-black/[0.04]">
