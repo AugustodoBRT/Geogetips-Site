@@ -1,4 +1,9 @@
-export type BetResult = "GREEN" | "RED" | "PENDENTE";
+/**
+ * VOID = aposta anulada pela casa (jogo cancelado, mercado invalidado).
+ * Stake devolvida, lucro zero. Não conta como acerto nem como erro —
+ * fica fora do denominador da taxa de acerto e do ROI.
+ */
+export type BetResult = "GREEN" | "RED" | "PENDENTE" | "VOID";
 
 export interface BetItem {
   id: string;
@@ -23,6 +28,7 @@ export interface TipsterStat {
   taxaAcerto: number;
   totalApostas: number;
   lucroUnidades: number;
+  roi: number;
 }
 
 export interface SportBreakdown {
@@ -31,6 +37,7 @@ export interface SportBreakdown {
   apostas: number;
   taxaAcerto: number;
   lucro: number;
+  roi: number;
 }
 
 export interface BookieBreakdown {
