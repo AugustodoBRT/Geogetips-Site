@@ -183,7 +183,7 @@ export default async function HomePage() {
       {/* Prévia do painel */}
       <Revelar className="max-w-5xl mx-auto px-6 mb-20">
         <div className="bg-white border border-black/[0.07] rounded-2xl overflow-hidden shadow-subtle">
-          <div className="h-10 bg-[var(--bg-warm)] border-b border-black/[0.07] flex items-center px-4 gap-1.5">
+          <div className="h-10 bg-[var(--bg-alt)] border-b border-black/[0.07] flex items-center px-4 gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
             <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
             <div className="w-2.5 h-2.5 rounded-full bg-black/20" />

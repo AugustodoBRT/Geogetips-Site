@@ -3,30 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --bg: #F7F5F0;
+  --bg: #F6F4F8;
   --bg-card: #FFFFFF;
-  --bg-tinted: #EFECE6;
-  --bg-warm: #F0EDE5;
-  --bg-soft: #FAF8F5;
-  --bg-shimmer: #F5F3EE;
+  --bg-tinted: #ECE9F1;
+  --bg-alt: #EFEBF4;
+  --bg-soft: #FCFBFD;
+  --bg-shimmer: #F3F0F7;
 
   --border: rgba(0, 0, 0, 0.07);
   --border-strong: rgba(0, 0, 0, 0.12);
 
-  --text: #1A1715;
-  --text-2: #6B645A;
-  --text-3: #9E9689;
+  --text: #16131F;
+  --text-2: #5D5670;
+  --text-3: #736C82;
 
-  --accent: #C7522A;
-  --accent-hover: #B3461F;
-  --accent-soft: rgba(199, 82, 42, 0.08);
+  --accent: #6B3FE4;
+  --accent-hover: #5A2FD0;
+  --accent-soft: rgba(107, 63, 228, 0.08);
 
-  --green: #2D8659;
-  --green-soft: rgba(45, 134, 89, 0.08);
-  --red: #C23B22;
-  --red-soft: rgba(194, 59, 34, 0.08);
-  --amber: #B8860B;
-  --amber-soft: rgba(184, 134, 11, 0.08);
+  --green: #0E7A50;
+  --green-soft: rgba(14, 122, 80, 0.08);
+  --red: #C41E3A;
+  --red-soft: rgba(196, 30, 58, 0.08);
+  --amber: #8A6408;
+  --amber-soft: rgba(138, 100, 8, 0.08);
 
 }
 
@@ -62,7 +62,7 @@ body {
 }
 
 ::selection {
-  background: rgba(199, 82, 42, 0.15);
+  background: rgba(107, 63, 228, 0.16);
   color: var(--text);
 }
 

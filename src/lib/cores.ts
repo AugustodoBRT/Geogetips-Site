@@ -13,13 +13,13 @@
  * `npm run checar:cores` depois de mexer em qualquer um dos dois.
  */
 export const CORES = {
-  bg: "#F7F5F0",
+  bg: "#F6F4F8",
   bgCard: "#FFFFFF",
-  text: "#1A1715",
-  text2: "#6B645A",
-  text3: "#9E9689",
-  accent: "#C7522A",
-  green: "#2D8659",
-  red: "#C23B22",
-  amber: "#B8860B",
+  text: "#16131F",
+  text2: "#5D5670",
+  text3: "#736C82",
+  accent: "#6B3FE4",
+  green: "#0E7A50",
+  red: "#C41E3A",
+  amber: "#8A6408",
 } as const;
