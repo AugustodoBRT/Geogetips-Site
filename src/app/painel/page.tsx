@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import NumberFlow from "@number-flow/react";
 import { SportBadge } from "@/components/SportBadge";
@@ -261,6 +261,29 @@ export default function PainelPage() {
   const chartKey = `${activeTab}-${period}-${selectedDay}-${chartPoints.length}-${
     chartPoints[0]?.date ?? ""
   }-${chartPoints[chartPoints.length - 1]?.date ?? ""}`;
+
+  /**
+   * Ponto mais próximo do X apontado. Mouse e toque usam o mesmo caminho — antes
+   * só havia onMouseMove, então no celular o gráfico não revelava valor nenhum.
+   */
+  const aproximar = useCallback(
+    (svg: SVGSVGElement, clientX: number) => {
+      if (!chartData) return;
+      const rect = svg.getBoundingClientRect();
+      const alvo = ((clientX - rect.left) / rect.width) * chartData.width;
+      let maisPerto = chartData.points[0];
+      let menorDif = Infinity;
+      for (const ponto of chartData.points) {
+        const dif = Math.abs(ponto.x - alvo);
+        if (dif < menorDif) {
+          menorDif = dif;
+          maisPerto = ponto;
+        }
+      }
+      setHoveredPoint(maisPerto);
+    },
+    [chartData]
+  );
 
   // Current scope bets (all bets in month or filtered by selectedDay)
   const scopedBets = useMemo(() => {
@@ -555,6 +578,8 @@ export default function PainelPage() {
               {availablePeriods.map((p) => (
                 <button
                   key={p}
+                  type="button"
+                  aria-pressed={period === p && selectedDay === "TODOS"}
                   onClick={() => {
                     setPeriod(p);
                     setSelectedDay("TODOS");
@@ -587,22 +612,18 @@ export default function PainelPage() {
             ) : (
               <svg
                 viewBox={`0 0 ${chartData.width} ${chartData.height}`}
-                className="w-full h-full cursor-crosshair overflow-visible select-none"
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const mouseX = ((e.clientX - rect.left) / rect.width) * chartData.width;
-                  let closest = chartData.points[0];
-                  let minDiff = Infinity;
-                  for (const p of chartData.points) {
-                    const diff = Math.abs(p.x - mouseX);
-                    if (diff < minDiff) {
-                      minDiff = diff;
-                      closest = p;
-                    }
-                  }
-                  setHoveredPoint(closest);
-                }}
+                className="w-full h-full cursor-crosshair overflow-visible select-none touch-pan-y"
+                role="img"
+                aria-label={`Evolução da banca em ${activeTab}, de ${
+                  chartPoints[0]?.date ?? ""
+                } a ${chartPoints[chartPoints.length - 1]?.date ?? ""}. Resultado do período: ${formatarReaisComSinal(
+                  chartData.periodGain
+                )}. Maior queda: ${formatarReais(chartData.drawdown)}.`}
+                onMouseMove={(e) => aproximar(e.currentTarget, e.clientX)}
                 onMouseLeave={() => setHoveredPoint(null)}
+                onTouchStart={(e) => aproximar(e.currentTarget, e.touches[0].clientX)}
+                onTouchMove={(e) => aproximar(e.currentTarget, e.touches[0].clientX)}
+                onTouchEnd={() => setHoveredPoint(null)}
               >
                 <defs>
                   {/* Verde acima do zero, vermelho abaixo. O corte fica exatamente
