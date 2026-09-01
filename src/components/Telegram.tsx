@@ -64,7 +64,7 @@ export function BotaoTelegram({
 
 const BENEFICIOS = [
   "As entradas chegam no Telegram, na hora em que saem",
-  "Cada palpite vira linha na planilha — inclusive os que dão red",
+  "Cada aposta vira linha na planilha — inclusive as que dão red",
   "Entrada gratuita, sem cadastro",
 ];
 

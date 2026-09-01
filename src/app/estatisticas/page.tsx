@@ -346,7 +346,7 @@ export default function EstatisticasPage() {
                     Top Casas de Apostas
                   </h2>
                   <p className="text-xs text-[var(--text-3)]">
-                    Volume de palpites por plataforma cadastrada
+                    Volume de apostas por plataforma cadastrada
                   </p>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-[var(--text)]/5 text-[var(--text)] flex items-center justify-center">

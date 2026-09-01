@@ -92,7 +92,7 @@ export default async function OpenGraphImage() {
               maxWidth: 900,
             }}
           >
-            Seus palpites merecem
+            Suas apostas merecem
           </div>
           <div
             style={{

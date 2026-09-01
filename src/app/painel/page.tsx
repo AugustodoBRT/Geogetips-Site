@@ -452,7 +452,7 @@ export default function PainelPage() {
                     ({hoveredPoint.dayProfit >= 0 ? "+" : ""}R$ {hoveredPoint.dayProfit.toFixed(2).replace(".", ",")} no dia · {hoveredPoint.total} tips)
                   </span>
                 ) : (
-                  "Curva real calculada a partir de cada palpite registrado"
+                  "Curva real calculada a partir de cada aposta registrada"
                 )}
               </p>
             </div>

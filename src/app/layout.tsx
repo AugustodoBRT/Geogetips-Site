@@ -30,7 +30,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://geogetips.vercel.a
 
 const TITULO = "GeogeTips — Matemática para ganhar";
 const DESCRICAO =
-  "Histórico aberto de apostas esportivas: cada palpite planilhado, com ROI, " +
+  "Histórico aberto de apostas esportivas: cada uma planilhada, com ROI, " +
   "taxa de acerto e evolução da banca. Grupo gratuito no Telegram.";
 
 export const metadata: Metadata = {

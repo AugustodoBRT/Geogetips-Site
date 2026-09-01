@@ -73,7 +73,7 @@ const PASSOS = [
   {
     titulo: "A entrada chega",
     texto:
-      "O adm envia o palpite no canal do Telegram, com a casa, o mercado e a odd.",
+      "O adm envia a aposta no canal do Telegram, com a casa, o mercado e a odd.",
   },
   {
     titulo: "Entra na planilha",
@@ -98,14 +98,14 @@ export default async function HomePage() {
         <EntradaSequencial indice={0}>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[var(--accent)]/[0.08] border border-[var(--accent)]/[0.12] rounded-full text-xs font-semibold text-[var(--accent)] mb-7">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Análise · Dados · Palpites · Resultados</span>
+            <span>Análise · Dados · Apostas · Resultados</span>
           </div>
         </EntradaSequencial>
 
         {/* Duas linhas separadas: a segunda cai depois e é a que carrega a ênfase */}
         <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl leading-[1.1] tracking-[-1.5px] text-[var(--text)] mb-5">
           <TextoQueCai
-            texto="Seus palpites merecem"
+            texto="Suas apostas merecem"
             atraso={0.3}
             className="block"
           />
