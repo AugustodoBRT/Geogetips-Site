@@ -22,7 +22,15 @@ import {
   tamanhoDoValor,
 } from "@/lib/format";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
-import { TrendingUp, Activity, Clock, Layers, Percent, ArrowUpRight } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Clock,
+  Layers,
+  Percent,
+  ArrowUpRight,
+} from "lucide-react";
 import Link from "next/link";
 
 interface DayPoint {
@@ -183,7 +191,10 @@ export default function PainelPage() {
 
     const profits = chartPoints.map((p) => p.cumProfit);
     const minVal = Math.min(0, ...profits);
-    const maxVal = Math.max(100, ...profits);
+    // O piso evita que o eixo degenere quando o lucro é pequeno, mas precisa
+    // acompanhar a unidade do visitante: em unidade de R$ 5 os valores caem
+    // 20x e um piso fixo de R$ 100 achatava a curva inteira.
+    const maxVal = Math.max(converter(100), ...profits);
     const range = maxVal - minVal || 1;
     const yMin = minVal - range * 0.05;
     const yMax = maxVal + range * 0.08;
@@ -201,6 +212,10 @@ export default function PainelPage() {
       .join(" L ")} L ${points[points.length - 1].x.toFixed(1)},${padTop + drawH} Z`;
 
     const zeroY = padTop + drawH - ((0 - yMin) / yRange) * drawH;
+
+    // Onde o zero cai dentro da área de desenho, em 0..1. É o ponto de corte do
+    // gradiente que pinta a curva de verde acima e vermelho abaixo.
+    const pctZero = Math.min(1, Math.max(0, (zeroY - padTop) / drawH));
 
     // Period Gain
     const firstPoint = points[0];
@@ -223,8 +238,9 @@ export default function PainelPage() {
       linePath,
       areaPath,
       periodGain,
+      pctZero,
     };
-  }, [chartPoints]);
+  }, [chartPoints, converter]);
 
   // Re-triggers the draw-in animation only when the dataset itself changes
   const chartKey = `${activeTab}-${period}-${selectedDay}-${chartPoints.length}`;
@@ -326,8 +342,18 @@ export default function PainelPage() {
             <span className="text-[11px] font-bold uppercase tracking-wider">
               {selectedDay === "TODOS" ? "Lucro Acumulado" : `Lucro em ${selectedDay}`}
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                totalLucro >= 0
+                  ? "bg-[var(--green)]/10 text-[var(--green)]"
+                  : "bg-[var(--red)]/10 text-[var(--red)]"
+              }`}
+            >
+              {totalLucro >= 0 ? (
+                <TrendingUp className="w-4 h-4" />
+              ) : (
+                <TrendingDown className="w-4 h-4" />
+              )}
             </div>
           </div>
           <div
@@ -413,7 +439,7 @@ export default function PainelPage() {
           <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
             <NumberFlow value={taxaAcerto} locales="pt-BR" suffix="%" />
           </div>
-          <div className="text-xs font-medium text-[var(--green)] pt-1 border-t border-black/[0.04]">
+          <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
             Das apostas finalizadas
           </div>
         </div>
@@ -423,15 +449,30 @@ export default function PainelPage() {
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Apostas Pendentes
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[var(--amber)]/10 text-[var(--amber)] flex items-center justify-center">
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                pendentes > 0
+                  ? "bg-[var(--amber)]/10 text-[var(--amber)]"
+                  : "bg-[var(--text)]/5 text-[var(--text-3)]"
+              }`}
+            >
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="font-serif text-3xl sm:text-4xl text-[var(--amber)] tracking-tight leading-none">
+          <div
+            className={`font-serif text-3xl sm:text-4xl tracking-tight leading-none ${
+              pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text)]"
+            }`}
+          >
             <NumberFlow value={pendentes} locales="pt-BR" />
           </div>
-          <div className="text-xs font-medium text-[var(--amber)] pt-1 border-t border-black/[0.04]">
-            Aguardando resultado oficial
+          {/* Zero pendência é a situação boa, não um alerta — âmbar só quando há. */}
+          <div
+            className={`text-xs font-medium pt-1 border-t border-black/[0.04] ${
+              pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text-2)]"
+            }`}
+          >
+            {pendentes > 0 ? "Aguardando resultado oficial" : "Tudo com resultado lançado"}
           </div>
         </div>
       </div>
@@ -473,9 +514,9 @@ export default function PainelPage() {
                   <span className="text-[var(--text)] font-medium">
                     Dia <strong>{hoveredPoint.date}</strong>: Acumulado{" "}
                     <strong className={hoveredPoint.cumProfit >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"}>
-                      {hoveredPoint.cumProfit >= 0 ? "+" : ""}R$ {hoveredPoint.cumProfit.toFixed(2).replace(".", ",")}
+                      {formatarReaisComSinal(hoveredPoint.cumProfit)}
                     </strong>{" "}
-                    ({hoveredPoint.dayProfit >= 0 ? "+" : ""}R$ {hoveredPoint.dayProfit.toFixed(2).replace(".", ",")} no dia · {hoveredPoint.total} tips)
+                    ({formatarReaisComSinal(hoveredPoint.dayProfit)} no dia · {hoveredPoint.total} tips)
                   </span>
                 ) : (
                   "Curva real calculada a partir de cada aposta registrada"
@@ -537,9 +578,32 @@ export default function PainelPage() {
                 onMouseLeave={() => setHoveredPoint(null)}
               >
                 <defs>
-                  <linearGradient id="realChartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--green)" stopOpacity="0.22" />
-                    <stop offset="100%" stopColor="var(--green)" stopOpacity="0.0" />
+                  {/* Verde acima do zero, vermelho abaixo. O corte fica exatamente
+                      na linha do zero — antes a curva era verde fixa e um mês no
+                      prejuízo aparecia verde ao lado do próprio selo vermelho. */}
+                  <linearGradient
+                    id="realChartLinha"
+                    gradientUnits="userSpaceOnUse"
+                    x1="0"
+                    y1={chartData.padTop}
+                    x2="0"
+                    y2={chartData.padTop + chartData.drawH}
+                  >
+                    <stop offset={chartData.pctZero} stopColor="var(--green)" />
+                    <stop offset={chartData.pctZero} stopColor="var(--red)" />
+                  </linearGradient>
+                  <linearGradient
+                    id="realChartGrad"
+                    gradientUnits="userSpaceOnUse"
+                    x1="0"
+                    y1={chartData.padTop}
+                    x2="0"
+                    y2={chartData.padTop + chartData.drawH}
+                  >
+                    <stop offset="0" stopColor="var(--green)" stopOpacity="0.22" />
+                    <stop offset={chartData.pctZero} stopColor="var(--green)" stopOpacity="0.02" />
+                    <stop offset={chartData.pctZero} stopColor="var(--red)" stopOpacity="0.02" />
+                    <stop offset="1" stopColor="var(--red)" stopOpacity="0.22" />
                   </linearGradient>
                 </defs>
 
@@ -558,7 +622,9 @@ export default function PainelPage() {
                   textAnchor="end"
                   className="text-[9.5px] font-mono fill-[var(--text-3)]"
                 >
-                  R$ {chartData.yMax > 1000 ? `${(chartData.yMax / 1000).toFixed(1)}k` : chartData.yMax.toFixed(0)}
+                  {chartData.yMax >= 1000
+                    ? `R$ ${(chartData.yMax / 1000).toFixed(1).replace(".", ",")} mil`
+                    : `R$ ${Math.round(chartData.yMax)}`}
                 </text>
 
                 {/* Grid line: Zero Baseline */}
@@ -608,7 +674,7 @@ export default function PainelPage() {
                   key={`line-${chartKey}`}
                   d={chartData.linePath}
                   fill="none"
-                  stroke="var(--green)"
+                  stroke="url(#realChartLinha)"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -694,7 +760,7 @@ export default function PainelPage() {
                       cy={hoveredPoint.y}
                       r="7"
                       fill="none"
-                      stroke="var(--green)"
+                      stroke={hoveredPoint.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
                       strokeWidth="2"
                       opacity="0.4"
                     />
@@ -704,7 +770,7 @@ export default function PainelPage() {
                       cx={hoveredPoint.x}
                       cy={hoveredPoint.y}
                       r="4"
-                      fill="var(--green)"
+                      fill={hoveredPoint.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
                       stroke="var(--bg-card)"
                       strokeWidth="2"
                     />
