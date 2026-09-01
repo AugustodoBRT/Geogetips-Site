@@ -17,6 +17,7 @@ import { parseDateTimestamp } from "@/lib/date";
 import { ABA_TODOS } from "@/lib/constants";
 import {
   formatarOdd,
+  formatarReais,
   formatarReaisComSinal,
   formatarUnidades,
   tamanhoDoValor,
@@ -222,6 +223,17 @@ export default function PainelPage() {
     const lastPoint = points[points.length - 1];
     const periodGain = lastPoint.cumProfit - (firstPoint.cumProfit - firstPoint.dayProfit);
 
+    // Maior queda de um pico até o vale seguinte. É a métrica de risco que
+    // falta quando só se olha lucro e ROI: diz quanto a banca chegou a
+    // devolver antes de recuperar.
+    let pico = -Infinity;
+    let drawdown = 0;
+    for (const ponto of points) {
+      if (ponto.cumProfit > pico) pico = ponto.cumProfit;
+      const queda = pico - ponto.cumProfit;
+      if (queda > drawdown) drawdown = queda;
+    }
+
     return {
       width,
       height,
@@ -239,11 +251,16 @@ export default function PainelPage() {
       areaPath,
       periodGain,
       pctZero,
+      drawdown,
     };
   }, [chartPoints, converter]);
 
   // Re-triggers the draw-in animation only when the dataset itself changes
-  const chartKey = `${activeTab}-${period}-${selectedDay}-${chartPoints.length}`;
+  // Inclui as pontas da janela: dois períodos podem ter a mesma quantidade de
+  // pontos e, só pelo comprimento, a animação de entrada não re-disparava.
+  const chartKey = `${activeTab}-${period}-${selectedDay}-${chartPoints.length}-${
+    chartPoints[0]?.date ?? ""
+  }-${chartPoints[chartPoints.length - 1]?.date ?? ""}`;
 
   // Current scope bets (all bets in month or filtered by selectedDay)
   const scopedBets = useMemo(() => {
@@ -484,9 +501,9 @@ export default function PainelPage() {
         <div className="lg:col-span-8 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
             <div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                  Evolução da Banca ({activeTab === "TODOS" ? "Geral" : activeTab})
+                  Evolução da Banca ({activeTab === ABA_TODOS ? "Geral" : activeTab})
                 </h2>
                 {chartData && (
                   <span
@@ -506,6 +523,16 @@ export default function PainelPage() {
                       }}
                     />{" "}
                     ({period})
+                  </span>
+                )}
+                {/* Maior queda de pico a vale. Lucro e ROI dizem onde a banca
+                    chegou; isto diz quanto ela chegou a devolver no caminho. */}
+                {chartData && chartData.drawdown > 0 && (
+                  <span
+                    className="font-mono text-xs font-bold px-2 py-0.5 rounded-full bg-[var(--text)]/[0.05] text-[var(--text-2)]"
+                    title="Maior queda de um pico até o vale seguinte dentro da janela exibida"
+                  >
+                    maior queda {formatarReais(chartData.drawdown)}
                   </span>
                 )}
               </div>
@@ -848,7 +875,7 @@ export default function PainelPage() {
               </h2>
               <p className="text-xs text-[var(--text-3)]">
                 {selectedDay === "TODOS"
-                  ? "Atividade recente capturada do bot"
+                  ? "As entradas mais recentes da aba"
                   : `Apostas cadastradas no dia ${selectedDay}`}
               </p>
             </div>
