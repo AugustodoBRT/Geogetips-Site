@@ -35,6 +35,15 @@ interface DayPoint {
   total: number;
 }
 
+/** Quantos dias de calendário cada intervalo cobre. `Tudo` não tem limite. */
+const DIAS_DO_PERIODO = {
+  "7D": 7,
+  "30D": 30,
+  "90D": 90,
+  "120D": 120,
+  Tudo: null,
+} as const;
+
 export default function PainelPage() {
   const {
     bets: allBets,
@@ -135,11 +144,28 @@ export default function PainelPage() {
       const filtered = allDailyPoints.filter((p) => p.timestamp <= targetTs);
       return filtered.length > 0 ? filtered : allDailyPoints;
     }
-    if (period === "7D") return allDailyPoints.slice(-7);
-    if (period === "30D") return allDailyPoints.slice(-30);
-    if (period === "90D") return allDailyPoints.slice(-90);
-    if (period === "120D") return allDailyPoints.slice(-120);
-    return allDailyPoints;
+    // A planilha traz apostas pendentes de jogos que ainda vão acontecer. Elas
+    // não podem entrar na curva: têm lucro 0 e desenhariam uma reta plana no
+    // futuro, como se a banca tivesse parado de crescer.
+    const fimDeHoje = new Date();
+    fimDeHoje.setHours(23, 59, 59, 999);
+    const ateHoje = allDailyPoints.filter((p) => p.timestamp <= fimDeHoje.getTime());
+
+    const dias = DIAS_DO_PERIODO[period];
+    if (dias === null || ateHoje.length === 0) return ateHoje;
+
+    // A janela termina hoje — mas numa aba de mês passado "hoje" está fora dos
+    // dados e o gráfico ficaria vazio, então ela para no último dia da aba.
+    const fim = Math.min(fimDeHoje.getTime(), ateHoje[ateHoje.length - 1].timestamp);
+
+    // Janela de calendário, não os N últimos registros: slice(-7) pegava os 7
+    // últimos dias COM aposta, que em período parado alcançava semanas atrás
+    // e, com pendentes no futuro, empurrava a janela para frente escondendo
+    // dias que de fato aconteceram.
+    const inicio = new Date(fim);
+    inicio.setDate(inicio.getDate() - (dias - 1));
+    inicio.setHours(0, 0, 0, 0);
+    return ateHoje.filter((p) => p.timestamp >= inicio.getTime() && p.timestamp <= fim);
   }, [allDailyPoints, period, selectedDay]);
 
   // Calculate coordinates for SVG rendering
@@ -452,7 +478,7 @@ export default function PainelPage() {
                     ({hoveredPoint.dayProfit >= 0 ? "+" : ""}R$ {hoveredPoint.dayProfit.toFixed(2).replace(".", ",")} no dia · {hoveredPoint.total} tips)
                   </span>
                 ) : (
-                  "Curva real calculada a partir de cada palpite registrado"
+                  "Curva real calculada a partir de cada aposta registrada"
                 )}
               </p>
             </div>

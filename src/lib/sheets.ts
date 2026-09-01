@@ -146,7 +146,7 @@ function linhasParaBets(tab: string, rows: string[][]): BetItem[] {
       esporte: (row[1] || "").trim() || "Futebol",
       tipster: (row[2] || "").trim() || "Geral",
       partida: partida || "Aposta Registrada",
-      tip: (row[4] || "").trim() || "Palpite",
+      tip: (row[4] || "").trim() || "Aposta",
       casa: (row[5] || "").trim() || "Sem Casa",
       odd: parseFloat(odd.toFixed(2)),
       valor: parseFloat(valor.toFixed(2)),
