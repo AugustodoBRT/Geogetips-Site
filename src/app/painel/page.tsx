@@ -835,8 +835,13 @@ export default function PainelPage() {
             <h2 className="text-base font-bold text-[var(--text)] tracking-tight mb-1">
               Lucro por Esporte
             </h2>
+            {/* Distribuição precisa de volume: num dia com 3 apostas isto viraria
+                um esporte só. Fica no mês inteiro de propósito — mas precisa dizer
+                isso, senão contradiz os KPIs logo acima, que seguem o dia. */}
             <p className="text-xs text-[var(--text-3)] mb-3">
-              Distribuição por modalidades cadastradas
+              {selectedDay === "TODOS"
+                ? "Distribuição por modalidades cadastradas"
+                : `Mês inteiro de ${activeTab}, não o dia ${selectedDay}`}
             </p>
 
             <div className="divide-y divide-black/[0.05] max-h-[220px] overflow-y-auto pr-1">
@@ -977,8 +982,12 @@ export default function PainelPage() {
               <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                 Ranking de Adms ({activeTab})
               </h2>
+              {/* Mesmo caso do bloco de esportes: ranking de um dia isolado
+                  costuma ter um adm só, então permanece no mês. */}
               <p className="text-xs text-[var(--text-3)]">
-                Quem mais gerou retorno na aba ativa
+                {selectedDay === "TODOS"
+                  ? "Quem mais gerou retorno na aba ativa"
+                  : `Mês inteiro de ${activeTab}, não o dia ${selectedDay}`}
               </p>
             </div>
 
