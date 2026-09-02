@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import NumberFlow from "@number-flow/react";
 import { SportBadge } from "@/components/SportBadge";
@@ -17,12 +17,21 @@ import { parseDateTimestamp } from "@/lib/date";
 import { ABA_TODOS } from "@/lib/constants";
 import {
   formatarOdd,
+  formatarReais,
   formatarReaisComSinal,
   formatarUnidades,
   tamanhoDoValor,
 } from "@/lib/format";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
-import { TrendingUp, Activity, Clock, Layers, Percent, ArrowUpRight } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Clock,
+  Layers,
+  Percent,
+  ArrowUpRight,
+} from "lucide-react";
 import Link from "next/link";
 
 interface DayPoint {
@@ -183,14 +192,23 @@ export default function PainelPage() {
 
     const profits = chartPoints.map((p) => p.cumProfit);
     const minVal = Math.min(0, ...profits);
-    const maxVal = Math.max(100, ...profits);
+    // O piso evita que o eixo degenere quando o lucro é pequeno, mas precisa
+    // acompanhar a unidade do visitante: em unidade de R$ 5 os valores caem
+    // 20x e um piso fixo de R$ 100 achatava a curva inteira.
+    const maxVal = Math.max(converter(100), ...profits);
     const range = maxVal - minVal || 1;
     const yMin = minVal - range * 0.05;
     const yMax = maxVal + range * 0.08;
     const yRange = yMax - yMin || 1;
 
+    // Com um único ponto a divisão dá 0 e ele encostaria na borda esquerda,
+    // como se o gráfico estivesse cortado. Centralizar deixa claro que é um
+    // dia só — acontece todo começo de mês com o intervalo curto.
+    const umPontoSo = chartPoints.length === 1;
     const points = chartPoints.map((p, i) => {
-      const x = padLeft + (i / Math.max(chartPoints.length - 1, 1)) * drawW;
+      const x = umPontoSo
+        ? padLeft + drawW / 2
+        : padLeft + (i / Math.max(chartPoints.length - 1, 1)) * drawW;
       const y = padTop + drawH - ((p.cumProfit - yMin) / yRange) * drawH;
       return { ...p, x, y };
     });
@@ -202,10 +220,25 @@ export default function PainelPage() {
 
     const zeroY = padTop + drawH - ((0 - yMin) / yRange) * drawH;
 
+    // Onde o zero cai dentro da área de desenho, em 0..1. É o ponto de corte do
+    // gradiente que pinta a curva de verde acima e vermelho abaixo.
+    const pctZero = Math.min(1, Math.max(0, (zeroY - padTop) / drawH));
+
     // Period Gain
     const firstPoint = points[0];
     const lastPoint = points[points.length - 1];
     const periodGain = lastPoint.cumProfit - (firstPoint.cumProfit - firstPoint.dayProfit);
+
+    // Maior queda de um pico até o vale seguinte. É a métrica de risco que
+    // falta quando só se olha lucro e ROI: diz quanto a banca chegou a
+    // devolver antes de recuperar.
+    let pico = -Infinity;
+    let drawdown = 0;
+    for (const ponto of points) {
+      if (ponto.cumProfit > pico) pico = ponto.cumProfit;
+      const queda = pico - ponto.cumProfit;
+      if (queda > drawdown) drawdown = queda;
+    }
 
     return {
       width,
@@ -223,11 +256,40 @@ export default function PainelPage() {
       linePath,
       areaPath,
       periodGain,
+      pctZero,
+      drawdown,
     };
-  }, [chartPoints]);
+  }, [chartPoints, converter]);
 
   // Re-triggers the draw-in animation only when the dataset itself changes
-  const chartKey = `${activeTab}-${period}-${selectedDay}-${chartPoints.length}`;
+  // Inclui as pontas da janela: dois períodos podem ter a mesma quantidade de
+  // pontos e, só pelo comprimento, a animação de entrada não re-disparava.
+  const chartKey = `${activeTab}-${period}-${selectedDay}-${chartPoints.length}-${
+    chartPoints[0]?.date ?? ""
+  }-${chartPoints[chartPoints.length - 1]?.date ?? ""}`;
+
+  /**
+   * Ponto mais próximo do X apontado. Mouse e toque usam o mesmo caminho — antes
+   * só havia onMouseMove, então no celular o gráfico não revelava valor nenhum.
+   */
+  const aproximar = useCallback(
+    (svg: SVGSVGElement, clientX: number) => {
+      if (!chartData) return;
+      const rect = svg.getBoundingClientRect();
+      const alvo = ((clientX - rect.left) / rect.width) * chartData.width;
+      let maisPerto = chartData.points[0];
+      let menorDif = Infinity;
+      for (const ponto of chartData.points) {
+        const dif = Math.abs(ponto.x - alvo);
+        if (dif < menorDif) {
+          menorDif = dif;
+          maisPerto = ponto;
+        }
+      }
+      setHoveredPoint(maisPerto);
+    },
+    [chartData]
+  );
 
   // Current scope bets (all bets in month or filtered by selectedDay)
   const scopedBets = useMemo(() => {
@@ -326,8 +388,18 @@ export default function PainelPage() {
             <span className="text-[11px] font-bold uppercase tracking-wider">
               {selectedDay === "TODOS" ? "Lucro Acumulado" : `Lucro em ${selectedDay}`}
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                totalLucro >= 0
+                  ? "bg-[var(--green)]/10 text-[var(--green)]"
+                  : "bg-[var(--red)]/10 text-[var(--red)]"
+              }`}
+            >
+              {totalLucro >= 0 ? (
+                <TrendingUp className="w-4 h-4" />
+              ) : (
+                <TrendingDown className="w-4 h-4" />
+              )}
             </div>
           </div>
           <div
@@ -413,7 +485,7 @@ export default function PainelPage() {
           <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
             <NumberFlow value={taxaAcerto} locales="pt-BR" suffix="%" />
           </div>
-          <div className="text-xs font-medium text-[var(--green)] pt-1 border-t border-black/[0.04]">
+          <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
             Das apostas finalizadas
           </div>
         </div>
@@ -423,15 +495,30 @@ export default function PainelPage() {
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Apostas Pendentes
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[var(--amber)]/10 text-[var(--amber)] flex items-center justify-center">
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                pendentes > 0
+                  ? "bg-[var(--amber)]/10 text-[var(--amber)]"
+                  : "bg-[var(--text)]/5 text-[var(--text-3)]"
+              }`}
+            >
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="font-serif text-3xl sm:text-4xl text-[var(--amber)] tracking-tight leading-none">
+          <div
+            className={`font-serif text-3xl sm:text-4xl tracking-tight leading-none ${
+              pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text)]"
+            }`}
+          >
             <NumberFlow value={pendentes} locales="pt-BR" />
           </div>
-          <div className="text-xs font-medium text-[var(--amber)] pt-1 border-t border-black/[0.04]">
-            Aguardando resultado oficial
+          {/* Zero pendência é a situação boa, não um alerta — âmbar só quando há. */}
+          <div
+            className={`text-xs font-medium pt-1 border-t border-black/[0.04] ${
+              pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text-2)]"
+            }`}
+          >
+            {pendentes > 0 ? "Aguardando resultado oficial" : "Tudo com resultado lançado"}
           </div>
         </div>
       </div>
@@ -443,9 +530,9 @@ export default function PainelPage() {
         <div className="lg:col-span-8 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
             <div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                  Evolução da Banca ({activeTab === "TODOS" ? "Geral" : activeTab})
+                  Evolução da Banca ({activeTab === ABA_TODOS ? "Geral" : activeTab})
                 </h2>
                 {chartData && (
                   <span
@@ -467,15 +554,25 @@ export default function PainelPage() {
                     ({period})
                   </span>
                 )}
+                {/* Maior queda de pico a vale. Lucro e ROI dizem onde a banca
+                    chegou; isto diz quanto ela chegou a devolver no caminho. */}
+                {chartData && chartData.drawdown > 0 && (
+                  <span
+                    className="font-mono text-xs font-bold px-2 py-0.5 rounded-full bg-[var(--text)]/[0.05] text-[var(--text-2)]"
+                    title="Maior queda de um pico até o vale seguinte dentro da janela exibida"
+                  >
+                    maior queda {formatarReais(chartData.drawdown)}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-[var(--text-3)] mt-0.5">
                 {hoveredPoint ? (
                   <span className="text-[var(--text)] font-medium">
                     Dia <strong>{hoveredPoint.date}</strong>: Acumulado{" "}
                     <strong className={hoveredPoint.cumProfit >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"}>
-                      {hoveredPoint.cumProfit >= 0 ? "+" : ""}R$ {hoveredPoint.cumProfit.toFixed(2).replace(".", ",")}
+                      {formatarReaisComSinal(hoveredPoint.cumProfit)}
                     </strong>{" "}
-                    ({hoveredPoint.dayProfit >= 0 ? "+" : ""}R$ {hoveredPoint.dayProfit.toFixed(2).replace(".", ",")} no dia · {hoveredPoint.total} tips)
+                    ({formatarReaisComSinal(hoveredPoint.dayProfit)} no dia · {hoveredPoint.total} tips)
                   </span>
                 ) : (
                   "Curva real calculada a partir de cada aposta registrada"
@@ -487,6 +584,8 @@ export default function PainelPage() {
               {availablePeriods.map((p) => (
                 <button
                   key={p}
+                  type="button"
+                  aria-pressed={period === p && selectedDay === "TODOS"}
                   onClick={() => {
                     setPeriod(p);
                     setSelectedDay("TODOS");
@@ -519,27 +618,46 @@ export default function PainelPage() {
             ) : (
               <svg
                 viewBox={`0 0 ${chartData.width} ${chartData.height}`}
-                className="w-full h-full cursor-crosshair overflow-visible select-none"
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const mouseX = ((e.clientX - rect.left) / rect.width) * chartData.width;
-                  let closest = chartData.points[0];
-                  let minDiff = Infinity;
-                  for (const p of chartData.points) {
-                    const diff = Math.abs(p.x - mouseX);
-                    if (diff < minDiff) {
-                      minDiff = diff;
-                      closest = p;
-                    }
-                  }
-                  setHoveredPoint(closest);
-                }}
+                className="w-full h-full cursor-crosshair overflow-visible select-none touch-pan-y"
+                role="img"
+                aria-label={`Evolução da banca em ${activeTab}, de ${
+                  chartPoints[0]?.date ?? ""
+                } a ${chartPoints[chartPoints.length - 1]?.date ?? ""}. Resultado do período: ${formatarReaisComSinal(
+                  chartData.periodGain
+                )}. Maior queda: ${formatarReais(chartData.drawdown)}.`}
+                onMouseMove={(e) => aproximar(e.currentTarget, e.clientX)}
                 onMouseLeave={() => setHoveredPoint(null)}
+                onTouchStart={(e) => aproximar(e.currentTarget, e.touches[0].clientX)}
+                onTouchMove={(e) => aproximar(e.currentTarget, e.touches[0].clientX)}
+                onTouchEnd={() => setHoveredPoint(null)}
               >
                 <defs>
-                  <linearGradient id="realChartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--green)" stopOpacity="0.22" />
-                    <stop offset="100%" stopColor="var(--green)" stopOpacity="0.0" />
+                  {/* Verde acima do zero, vermelho abaixo. O corte fica exatamente
+                      na linha do zero — antes a curva era verde fixa e um mês no
+                      prejuízo aparecia verde ao lado do próprio selo vermelho. */}
+                  <linearGradient
+                    id="realChartLinha"
+                    gradientUnits="userSpaceOnUse"
+                    x1="0"
+                    y1={chartData.padTop}
+                    x2="0"
+                    y2={chartData.padTop + chartData.drawH}
+                  >
+                    <stop offset={chartData.pctZero} stopColor="var(--green)" />
+                    <stop offset={chartData.pctZero} stopColor="var(--red)" />
+                  </linearGradient>
+                  <linearGradient
+                    id="realChartGrad"
+                    gradientUnits="userSpaceOnUse"
+                    x1="0"
+                    y1={chartData.padTop}
+                    x2="0"
+                    y2={chartData.padTop + chartData.drawH}
+                  >
+                    <stop offset="0" stopColor="var(--green)" stopOpacity="0.22" />
+                    <stop offset={chartData.pctZero} stopColor="var(--green)" stopOpacity="0.02" />
+                    <stop offset={chartData.pctZero} stopColor="var(--red)" stopOpacity="0.02" />
+                    <stop offset="1" stopColor="var(--red)" stopOpacity="0.22" />
                   </linearGradient>
                 </defs>
 
@@ -558,7 +676,9 @@ export default function PainelPage() {
                   textAnchor="end"
                   className="text-[9.5px] font-mono fill-[var(--text-3)]"
                 >
-                  R$ {chartData.yMax > 1000 ? `${(chartData.yMax / 1000).toFixed(1)}k` : chartData.yMax.toFixed(0)}
+                  {chartData.yMax >= 1000
+                    ? `R$ ${(chartData.yMax / 1000).toFixed(1).replace(".", ",")} mil`
+                    : `R$ ${Math.round(chartData.yMax)}`}
                 </text>
 
                 {/* Grid line: Zero Baseline */}
@@ -608,7 +728,7 @@ export default function PainelPage() {
                   key={`line-${chartKey}`}
                   d={chartData.linePath}
                   fill="none"
-                  stroke="var(--green)"
+                  stroke="url(#realChartLinha)"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -623,7 +743,13 @@ export default function PainelPage() {
                     key={`${chartKey}-${p.date}`}
                     cx={p.x}
                     cy={p.y}
-                    r={chartData.points.length > 20 ? 1.5 : 3}
+                    r={
+                      chartData.points.length === 1
+                        ? 5
+                        : chartData.points.length > 20
+                        ? 1.5
+                        : 3
+                    }
                     fill={p.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
                     initial={{ opacity: 0, scale: 0.4 }}
                     animate={{
@@ -645,7 +771,7 @@ export default function PainelPage() {
                     <text
                       x={chartData.points[0].x}
                       y={chartData.height - 12}
-                      textAnchor="start"
+                      textAnchor={chartData.points.length > 1 ? "start" : "middle"}
                       className="text-[10px] font-mono fill-[var(--text-3)]"
                     >
                       {chartData.points[0].date}
@@ -662,14 +788,16 @@ export default function PainelPage() {
                       </text>
                     )}
 
-                    <text
-                      x={chartData.points[chartData.points.length - 1].x}
-                      y={chartData.height - 12}
-                      textAnchor="end"
-                      className="text-[10px] font-mono fill-[var(--text-3)]"
-                    >
-                      {chartData.points[chartData.points.length - 1].date}
-                    </text>
+                    {chartData.points.length > 1 && (
+                      <text
+                        x={chartData.points[chartData.points.length - 1].x}
+                        y={chartData.height - 12}
+                        textAnchor="end"
+                        className="text-[10px] font-mono fill-[var(--text-3)]"
+                      >
+                        {chartData.points[chartData.points.length - 1].date}
+                      </text>
+                    )}
                   </>
                 )}
 
@@ -694,7 +822,7 @@ export default function PainelPage() {
                       cy={hoveredPoint.y}
                       r="7"
                       fill="none"
-                      stroke="var(--green)"
+                      stroke={hoveredPoint.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
                       strokeWidth="2"
                       opacity="0.4"
                     />
@@ -704,7 +832,7 @@ export default function PainelPage() {
                       cx={hoveredPoint.x}
                       cy={hoveredPoint.y}
                       r="4"
-                      fill="var(--green)"
+                      fill={hoveredPoint.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
                       stroke="var(--bg-card)"
                       strokeWidth="2"
                     />
@@ -721,8 +849,13 @@ export default function PainelPage() {
             <h2 className="text-base font-bold text-[var(--text)] tracking-tight mb-1">
               Lucro por Esporte
             </h2>
+            {/* Distribuição precisa de volume: num dia com 3 apostas isto viraria
+                um esporte só. Fica no mês inteiro de propósito — mas precisa dizer
+                isso, senão contradiz os KPIs logo acima, que seguem o dia. */}
             <p className="text-xs text-[var(--text-3)] mb-3">
-              Distribuição por modalidades cadastradas
+              {selectedDay === "TODOS"
+                ? "Distribuição por modalidades cadastradas"
+                : `Mês inteiro de ${activeTab}, não o dia ${selectedDay}`}
             </p>
 
             <div className="divide-y divide-black/[0.05] max-h-[220px] overflow-y-auto pr-1">
@@ -782,7 +915,7 @@ export default function PainelPage() {
               </h2>
               <p className="text-xs text-[var(--text-3)]">
                 {selectedDay === "TODOS"
-                  ? "Atividade recente capturada do bot"
+                  ? "As entradas mais recentes da aba"
                   : `Apostas cadastradas no dia ${selectedDay}`}
               </p>
             </div>
@@ -797,7 +930,18 @@ export default function PainelPage() {
           </div>
 
           <div className="space-y-2">
-            {recentBets.map((bet) => {
+            {recentBets.length === 0 ? (
+              loading ? (
+                <SkeletonLinhas quantidade={4} altura="h-14" />
+              ) : (
+                <p className="text-center text-xs text-[var(--text-3)] py-6">
+                  {selectedDay === "TODOS"
+                    ? "Sem apostas nesta aba."
+                    : `Sem apostas no dia ${selectedDay}.`}
+                </p>
+              )
+            ) : (
+            recentBets.map((bet) => {
               const isGreen = bet.resultado === "GREEN";
               const isRed = bet.resultado === "RED";
               const isVoid = bet.resultado === "VOID";
@@ -813,11 +957,20 @@ export default function PainelPage() {
                       <div className="font-bold text-[var(--text)] truncate">
                         {bet.partida}
                       </div>
-                      <div className="text-[11px] text-[var(--text-2)] truncate flex items-center gap-1.5 mt-0.5">
-                        <span>{bet.tip}</span>
-                        <span>·</span>
-                        <strong className="font-mono">@{formatarOdd(bet.odd)}</strong>
-                        {bet.casa && <BookieBadge bookie={bet.casa} className="scale-90 origin-left" />}
+                      {/* `truncate` num container flex não trunca: recorta os filhos
+                          sem reticências. Num viewport de 375px a odd e a casa
+                          terminavam fora da tela e sumiam sem aviso. Agora só o
+                          texto da tip encolhe; odd e casa não cedem espaço. */}
+                      <div className="text-[11px] text-[var(--text-2)] flex items-center gap-1.5 mt-0.5 min-w-0">
+                        <span className="truncate">{bet.tip}</span>
+                        <span className="shrink-0">·</span>
+                        <strong className="font-mono shrink-0">@{formatarOdd(bet.odd)}</strong>
+                        {bet.casa && (
+                          <BookieBadge
+                            bookie={bet.casa}
+                            className="scale-90 origin-left shrink-0"
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -852,7 +1005,8 @@ export default function PainelPage() {
                   </div>
                 </div>
               );
-            })}
+            })
+            )}
           </div>
         </div>
 
@@ -863,8 +1017,12 @@ export default function PainelPage() {
               <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                 Ranking de Adms ({activeTab})
               </h2>
+              {/* Mesmo caso do bloco de esportes: ranking de um dia isolado
+                  costuma ter um adm só, então permanece no mês. */}
               <p className="text-xs text-[var(--text-3)]">
-                Quem mais gerou retorno na aba ativa
+                {selectedDay === "TODOS"
+                  ? "Quem mais gerou retorno na aba ativa"
+                  : `Mês inteiro de ${activeTab}, não o dia ${selectedDay}`}
               </p>
             </div>
 
@@ -878,7 +1036,16 @@ export default function PainelPage() {
           </div>
 
           <div className="space-y-3">
-            {tipsters.slice(0, 4).map((t, idx) => (
+            {tipsters.length === 0 ? (
+              loading ? (
+                <SkeletonLinhas quantidade={3} altura="h-14" />
+              ) : (
+                <p className="text-center text-xs text-[var(--text-3)] py-6">
+                  Sem adms nesta aba.
+                </p>
+              )
+            ) : (
+            tipsters.slice(0, 4).map((t, idx) => (
               <div
                 key={t.nome}
                 className="p-3.5 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3"
@@ -915,7 +1082,8 @@ export default function PainelPage() {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </div>
         </div>
       </div>

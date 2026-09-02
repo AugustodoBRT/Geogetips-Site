@@ -39,13 +39,29 @@ export function mediaDeOdd(bets: BetItem[]): number {
   return parseFloat((soma / bets.length).toFixed(2));
 }
 
+/**
+ * Gradientes de avatar. Nenhum usa o verde nem o vermelho da paleta de
+ * propósito: nesta interface essas duas cores significam lucro e prejuízo, e
+ * um adm com avatar vermelho parecia estar no negativo.
+ */
 const CORES_AVATAR = [
-  "from-[#2D8659] to-[#34d399]",
+  "from-[#6B3FE4] to-[#a78bfa]",
   "from-[#3b82f6] to-[#60a5fa]",
-  "from-[#B8860B] to-[#f59e0b]",
-  "from-[#C23B22] to-[#f87171]",
-  "from-[#8b5cf6] to-[#a78bfa]",
+  "from-[#0891B2] to-[#22d3ee]",
+  "from-[#8A6408] to-[#f59e0b]",
+  "from-[#BE185D] to-[#f472b6]",
 ];
+
+/**
+ * Cor derivada do nome, não da posição na lista. Antes vinha do índice de
+ * iteração, então o mesmo adm trocava de cor a cada aba — a ordem de aparição
+ * nos dados muda de mês para mês.
+ */
+function corDoAvatar(nome: string): string {
+  let h = 0;
+  for (let i = 0; i < nome.length; i++) h = (h * 31 + nome.charCodeAt(i)) | 0;
+  return CORES_AVATAR[Math.abs(h) % CORES_AVATAR.length];
+}
 
 export function computeStatsFromBets(bets: BetItem[]) {
   const totalBets = bets.length;
@@ -98,10 +114,10 @@ export function computeStatsFromBets(bets: BetItem[]) {
   });
 
   const tipsters: TipsterStat[] = Array.from(tipsterMap.entries())
-    .map(([nome, d], idx) => ({
+    .map(([nome, d]) => ({
       nome,
       esportes: Array.from(d.esportes),
-      avatarColor: CORES_AVATAR[idx % CORES_AVATAR.length],
+      avatarColor: corDoAvatar(nome),
       initial: nome.charAt(0).toUpperCase() || "T",
       taxaAcerto: taxaDeAcerto(d.greens, d.reds),
       totalApostas: d.total,
