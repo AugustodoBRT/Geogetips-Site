@@ -946,11 +946,20 @@ export default function PainelPage() {
                       <div className="font-bold text-[var(--text)] truncate">
                         {bet.partida}
                       </div>
-                      <div className="text-[11px] text-[var(--text-2)] truncate flex items-center gap-1.5 mt-0.5">
-                        <span>{bet.tip}</span>
-                        <span>·</span>
-                        <strong className="font-mono">@{formatarOdd(bet.odd)}</strong>
-                        {bet.casa && <BookieBadge bookie={bet.casa} className="scale-90 origin-left" />}
+                      {/* `truncate` num container flex não trunca: recorta os filhos
+                          sem reticências. Num viewport de 375px a odd e a casa
+                          terminavam fora da tela e sumiam sem aviso. Agora só o
+                          texto da tip encolhe; odd e casa não cedem espaço. */}
+                      <div className="text-[11px] text-[var(--text-2)] flex items-center gap-1.5 mt-0.5 min-w-0">
+                        <span className="truncate">{bet.tip}</span>
+                        <span className="shrink-0">·</span>
+                        <strong className="font-mono shrink-0">@{formatarOdd(bet.odd)}</strong>
+                        {bet.casa && (
+                          <BookieBadge
+                            bookie={bet.casa}
+                            className="scale-90 origin-left shrink-0"
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
