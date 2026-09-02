@@ -930,7 +930,18 @@ export default function PainelPage() {
           </div>
 
           <div className="space-y-2">
-            {recentBets.map((bet) => {
+            {recentBets.length === 0 ? (
+              loading ? (
+                <SkeletonLinhas quantidade={4} altura="h-14" />
+              ) : (
+                <p className="text-center text-xs text-[var(--text-3)] py-6">
+                  {selectedDay === "TODOS"
+                    ? "Sem apostas nesta aba."
+                    : `Sem apostas no dia ${selectedDay}.`}
+                </p>
+              )
+            ) : (
+            recentBets.map((bet) => {
               const isGreen = bet.resultado === "GREEN";
               const isRed = bet.resultado === "RED";
               const isVoid = bet.resultado === "VOID";
@@ -994,7 +1005,8 @@ export default function PainelPage() {
                   </div>
                 </div>
               );
-            })}
+            })
+            )}
           </div>
         </div>
 
@@ -1024,7 +1036,16 @@ export default function PainelPage() {
           </div>
 
           <div className="space-y-3">
-            {tipsters.slice(0, 4).map((t, idx) => (
+            {tipsters.length === 0 ? (
+              loading ? (
+                <SkeletonLinhas quantidade={3} altura="h-14" />
+              ) : (
+                <p className="text-center text-xs text-[var(--text-3)] py-6">
+                  Sem adms nesta aba.
+                </p>
+              )
+            ) : (
+            tipsters.slice(0, 4).map((t, idx) => (
               <div
                 key={t.nome}
                 className="p-3.5 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3"
@@ -1061,7 +1082,8 @@ export default function PainelPage() {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </div>
         </div>
       </div>
