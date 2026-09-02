@@ -201,8 +201,14 @@ export default function PainelPage() {
     const yMax = maxVal + range * 0.08;
     const yRange = yMax - yMin || 1;
 
+    // Com um único ponto a divisão dá 0 e ele encostaria na borda esquerda,
+    // como se o gráfico estivesse cortado. Centralizar deixa claro que é um
+    // dia só — acontece todo começo de mês com o intervalo curto.
+    const umPontoSo = chartPoints.length === 1;
     const points = chartPoints.map((p, i) => {
-      const x = padLeft + (i / Math.max(chartPoints.length - 1, 1)) * drawW;
+      const x = umPontoSo
+        ? padLeft + drawW / 2
+        : padLeft + (i / Math.max(chartPoints.length - 1, 1)) * drawW;
       const y = padTop + drawH - ((p.cumProfit - yMin) / yRange) * drawH;
       return { ...p, x, y };
     });
@@ -737,7 +743,13 @@ export default function PainelPage() {
                     key={`${chartKey}-${p.date}`}
                     cx={p.x}
                     cy={p.y}
-                    r={chartData.points.length > 20 ? 1.5 : 3}
+                    r={
+                      chartData.points.length === 1
+                        ? 5
+                        : chartData.points.length > 20
+                        ? 1.5
+                        : 3
+                    }
                     fill={p.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
                     initial={{ opacity: 0, scale: 0.4 }}
                     animate={{
@@ -759,7 +771,7 @@ export default function PainelPage() {
                     <text
                       x={chartData.points[0].x}
                       y={chartData.height - 12}
-                      textAnchor="start"
+                      textAnchor={chartData.points.length > 1 ? "start" : "middle"}
                       className="text-[10px] font-mono fill-[var(--text-3)]"
                     >
                       {chartData.points[0].date}
@@ -776,14 +788,16 @@ export default function PainelPage() {
                       </text>
                     )}
 
-                    <text
-                      x={chartData.points[chartData.points.length - 1].x}
-                      y={chartData.height - 12}
-                      textAnchor="end"
-                      className="text-[10px] font-mono fill-[var(--text-3)]"
-                    >
-                      {chartData.points[chartData.points.length - 1].date}
-                    </text>
+                    {chartData.points.length > 1 && (
+                      <text
+                        x={chartData.points[chartData.points.length - 1].x}
+                        y={chartData.height - 12}
+                        textAnchor="end"
+                        className="text-[10px] font-mono fill-[var(--text-3)]"
+                      >
+                        {chartData.points[chartData.points.length - 1].date}
+                      </text>
+                    )}
                   </>
                 )}
 
