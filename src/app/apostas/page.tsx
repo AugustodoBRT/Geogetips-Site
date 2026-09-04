@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import NumberFlow from "@number-flow/react";
 import {
   Search,
@@ -555,8 +555,12 @@ export default function ApostasPage() {
                       </span>
                     </div>
 
-                    <AnimatePresence mode="popLayout" initial={false}>
-                      {dayBets.map((bet) => {
+                    {/* Sem AnimatePresence de propósito.
+                        Com ela (mode="popLayout"), remover muitos itens de uma vez
+                        — o que acontece a cada troca de filtro — deixava os antigos
+                        presos no DOM e VISÍVEIS. Sair sem animação é
+                        determinístico; a animação de entrada continua. */}
+                    {dayBets.map((bet) => {
                         const isGreen = bet.resultado === "GREEN";
                         const isRed = bet.resultado === "RED";
                         const isVoid = bet.resultado === "VOID";
@@ -564,10 +568,8 @@ export default function ApostasPage() {
                         return (
                           <motion.button
                             key={bet.id}
-                            layout
                             initial={{ opacity: 0, scale: 0.97 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.97 }}
                             transition={{ duration: 0.2 }}
                             type="button"
                             onClick={() => setSelectedBet(bet)}
@@ -649,8 +651,7 @@ export default function ApostasPage() {
                             </div>
                           </motion.button>
                         );
-                      })}
-                    </AnimatePresence>
+                    })}
                   </motion.section>
                 );
               })}
