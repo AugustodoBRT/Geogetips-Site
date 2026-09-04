@@ -98,6 +98,23 @@ export default function PainelPage() {
     return dates;
   }, [allBets]);
 
+  /**
+   * Contagem de apostas por dia, numa passada só.
+   *
+   * O JSX do seletor refazia um filter sobre TODAS as apostas para cada dia da
+   * lista: 73.560 filtragens por render em Abril26. E como `hoveredPoint` é
+   * estado, cada movimento do mouse sobre o gráfico dispara um render — ou
+   * seja, pagava-se esse custo por pixel percorrido.
+   */
+  const contagemPorDia = useMemo(() => {
+    const mapa = new Map<string, number>();
+    for (const b of allBets) {
+      if (!b.data || b.data === "—") continue;
+      mapa.set(b.data, (mapa.get(b.data) ?? 0) + 1);
+    }
+    return mapa;
+  }, [allBets]);
+
   // Aggregate daily points in ascending chronological order (oldest to newest)
   const allDailyPoints: DayPoint[] = useMemo(() => {
     if (!allBets || allBets.length === 0) return [];
@@ -353,7 +370,7 @@ export default function PainelPage() {
           >
             <option value="TODOS">Mês Completo ({allBets.length} tips)</option>
             {availableDays.map((day) => {
-              const count = allBets.filter((b) => b.data === day).length;
+              const count = contagemPorDia.get(day) ?? 0;
               return (
                 <option key={day} value={day}>
                   Dia {day} ({count} {count === 1 ? "tip" : "tips"})
