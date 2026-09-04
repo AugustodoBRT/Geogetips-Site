@@ -33,7 +33,8 @@ import { formatarOdd, formatarReais, formatarReaisComSinal } from "@/lib/format"
  * Quantas apostas o feed desenha por vez.
  *
  * Sem limite, Abril26 punha 2.452 linhas na tela de uma vez: 44.753 nós no DOM
- * e 665.421 px de altura, cerca de 800 telas de rolagem.
+ * e 665.421 px de altura, cerca de 800 telas de rolagem. Renderizar em blocos
+ * derruba isso para a ordem de 2 mil nós e é o que devolve a fluidez à busca.
  */
 const APOSTAS_POR_BLOCO = 100;
 
@@ -52,7 +53,8 @@ export default function ApostasPage() {
   const { converter } = useUnidade();
 
   // `search` é o que está digitado; `buscaAplicada` é o que de fato filtra.
-  // Sem essa separação, cada tecla refiltrava tudo e remontava a lista inteira.
+  // Sem essa separação, cada tecla refiltrava tudo e remontava a lista inteira
+  // — medi entre 640 e 1.199 ms de interface travada por caractere.
   const [search, setSearch] = useState("");
   const [buscaAplicada, setBuscaAplicada] = useState("");
   const [statusFilter, setStatusFilter] = useState<"TODAS" | BetResult>("TODAS");
@@ -165,6 +167,19 @@ export default function ApostasPage() {
       roi: calcularRoi(filteredBets),
     };
   }, [filteredBets, converter]);
+
+  /**
+   * Pendentes da aba inteira, não do recorte filtrado.
+   *
+   * Este card mostrava o streak (sem filtro) logo acima de "apostas em aberto"
+   * (com filtro): filtrar por Red zerava o segundo e não mexia no primeiro,
+   * dois comportamentos opostos a duas linhas de distância. Agora o card todo
+   * fala da aba, e o título diz isso.
+   */
+  const pendentesNaAba = useMemo(
+    () => bets.filter((b) => b.resultado === "PENDENTE").length,
+    [bets]
+  );
 
   const currentStreak = useMemo(() => {
     let streak = 0;
@@ -591,8 +606,9 @@ export default function ApostasPage() {
                     {/* Sem AnimatePresence de propósito.
                         Com ela (mode="popLayout"), remover muitos itens de uma vez
                         — o que acontece a cada troca de filtro — deixava os antigos
-                        presos no DOM e VISÍVEIS. Sair sem animação é
-                        determinístico; a animação de entrada continua. */}
+                        presos no DOM e VISÍVEIS: o rodapé dizia "Exibindo 100" com
+                        301 linhas na tela. Sair sem animação é determinístico; a
+                        animação de entrada continua funcionando. */}
                     {dayBets.map((bet) => {
                         const isGreen = bet.resultado === "GREEN";
                         const isRed = bet.resultado === "RED";
@@ -816,7 +832,7 @@ export default function ApostasPage() {
           <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">
-                Momento Atual
+                Momento Atual ({activeTab})
               </h2>
               <Flame className="w-4 h-4 text-[var(--accent)]" aria-hidden="true" />
             </div>
@@ -843,10 +859,8 @@ export default function ApostasPage() {
                     : "Em busca do próximo green"}
                 </p>
                 <p className="text-xs text-[var(--text-2)]">
-                  {resumo.pendentes}{" "}
-                  {resumo.pendentes === 1
-                    ? "aposta em aberto"
-                    : "apostas em aberto"}
+                  {pendentesNaAba}{" "}
+                  {pendentesNaAba === 1 ? "aposta em aberto" : "apostas em aberto"}
                 </p>
               </div>
             </div>
