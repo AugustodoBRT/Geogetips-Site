@@ -29,6 +29,14 @@ import { parseDateTimestamp } from "@/lib/date";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
 import { formatarOdd, formatarReais, formatarReaisComSinal } from "@/lib/format";
 
+/**
+ * Quantas apostas o feed desenha por vez.
+ *
+ * Sem limite, Abril26 punha 2.452 linhas na tela de uma vez: 44.753 nós no DOM
+ * e 665.421 px de altura, cerca de 800 telas de rolagem.
+ */
+const APOSTAS_POR_BLOCO = 100;
+
 export default function ApostasPage() {
   const {
     bets,
@@ -56,6 +64,7 @@ export default function ApostasPage() {
   >("TODAS");
 
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [visiveis, setVisiveis] = useState(APOSTAS_POR_BLOCO);
   const [selectedBet, setSelectedBet] = useState<BetItem | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -210,9 +219,25 @@ export default function ApostasPage() {
       .slice(0, 4);
   }, [bets]);
 
+  // Volta ao primeiro bloco sempre que o recorte muda, senão o visitante
+  // continuaria vendo 500 linhas depois de restringir o filtro.
+  useEffect(() => {
+    setVisiveis(APOSTAS_POR_BLOCO);
+  }, [buscaAplicada, statusFilter, sportFilter, bookieFilter, dayFilter, oddRangeFilter, activeTab]);
+
+  /**
+   * O que de fato vai para a tela. Os totais do resumo continuam saindo de
+   * `filteredBets` — o recorte é do desenho, não da conta.
+   */
+  const betsVisiveis = useMemo(
+    () => filteredBets.slice(0, visiveis),
+    [filteredBets, visiveis]
+  );
+  const restantes = filteredBets.length - betsVisiveis.length;
+
   const groupedByDate = useMemo(() => {
     const map = new Map<string, BetItem[]>();
-    filteredBets.forEach((bet) => {
+    betsVisiveis.forEach((bet) => {
       const list = map.get(bet.data) || [];
       list.push(bet);
       map.set(bet.data, list);
@@ -220,7 +245,7 @@ export default function ApostasPage() {
     return Array.from(map.entries()).sort(
       (a, b) => parseDateTimestamp(b[0]) - parseDateTimestamp(a[0])
     );
-  }, [filteredBets]);
+  }, [betsVisiveis]);
 
   const fecharDetalhe = useCallback(() => setSelectedBet(null), []);
 
@@ -700,7 +725,7 @@ export default function ApostasPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-black/[0.05]">
-                    {filteredBets.map((bet) => {
+                    {betsVisiveis.map((bet) => {
                       const isGreen = bet.resultado === "GREEN";
                       const isRed = bet.resultado === "RED";
                       const isVoid = bet.resultado === "VOID";
@@ -767,6 +792,21 @@ export default function ApostasPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+
+          {restantes > 0 && (
+            <div className="mt-5 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setVisiveis((v) => v + APOSTAS_POR_BLOCO)}
+                className="px-6 py-2.5 bg-[var(--accent)] text-white text-sm font-bold rounded-full hover:bg-[var(--accent-hover)] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all"
+              >
+                Mostrar mais {Math.min(restantes, APOSTAS_POR_BLOCO)}
+              </button>
+              <p className="text-[11px] text-[var(--text-3)]">
+                Exibindo {betsVisiveis.length} de {filteredBets.length} apostas
+              </p>
             </div>
           )}
         </div>
