@@ -111,9 +111,9 @@ export default function PainelPage() {
    * Contagem de apostas por dia, numa passada só.
    *
    * O JSX do seletor refazia um filter sobre TODAS as apostas para cada dia da
-   * lista: 73.560 filtragens por render em Abril26. E como `hoveredPoint` é
-   * estado, cada movimento do mouse sobre o gráfico dispara um render — ou
-   * seja, pagava-se esse custo por pixel percorrido.
+   * lista: 73.560 filtragens por render em Abril26, medidas em 14,6 ms. E como
+   * `hoveredPoint` é estado, cada movimento do mouse sobre o gráfico dispara um
+   * render — ou seja, pagava-se quase um quadro inteiro por pixel percorrido.
    */
   const contagemPorDia = useMemo(() => {
     const mapa = new Map<string, number>();
@@ -413,11 +413,18 @@ export default function PainelPage() {
 
       <SeletorUnidade />
 
-      {/* 5 KPIs */}
+      {/* 5 KPIs.
+          role="region" com nome acessível vira marco de navegação, igual a
+          <section aria-labelledby>. Antes os cinco blocos eram div solta e não
+          havia como pular entre eles com leitor de tela. */}
       {loading ? (
         <SkeletonKpis quantidade={5} />
       ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div
+        role="region"
+        aria-label="Indicadores do período"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"
+      >
         <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
@@ -562,11 +569,18 @@ export default function PainelPage() {
       {/* Middle Section: Real Dynamic Chart (8 cols) + Sport Breakdown (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Real Chart Box */}
-        <div className="lg:col-span-8 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
+        <div
+          role="region"
+          aria-labelledby="titulo-evolucao"
+          className="lg:col-span-8 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden"
+        >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
+                <h2
+                  id="titulo-evolucao"
+                  className="text-base font-bold text-[var(--text)] tracking-tight"
+                >
                   Evolução da Banca ({activeTab === ABA_TODOS ? "Geral" : activeTab})
                 </h2>
                 {chartData && (
@@ -879,9 +893,16 @@ export default function PainelPage() {
         </div>
 
         {/* Breakdown by Sport */}
-        <div className="lg:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4">
+        <div
+          role="region"
+          aria-labelledby="titulo-esportes"
+          className="lg:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4"
+        >
           <div>
-            <h2 className="text-base font-bold text-[var(--text)] tracking-tight mb-1">
+            <h2
+              id="titulo-esportes"
+              className="text-base font-bold text-[var(--text)] tracking-tight mb-1"
+            >
               Lucro por Esporte
             </h2>
             {/* Distribuição precisa de volume: num dia com 3 apostas isto viraria
@@ -942,10 +963,17 @@ export default function PainelPage() {
       {/* Bottom Section: Recent Activity Stream (6 cols) + Top Adms Leaderboard (6 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Bets Stream */}
-        <div className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
+        <div
+          role="region"
+          aria-labelledby="titulo-ultimas"
+          className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
+              <h2
+                id="titulo-ultimas"
+                className="text-base font-bold text-[var(--text)] tracking-tight"
+              >
                 Últimas Apostas Registradas
               </h2>
               <p className="text-xs text-[var(--text-3)]">
@@ -1046,10 +1074,17 @@ export default function PainelPage() {
         </div>
 
         {/* Top Adms Box */}
-        <div className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
+        <div
+          role="region"
+          aria-labelledby="titulo-ranking"
+          className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
+              <h2
+                id="titulo-ranking"
+                className="text-base font-bold text-[var(--text)] tracking-tight"
+              >
                 Ranking de Adms ({activeTab})
               </h2>
               {/* Mesmo caso do bloco de esportes: ranking de um dia isolado
