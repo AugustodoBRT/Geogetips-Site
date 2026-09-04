@@ -8,7 +8,15 @@ import {
 import { abaDoMesAtual, abasRecentes } from "@/lib/constants";
 import { MOCK_BETS } from "@/lib/data";
 
-export const revalidate = 15;
+/**
+ * Precisa bater com o revalidate da leitura da planilha em planilhaPublica.ts.
+ * Estava em 15 enquanto a leitura ficava em cache por 60: três de cada quatro
+ * revalidações refaziam o trabalho e devolviam exatamente o mesmo dado.
+ *
+ * O Next exige um literal aqui, então não dá para importar a constante — se
+ * mudar um dos dois, mude o outro.
+ */
+export const revalidate = 60;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -25,6 +33,7 @@ export async function GET(request: NextRequest) {
       tabs: abasRecentes(),
       count: MOCK_BETS.length,
       stats,
+      lidoEm: new Date().toISOString(),
       data: onlyStats ? [] : MOCK_BETS,
     });
   }
@@ -42,6 +51,9 @@ export async function GET(request: NextRequest) {
       tabs,
       count: bets.length,
       stats: computeStatsFromBets(bets),
+      // Quando o servidor montou esta resposta. Vale até o cache expirar, então
+      // a tela arredonda para "agora" abaixo de um minuto e meio.
+      lidoEm: new Date().toISOString(),
       data: onlyStats ? [] : bets,
     });
   } catch (error) {

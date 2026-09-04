@@ -21,6 +21,7 @@ import {
   formatarReaisComSinal,
   formatarUnidades,
   tamanhoDoValor,
+  tempoRelativo,
 } from "@/lib/format";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
 import {
@@ -63,6 +64,7 @@ export default function PainelPage() {
     loading,
     erro,
     isMock,
+    lidoEm,
     recarregar,
   } = useBets();
 
@@ -73,6 +75,13 @@ export default function PainelPage() {
   const [hoveredPoint, setHoveredPoint] = useState<(DayPoint & { x: number; y: number }) | null>(
     null
   );
+
+  // Sem isto o selo diria "agora" indefinidamente numa aba deixada aberta.
+  const [agora, setAgora] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setAgora(new Date()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   // Todas as abas cobrem período maior, então a janela padrão muda junto
   const availablePeriods: readonly ("7D" | "30D" | "90D" | "120D" | "Tudo")[] = useMemo(
@@ -96,6 +105,23 @@ export default function PainelPage() {
     );
     dates.sort((a, b) => parseDateTimestamp(b) - parseDateTimestamp(a));
     return dates;
+  }, [allBets]);
+
+  /**
+   * Contagem de apostas por dia, numa passada só.
+   *
+   * O JSX do seletor refazia um filter sobre TODAS as apostas para cada dia da
+   * lista: 73.560 filtragens por render em Abril26, medidas em 14,6 ms. E como
+   * `hoveredPoint` é estado, cada movimento do mouse sobre o gráfico dispara um
+   * render — ou seja, pagava-se quase um quadro inteiro por pixel percorrido.
+   */
+  const contagemPorDia = useMemo(() => {
+    const mapa = new Map<string, number>();
+    for (const b of allBets) {
+      if (!b.data || b.data === "—") continue;
+      mapa.set(b.data, (mapa.get(b.data) ?? 0) + 1);
+    }
+    return mapa;
   }, [allBets]);
 
   // Aggregate daily points in ascending chronological order (oldest to newest)
@@ -325,9 +351,18 @@ export default function PainelPage() {
               Painel de Performance
             </h1>
             {/* Só afirma "ao vivo" quando a leitura realmente veio da planilha */}
+            {/* Afirmar "ao vivo" sem dizer de quando é o dado era a única
+                informação não auditável de uma página que vive de auditoria. */}
             {!erro && !isMock && !loading && (
-              <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
-                Live Data
+              <span
+                className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full"
+                title={
+                  lidoEm
+                    ? `Leitura da planilha em ${new Date(lidoEm).toLocaleString("pt-BR")}`
+                    : undefined
+                }
+              >
+                Ao vivo{lidoEm ? ` · ${tempoRelativo(lidoEm, agora)}` : ""}
               </span>
             )}
           </div>
@@ -353,7 +388,7 @@ export default function PainelPage() {
           >
             <option value="TODOS">Mês Completo ({allBets.length} tips)</option>
             {availableDays.map((day) => {
-              const count = allBets.filter((b) => b.data === day).length;
+              const count = contagemPorDia.get(day) ?? 0;
               return (
                 <option key={day} value={day}>
                   Dia {day} ({count} {count === 1 ? "tip" : "tips"})
@@ -378,11 +413,18 @@ export default function PainelPage() {
 
       <SeletorUnidade />
 
-      {/* 5 KPIs */}
+      {/* 5 KPIs.
+          role="region" com nome acessível vira marco de navegação, igual a
+          <section aria-labelledby>. Antes os cinco blocos eram div solta e não
+          havia como pular entre eles com leitor de tela. */}
       {loading ? (
         <SkeletonKpis quantidade={5} />
       ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div
+        role="region"
+        aria-label="Indicadores do período"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"
+      >
         <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
@@ -476,7 +518,7 @@ export default function PainelPage() {
         <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
-              Taxa de Assertividade
+              Taxa de Acerto
             </span>
             <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
               <Activity className="w-4 h-4" />
@@ -527,11 +569,18 @@ export default function PainelPage() {
       {/* Middle Section: Real Dynamic Chart (8 cols) + Sport Breakdown (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Real Chart Box */}
-        <div className="lg:col-span-8 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
+        <div
+          role="region"
+          aria-labelledby="titulo-evolucao"
+          className="lg:col-span-8 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden"
+        >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
+                <h2
+                  id="titulo-evolucao"
+                  className="text-base font-bold text-[var(--text)] tracking-tight"
+                >
                   Evolução da Banca ({activeTab === ABA_TODOS ? "Geral" : activeTab})
                 </h2>
                 {chartData && (
@@ -844,9 +893,16 @@ export default function PainelPage() {
         </div>
 
         {/* Breakdown by Sport */}
-        <div className="lg:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4">
+        <div
+          role="region"
+          aria-labelledby="titulo-esportes"
+          className="lg:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4"
+        >
           <div>
-            <h2 className="text-base font-bold text-[var(--text)] tracking-tight mb-1">
+            <h2
+              id="titulo-esportes"
+              className="text-base font-bold text-[var(--text)] tracking-tight mb-1"
+            >
               Lucro por Esporte
             </h2>
             {/* Distribuição precisa de volume: num dia com 3 apostas isto viraria
@@ -907,10 +963,17 @@ export default function PainelPage() {
       {/* Bottom Section: Recent Activity Stream (6 cols) + Top Adms Leaderboard (6 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Bets Stream */}
-        <div className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
+        <div
+          role="region"
+          aria-labelledby="titulo-ultimas"
+          className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
+              <h2
+                id="titulo-ultimas"
+                className="text-base font-bold text-[var(--text)] tracking-tight"
+              >
                 Últimas Apostas Registradas
               </h2>
               <p className="text-xs text-[var(--text-3)]">
@@ -1011,10 +1074,17 @@ export default function PainelPage() {
         </div>
 
         {/* Top Adms Box */}
-        <div className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
+        <div
+          role="region"
+          aria-labelledby="titulo-ranking"
+          className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
+              <h2
+                id="titulo-ranking"
+                className="text-base font-bold text-[var(--text)] tracking-tight"
+              >
                 Ranking de Adms ({activeTab})
               </h2>
               {/* Mesmo caso do bloco de esportes: ranking de um dia isolado

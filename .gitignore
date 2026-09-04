@@ -34,3 +34,6 @@ credenciais*.json
 
 # typescript
 *.tsbuildinfo
+
+# ferramentas locais de quem desenvolve
+.claude
