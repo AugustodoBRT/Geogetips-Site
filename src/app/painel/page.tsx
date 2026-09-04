@@ -511,7 +511,7 @@ export default function PainelPage() {
         <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">
-              Taxa de Assertividade
+              Taxa de Acerto
             </span>
             <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
               <Activity className="w-4 h-4" />
