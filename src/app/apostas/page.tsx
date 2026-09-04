@@ -43,7 +43,10 @@ export default function ApostasPage() {
 
   const { converter } = useUnidade();
 
+  // `search` é o que está digitado; `buscaAplicada` é o que de fato filtra.
+  // Sem essa separação, cada tecla refiltrava tudo e remontava a lista inteira.
   const [search, setSearch] = useState("");
+  const [buscaAplicada, setBuscaAplicada] = useState("");
   const [statusFilter, setStatusFilter] = useState<"TODAS" | BetResult>("TODAS");
   const [sportFilter, setSportFilter] = useState("TODOS");
   const [bookieFilter, setBookieFilter] = useState("TODAS");
@@ -55,6 +58,11 @@ export default function ApostasPage() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [selectedBet, setSelectedBet] = useState<BetItem | null>(null);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const id = setTimeout(() => setBuscaAplicada(search), 250);
+    return () => clearTimeout(id);
+  }, [search]);
 
   useEffect(() => {
     setDayFilter("TODOS");
@@ -86,7 +94,7 @@ export default function ApostasPage() {
   }, [bets]);
 
   const filteredBets = useMemo(() => {
-    const termo = search.toLowerCase();
+    const termo = buscaAplicada.toLowerCase();
     return bets.filter((bet) => {
       const matchesSearch =
         termo === "" ||
@@ -118,7 +126,7 @@ export default function ApostasPage() {
     });
   }, [
     bets,
-    search,
+    buscaAplicada,
     statusFilter,
     sportFilter,
     bookieFilter,
