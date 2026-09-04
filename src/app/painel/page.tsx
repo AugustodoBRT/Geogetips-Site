@@ -21,6 +21,7 @@ import {
   formatarReaisComSinal,
   formatarUnidades,
   tamanhoDoValor,
+  tempoRelativo,
 } from "@/lib/format";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
 import {
@@ -63,6 +64,7 @@ export default function PainelPage() {
     loading,
     erro,
     isMock,
+    lidoEm,
     recarregar,
   } = useBets();
 
@@ -73,6 +75,13 @@ export default function PainelPage() {
   const [hoveredPoint, setHoveredPoint] = useState<(DayPoint & { x: number; y: number }) | null>(
     null
   );
+
+  // Sem isto o selo diria "agora" indefinidamente numa aba deixada aberta.
+  const [agora, setAgora] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setAgora(new Date()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   // Todas as abas cobrem período maior, então a janela padrão muda junto
   const availablePeriods: readonly ("7D" | "30D" | "90D" | "120D" | "Tudo")[] = useMemo(
@@ -342,9 +351,18 @@ export default function PainelPage() {
               Painel de Performance
             </h1>
             {/* Só afirma "ao vivo" quando a leitura realmente veio da planilha */}
+            {/* Afirmar "ao vivo" sem dizer de quando é o dado era a única
+                informação não auditável de uma página que vive de auditoria. */}
             {!erro && !isMock && !loading && (
-              <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
-                Live Data
+              <span
+                className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full"
+                title={
+                  lidoEm
+                    ? `Leitura da planilha em ${new Date(lidoEm).toLocaleString("pt-BR")}`
+                    : undefined
+                }
+              >
+                Ao vivo{lidoEm ? ` · ${tempoRelativo(lidoEm, agora)}` : ""}
               </span>
             )}
           </div>

@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       tabs: abasRecentes(),
       count: MOCK_BETS.length,
       stats,
+      lidoEm: new Date().toISOString(),
       data: onlyStats ? [] : MOCK_BETS,
     });
   }
@@ -50,6 +51,9 @@ export async function GET(request: NextRequest) {
       tabs,
       count: bets.length,
       stats: computeStatsFromBets(bets),
+      // Quando o servidor montou esta resposta. Vale até o cache expirar, então
+      // a tela arredonda para "agora" abaixo de um minuto e meio.
+      lidoEm: new Date().toISOString(),
       data: onlyStats ? [] : bets,
     });
   } catch (error) {

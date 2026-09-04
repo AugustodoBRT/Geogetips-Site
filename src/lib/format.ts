@@ -47,3 +47,20 @@ export function tamanhoDoValor(texto: string): string {
   if (n <= 16) return "text-xl sm:text-2xl";
   return "text-lg sm:text-xl";
 }
+
+/**
+ * "há 3 min" a partir de um ISO. Usado no selo de frescura do painel.
+ *
+ * A precisão é limitada pelo cache da API: o carimbo marca quando o servidor
+ * montou a resposta, e essa resposta vale por CACHE_SEGUNDOS. Por isso o menor
+ * degrau é "agora" em vez de contar segundos, que daria falsa precisão.
+ */
+export function tempoRelativo(iso: string, agora: Date = new Date()): string {
+  const seg = Math.max(0, Math.floor((agora.getTime() - new Date(iso).getTime()) / 1000));
+  if (seg < 90) return "agora";
+  const min = Math.floor(seg / 60);
+  if (min < 60) return `há ${min} min`;
+  const horas = Math.floor(min / 60);
+  if (horas < 24) return `há ${horas} h`;
+  return `há ${Math.floor(horas / 24)} d`;
+}

@@ -21,6 +21,8 @@ export interface UseBetsResult {
   erro: string | null;
   /** true quando a API está servindo dados de demonstração. */
   isMock: boolean;
+  /** ISO de quando o servidor montou a resposta, ou null. */
+  lidoEm: string | null;
   recarregar: () => void;
 }
 
@@ -38,6 +40,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [isMock, setIsMock] = useState(false);
+  const [lidoEm, setLidoEm] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
   const [nonce, setNonce] = useState(0);
@@ -71,10 +74,12 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
           setErro(json?.error || `A planilha não respondeu (HTTP ${res.status}).`);
           setBets([]);
           setStats(null);
+          setLidoEm(null);
           return;
         }
 
         setIsMock(Boolean(json.isMock));
+        setLidoEm(typeof json.lidoEm === "string" ? json.lidoEm : null);
         setStats(json.stats ?? null);
         setBets(Array.isArray(json.data) ? json.data : []);
         if (Array.isArray(json.tabs) && json.tabs.length > 0) setTabs(json.tabs);
@@ -83,6 +88,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
         setErro("Não foi possível falar com o servidor. Verifique sua conexão.");
         setBets([]);
         setStats(null);
+        setLidoEm(null);
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
@@ -101,6 +107,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
     loading,
     erro,
     isMock,
+    lidoEm,
     recarregar,
   };
 }
