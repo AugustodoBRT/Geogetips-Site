@@ -19,9 +19,11 @@ import { BotaoTelegram, SecaoTelegram } from "@/components/Telegram";
 import { TextoQueCai, Revelar, EntradaSequencial } from "@/components/animacoes";
 import { CarrosselProfundidade } from "@/components/CarrosselProfundidade";
 
-// Página de captação: renderizada no servidor e revalidada a cada 5 min,
-// para que os números apareçam no HTML inicial (SEO e preview de link).
-export const revalidate = 300;
+// Página de captação: renderizada no servidor para que os números apareçam no
+// HTML inicial (SEO e preview de link). O prazo acompanha o da API e o da
+// leitura da planilha — com 300s aqui, home e painel podiam mostrar totais
+// diferentes do mesmo dado por até quatro minutos.
+export const revalidate = 60;
 
 async function carregarStats(): Promise<BetStats | null> {
   if (USANDO_MOCK) return computeStatsFromBets(MOCK_BETS);
