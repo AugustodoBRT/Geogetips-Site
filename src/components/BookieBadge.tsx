@@ -33,102 +33,102 @@ interface Casa {
  * A Bet365 é a única exceção: fica na combinação oficial da marca.
  */
 const CASAS: Casa[] = [
-  { nome: "4play", bg: "#FF2442", fg: "#1A1715" },
-  { nome: "4win", bg: "#DA5E15", fg: "#1A1715" },
-  { nome: "7Games", bg: "#DCF7D9", fg: "#1A1715" }, // cor da marca
-  { nome: "7K Bet", bg: "#A1CD3D", fg: "#1A1715", alias: ["7K"] },
-  { nome: "Aposta Ganha", bg: "#FF3D00", fg: "#1A1715" }, // cor da marca
+  { nome: "4play", bg: "#FF2442", fg: "#16131F" },
+  { nome: "4win", bg: "#DA5E15", fg: "#16131F" },
+  { nome: "7Games", bg: "#DCF7D9", fg: "#16131F" }, // cor da marca
+  { nome: "7K Bet", bg: "#A1CD3D", fg: "#16131F", alias: ["7K"] },
+  { nome: "Aposta Ganha", bg: "#FF3D00", fg: "#16131F" }, // cor da marca
   { nome: "Aposta Tudo", bg: "#280AA3", fg: "#FFFFFF" },
-  { nome: "Aposta1", bg: "#4EB548", fg: "#1A1715" },
+  { nome: "Aposta1", bg: "#4EB548", fg: "#16131F" },
   { nome: "Apostou", bg: "#172448", fg: "#FFFFFF" },
   { nome: "B2X", bg: "#5B21B6", fg: "#FFFFFF" },
   { nome: "Band", bg: "#005498", fg: "#FFFFFF" },
   { nome: "Bateu", bg: "#570433", fg: "#FFFFFF" },
-  { nome: "Bet MGM", bg: "#B19661", fg: "#1A1715", alias: ["BetMGM"] }, // cor da marca
+  { nome: "Bet MGM", bg: "#B19661", fg: "#16131F", alias: ["BetMGM"] }, // cor da marca
   { nome: "Bet365", bg: "#007B40", fg: "#FFDF1B" }, // cor da marca
-  { nome: "Betaki", bg: "#A3E635", fg: "#1A1715" }, // verde limão, escolha do grupo
-  { nome: "Betano", bg: "#FF3C00", fg: "#1A1715" }, // cor da marca
+  { nome: "Betaki", bg: "#A3E635", fg: "#16131F" }, // verde limão, escolha do grupo
+  { nome: "Betano", bg: "#FF3C00", fg: "#16131F" }, // cor da marca
   { nome: "Betao", bg: "#0F2425", fg: "#FFFFFF", alias: ["Betão"] },
   { nome: "Betboo", bg: "#CA3B1B", fg: "#FFFFFF" }, // cor da marca
   { nome: "BetBoom", bg: "#B91C1C", fg: "#FFFFFF" },
-  { nome: "BetBra", bg: "#0AA614", fg: "#1A1715" },
+  { nome: "BetBra", bg: "#0AA614", fg: "#16131F" },
   { nome: "BETesporte", bg: "#1D2F72", fg: "#FFFFFF", alias: ["Betesporte"] },
   { nome: "Betfair", bg: "#665327", fg: "#FFFFFF" }, // cor da marca
   { nome: "Betfast", bg: "#D61F26", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Betnacional", bg: "#FCC135", fg: "#1A1715" }, // cor da marca
+  { nome: "Betnacional", bg: "#FCC135", fg: "#16131F" }, // cor da marca
   { nome: "Betou", bg: "#062B45", fg: "#FFFFFF" },
-  { nome: "Betpix", bg: "#EDC317", fg: "#1A1715" }, // cor da marca
+  { nome: "Betpix", bg: "#EDC317", fg: "#16131F" }, // cor da marca
   { nome: "BetPonto", bg: "#2A1545", fg: "#FFFFFF" },
-  { nome: "Betsson", bg: "#FE6600", fg: "#1A1715" }, // cor da marca
+  { nome: "Betsson", bg: "#FE6600", fg: "#16131F" }, // cor da marca
   { nome: "Betsul", bg: "#7329C9", fg: "#FFFFFF" },
   { nome: "Betvip", bg: "#035E01", fg: "#FFFFFF" },
   { nome: "Bingo Plus", bg: "#21093D", fg: "#FFFFFF" },
-  { nome: "Bolsa de Aposta", bg: "#3EAD64", fg: "#1A1715", alias: ["Bolsa de Apostas"] },
+  { nome: "Bolsa de Aposta", bg: "#3EAD64", fg: "#16131F", alias: ["Bolsa de Apostas"] },
   { nome: "Br4", bg: "#0D162D", fg: "#FFFFFF" },
-  { nome: "Brasil Bet", bg: "#FCDC00", fg: "#1A1715" },
-  { nome: "Brasil da Sorte", bg: "#05B962", fg: "#1A1715" },
-  { nome: "Bravo", bg: "#F03F45", fg: "#1A1715" },
-  { nome: "BrBet", bg: "#02AD21", fg: "#1A1715" },
-  { nome: "Brx", bg: "#22B573", fg: "#1A1715" },
+  { nome: "Brasil Bet", bg: "#FCDC00", fg: "#16131F" },
+  { nome: "Brasil da Sorte", bg: "#05B962", fg: "#16131F" },
+  { nome: "Bravo", bg: "#F03F45", fg: "#16131F" },
+  { nome: "BrBet", bg: "#02AD21", fg: "#16131F" },
+  { nome: "Brx", bg: "#22B573", fg: "#16131F" },
   { nome: "Buffalos", bg: "#2A2540", fg: "#FFFFFF" },
-  { nome: "Bulls", bg: "#01FE7B", fg: "#1A1715" },
-  { nome: "Casa de Apostas", bg: "#EE3C42", fg: "#1A1715", alias: ["Casa de Aposta"] },
+  { nome: "Bulls", bg: "#01FE7B", fg: "#16131F" },
+  { nome: "Casa de Apostas", bg: "#EE3C42", fg: "#16131F", alias: ["Casa de Aposta"] },
   { nome: "Cassino", bg: "#2773B8", fg: "#FFFFFF" },
-  { nome: "CBEsporte", bg: "#41C1EE", fg: "#1A1715" },
-  { nome: "Donald", bg: "#059669", fg: "#1A1715" },
-  { nome: "Donos", bg: "#FE5400", fg: "#1A1715" },
+  { nome: "CBEsporte", bg: "#41C1EE", fg: "#16131F" },
+  { nome: "Donald", bg: "#059669", fg: "#16131F" },
+  { nome: "Donos", bg: "#FE5400", fg: "#16131F" },
   { nome: "Esportes da Sorte", bg: "#02003A", fg: "#FFFFFF", alias: ["Esporte da Sorte"] }, // cor da marca
-  { nome: "Esportiva", bg: "#FF3901", fg: "#1A1715" },
-  { nome: "Estrela", bg: "#C3985A", fg: "#1A1715" }, // cor da marca
+  { nome: "Esportiva", bg: "#FF3901", fg: "#16131F" },
+  { nome: "Estrela", bg: "#C3985A", fg: "#16131F" }, // cor da marca
   { nome: "EVip", bg: "#312E81", fg: "#FFFFFF" },
-  { nome: "F12", bg: "#59DA00", fg: "#1A1715" },
+  { nome: "F12", bg: "#59DA00", fg: "#16131F" },
   { nome: "Falcons", bg: "#130138", fg: "#FFFFFF" },
-  { nome: "Faz1", bg: "#FDC418", fg: "#1A1715" },
-  { nome: "Fla / Ganhei", bg: "#FFD700", fg: "#1A1715", alias: ["Fla/Ganhei", "Fla Ganhei", "Ganhei"] },
-  { nome: "Fullt", bg: "#FDB80F", fg: "#1A1715" },
+  { nome: "Faz1", bg: "#FDC418", fg: "#16131F" },
+  { nome: "Fla / Ganhei", bg: "#FFD700", fg: "#16131F", alias: ["Fla/Ganhei", "Fla Ganhei", "Ganhei"] },
+  { nome: "Fullt", bg: "#FDB80F", fg: "#16131F" },
   { nome: "Galera", bg: "#000A17", fg: "#FFFFFF" },
-  { nome: "Ginga", bg: "#FEE403", fg: "#1A1715" },
-  { nome: "Gol de Bet", bg: "#FBCA03", fg: "#1A1715", alias: ["GoldeBet"] },
-  { nome: "Gorillas", bg: "#C8FF00", fg: "#1A1715" },
+  { nome: "Ginga", bg: "#FEE403", fg: "#16131F" },
+  { nome: "Gol de Bet", bg: "#FBCA03", fg: "#16131F", alias: ["GoldeBet"] },
+  { nome: "Gorillas", bg: "#C8FF00", fg: "#16131F" },
   { nome: "Hiper", bg: "#DE002F", fg: "#FFFFFF" },
-  { nome: "Ice", bg: "#66C6E6", fg: "#1A1715" },
-  { nome: "Jogo de Ouro", bg: "#FFC32A", fg: "#1A1715" },
-  { nome: "King Panda", bg: "#F5F4EA", fg: "#1A1715" },
+  { nome: "Ice", bg: "#66C6E6", fg: "#16131F" },
+  { nome: "Jogo de Ouro", bg: "#FFC32A", fg: "#16131F" },
+  { nome: "King Panda", bg: "#F5F4EA", fg: "#16131F" },
   { nome: "KTO", bg: "#DA0000", fg: "#FFFFFF" }, // cor da marca
   { nome: "Lance de Sorte", bg: "#5400B2", fg: "#FFFFFF" },
   { nome: "Lider", bg: "#D01917", fg: "#FFFFFF", alias: ["Líder"] },
-  { nome: "Loto", bg: "#00D225", fg: "#1A1715" },
-  { nome: "Lottoland", bg: "#4EFF83", fg: "#1A1715" }, // cor da marca
-  { nome: "Lottu", bg: "#F2B74B", fg: "#1A1715" }, // cor da marca
+  { nome: "Loto", bg: "#00D225", fg: "#16131F" },
+  { nome: "Lottoland", bg: "#4EFF83", fg: "#16131F" }, // cor da marca
+  { nome: "Lottu", bg: "#F2B74B", fg: "#16131F" }, // cor da marca
   { nome: "Match", bg: "#C51A1B", fg: "#FFFFFF" },
-  { nome: "Maxima", bg: "#00FF99", fg: "#1A1715", alias: ["Máxima"] },
-  { nome: "MC Games", bg: "#FB212F", fg: "#1A1715" },
+  { nome: "Maxima", bg: "#00FF99", fg: "#16131F", alias: ["Máxima"] },
+  { nome: "MC Games", bg: "#FB212F", fg: "#16131F" },
   { nome: "Meridian", bg: "#A9090D", fg: "#FFFFFF" },
   { nome: "Milhao", bg: "#001F23", fg: "#FFFFFF", alias: ["Milhão"] },
-  { nome: "Multi", bg: "#F7F716", fg: "#1A1715" },
+  { nome: "Multi", bg: "#F7F716", fg: "#16131F" },
   { nome: "Nossa", bg: "#1C0244", fg: "#FFFFFF" },
   { nome: "Novibet", bg: "#0A1324", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Ona", bg: "#FE263D", fg: "#1A1715" }, // cor da marca
-  { nome: "Pagol", bg: "#13D299", fg: "#1A1715" },
-  { nome: "Pinnacle", bg: "#FE5500", fg: "#1A1715" }, // cor da marca
+  { nome: "Ona", bg: "#FE263D", fg: "#16131F" }, // cor da marca
+  { nome: "Pagol", bg: "#13D299", fg: "#16131F" },
+  { nome: "Pinnacle", bg: "#FE5500", fg: "#16131F" }, // cor da marca
   { nome: "Pixbet", bg: "#035FAF", fg: "#FFFFFF" }, // cor da marca
-  { nome: "R7", bg: "#FD9800", fg: "#1A1715" }, // cor da marca
+  { nome: "R7", bg: "#FD9800", fg: "#16131F" }, // cor da marca
   { nome: "Rei do Pitaco", bg: "#261168", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Seguro", bg: "#DAA00E", fg: "#1A1715" },
-  { nome: "Seu Bet", bg: "#01AF4E", fg: "#1A1715", alias: ["SeuBet"] },
+  { nome: "Seguro", bg: "#DAA00E", fg: "#16131F" },
+  { nome: "Seu Bet", bg: "#01AF4E", fg: "#16131F", alias: ["SeuBet"] },
   { nome: "Sorte na Bet", bg: "#26380E", fg: "#FFFFFF" },
   { nome: "SportingBet", bg: "#035C8E", fg: "#FFFFFF", alias: ["Sporting Bet", "Sporting"] }, // cor da marca
   { nome: "Stake", bg: "#1A2C38", fg: "#FFFFFF" }, // cor da marca
   { nome: "Superbet", bg: "#350103", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Suprema", bg: "#009D1F", fg: "#1A1715" },
+  { nome: "Suprema", bg: "#009D1F", fg: "#16131F" },
   { nome: "Tivo", bg: "#000E1D", fg: "#FFFFFF" },
-  { nome: "Ultra", bg: "#FF3D00", fg: "#1A1715" },
-  { nome: "Vai de Bet", bg: "#FFC300", fg: "#1A1715", alias: ["VaideBet"] }, // cor da marca
+  { nome: "Ultra", bg: "#FF3D00", fg: "#16131F" },
+  { nome: "Vai de Bet", bg: "#FFC300", fg: "#16131F", alias: ["VaideBet"] }, // cor da marca
   { nome: "Vbet", bg: "#D80D83", fg: "#FFFFFF" },
-  { nome: "Vera", bg: "#00E054", fg: "#1A1715" },
-  { nome: "Versus", bg: "#06FFD8", fg: "#1A1715" },
-  { nome: "Viva", bg: "#FE7811", fg: "#1A1715" },
-  { nome: "Vupi", bg: "#C4A0E8", fg: "#1A1715" }, // lilás, escolha do grupo
+  { nome: "Vera", bg: "#00E054", fg: "#16131F" },
+  { nome: "Versus", bg: "#06FFD8", fg: "#16131F" },
+  { nome: "Viva", bg: "#FE7811", fg: "#16131F" },
+  { nome: "Vupi", bg: "#C4A0E8", fg: "#16131F" }, // lilás, escolha do grupo
   { nome: "Warrior", bg: "#661700", fg: "#FFFFFF" },
   { nome: "ZeroUm", bg: "#CC0036", fg: "#FFFFFF" },
 ];
@@ -183,10 +183,10 @@ export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
   if (!casa) {
     return (
       <span
-        className={`${BASE} bg-[#EFECE6] text-[#1A1715] ${className}`}
+        className={`${BASE} bg-[var(--bg-tinted)] text-[var(--text)] ${className}`}
         title={`${nomeCru} — casa ainda não cadastrada`}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-[#6B645A]" />
+        <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-2)]" />
         <span>{nomeCru}</span>
       </span>
     );

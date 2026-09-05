@@ -94,8 +94,10 @@ export function SportBadge({ sport = "Futebol", className = "" }: SportBadgeProp
   const regra = REGRAS.find((r) => r.padroes.some((p) => alvo.includes(p)));
 
   const rotulo = regra?.rotulo ?? nome;
-  const estilo = regra?.estilo ?? "bg-[#6B645A]/10 text-[#1A1715] border-black/10";
-  const ponto = regra?.ponto ?? "bg-[#6B645A]";
+  const estilo =
+    regra?.estilo ??
+    "bg-[var(--text-2)]/10 text-[var(--text)] border-black/10";
+  const ponto = regra?.ponto ?? "bg-[var(--text-2)]";
 
   return (
     <span

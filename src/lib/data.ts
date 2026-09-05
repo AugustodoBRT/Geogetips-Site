@@ -165,7 +165,7 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
   {
     nome: "MarceloTips",
     esportes: ["Futebol", "NBA"],
-    avatarColor: "from-[#2D8659] to-[#34d399]",
+    avatarColor: "from-[#6B3FE4] to-[#a78bfa]",
     initial: "M",
     taxaAcerto: 72,
     totalApostas: 148,
@@ -189,7 +189,7 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
   {
     nome: "DiegoNBA",
     esportes: ["NBA"],
-    avatarColor: "from-[#B8860B] to-[#f59e0b]",
+    avatarColor: "from-[#0891B2] to-[#22d3ee]",
     initial: "D",
     taxaAcerto: 58,
     totalApostas: 67,
@@ -201,7 +201,7 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
   {
     nome: "LucasPicks",
     esportes: ["Futebol", "Tênis"],
-    avatarColor: "from-[#C23B22] to-[#f87171]",
+    avatarColor: "from-[#BE185D] to-[#f472b6]",
     initial: "L",
     taxaAcerto: 48,
     totalApostas: 33,

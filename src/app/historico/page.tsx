@@ -2,7 +2,14 @@
 
 import { useMemo } from "react";
 import NumberFlow from "@number-flow/react";
-import { RefreshCw, TrendingUp, Percent, Layers, Activity } from "lucide-react";
+import {
+  RefreshCw,
+  TrendingUp,
+  TrendingDown,
+  Percent,
+  Layers,
+  Activity,
+} from "lucide-react";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonKpis, SkeletonLinhas } from "@/components/Skeleton";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
@@ -41,9 +48,11 @@ export default function HistoricoPage() {
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
               Histórico Mês a Mês
             </h1>
-            <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
-              Consolidado
-            </span>
+            {!erro && !isMock && !loading && (
+              <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
+                Consolidado
+              </span>
+            )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans max-w-2xl">
             Todos os meses da planilha lado a lado, incluindo os negativos. O ROI é
@@ -88,8 +97,18 @@ export default function HistoricoPage() {
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     Resultado Consolidado
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4" />
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      consolidado.lucro >= 0
+                        ? "bg-[var(--green)]/10 text-[var(--green)]"
+                        : "bg-[var(--red)]/10 text-[var(--red)]"
+                    }`}
+                  >
+                    {consolidado.lucro >= 0 ? (
+                      <TrendingUp className="w-4 h-4" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4" />
+                    )}
                   </div>
                 </div>
                 <div
@@ -209,7 +228,12 @@ export default function HistoricoPage() {
                 className="flex items-stretch gap-3 min-w-min"
                 role="img"
                 aria-label={`Resultado de ${cronologico.length} meses: ${cronologico
-                  .map((m) => `${abaCurta(m.aba)} ${m.unidades.toFixed(2)} unidades`)
+                  .map(
+                    (m) =>
+                      `${abaCurta(m.aba)} ${m.unidades
+                        .toFixed(2)
+                        .replace(".", ",")} unidades`
+                  )
                   .join(", ")}`}
               >
                 {/* Altura aplicada direto no estilo, com transição em CSS.

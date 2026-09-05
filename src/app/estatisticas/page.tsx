@@ -68,9 +68,11 @@ export default function EstatisticasPage() {
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
               Estatísticas &amp; Padrões
             </h1>
-            <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
-              Analytics
-            </span>
+            {!erro && !isMock && !loading && (
+              <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
+                Análises
+              </span>
+            )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
             Distribuição de resultados, médias de odd e concentração por casa na aba{" "}
@@ -317,7 +319,7 @@ export default function EstatisticasPage() {
                             {formatarReaisComSinal(converter(sport.lucro))}
                             <span className="text-[10.5px] text-[var(--text-3)] font-medium">
                               ROI {sport.roi >= 0 ? "+" : ""}
-                              {sport.roi.toFixed(1).replace(".", ",")}%
+                              {sport.roi.toFixed(2).replace(".", ",")}%
                             </span>
                           </span>
                         </div>
