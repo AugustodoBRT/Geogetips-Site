@@ -13,6 +13,7 @@ import { useResumoMensal } from "@/hooks/useResumoMensal";
 import { useUnidade } from "@/hooks/useUnidade";
 import { abaCurta } from "@/lib/constants";
 import {
+  formatarInteiro,
   formatarOdd,
   formatarReaisComSinal,
   formatarUnidades,
@@ -160,8 +161,9 @@ export default function HistoricoPage() {
                   <NumberFlow value={consolidado.apostas} locales="pt-BR" />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
-                  {consolidado.greens} Green · {consolidado.reds} Red
-                  {consolidado.voids > 0 && ` · ${consolidado.voids} Void`}
+                  {formatarInteiro(consolidado.greens)} Green ·{" "}
+                  {formatarInteiro(consolidado.reds)} Red
+                  {consolidado.voids > 0 && ` · ${formatarInteiro(consolidado.voids)} Void`}
                 </div>
               </div>
 
@@ -301,13 +303,13 @@ export default function HistoricoPage() {
                         {m.aba}
                       </th>
                       <td className="py-3 px-3 font-mono text-right text-[var(--text-2)]">
-                        {m.apostas}
+                        {formatarInteiro(m.apostas)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right text-[var(--green)] font-bold">
-                        {m.greens}
+                        {formatarInteiro(m.greens)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right text-[var(--red)] font-bold">
-                        {m.reds}
+                        {formatarInteiro(m.reds)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right text-[var(--text-2)]">
                         {m.taxaAcerto.toFixed(1).replace(".", ",")}%
@@ -340,13 +342,13 @@ export default function HistoricoPage() {
                         Total
                       </th>
                       <td className="py-3 px-3 font-mono text-right font-bold text-[var(--text)]">
-                        {consolidado.apostas}
+                        {formatarInteiro(consolidado.apostas)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right font-bold text-[var(--green)]">
-                        {consolidado.greens}
+                        {formatarInteiro(consolidado.greens)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right font-bold text-[var(--red)]">
-                        {consolidado.reds}
+                        {formatarInteiro(consolidado.reds)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right font-bold text-[var(--text)]">
                         {consolidado.taxaAcerto.toFixed(1).replace(".", ",")}%

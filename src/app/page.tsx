@@ -13,7 +13,7 @@ import { getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
 import { computeStatsFromBets, type BetStats } from "@/lib/stats";
 import { MOCK_BETS } from "@/lib/data";
 import { ABA_TODOS, VALOR_UNIDADE } from "@/lib/constants";
-import { formatarReaisComSinal } from "@/lib/format";
+import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
 import { BotaoTelegram, SecaoTelegram } from "@/components/Telegram";
 import { TextoQueCai, Revelar, EntradaSequencial } from "@/components/animacoes";
 import { CarrosselProfundidade } from "@/components/CarrosselProfundidade";
@@ -149,7 +149,7 @@ export default async function HomePage() {
         <EntradaSequencial indice={3} base={1.5} className="flex flex-wrap items-center justify-center gap-6 md:gap-10 px-6 pb-16 text-xs text-[var(--text-3)] font-medium">
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-[var(--text-2)] text-sm">
-              {stats.totalBets}
+              {formatarInteiro(stats.totalBets)}
             </span>
             apostas registradas
           </div>
@@ -224,7 +224,7 @@ export default async function HomePage() {
               </div>
               <div className="text-xs font-medium text-[var(--text-2)] mt-1.5">
                 {temNumeros && stats
-                  ? `${stats.greens} green · ${stats.reds} red`
+                  ? `${formatarInteiro(stats.greens)} green · ${formatarInteiro(stats.reds)} red`
                   : "sobre apostas finalizadas"}
               </div>
             </div>

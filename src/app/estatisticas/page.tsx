@@ -13,7 +13,7 @@ import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
-import { formatarReaisComSinal } from "@/lib/format";
+import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
 
 const RAIO = 48;
 const CIRCUNFERENCIA = 2 * Math.PI * RAIO;
@@ -121,7 +121,7 @@ export default function EstatisticasPage() {
                     viewBox="0 0 120 120"
                     className="w-full h-full -rotate-90"
                     role="img"
-                    aria-label={`${greens} green, ${reds} red, ${pendings} pendentes, ${voids} anuladas, de ${totalBets} apostas`}
+                    aria-label={`${formatarInteiro(greens)} green, ${formatarInteiro(reds)} red, ${formatarInteiro(pendings)} pendentes, ${formatarInteiro(voids)} anuladas, de ${formatarInteiro(totalBets)} apostas`}
                   >
                     <circle
                       cx="60"
@@ -191,7 +191,7 @@ export default function EstatisticasPage() {
                         className="font-mono font-bold text-xs"
                         style={{ color: linha.cor }}
                       >
-                        {linha.n} ({pct(linha.n)}%)
+                        {formatarInteiro(linha.n)} ({pct(linha.n)}%)
                       </span>
                     </div>
                   ))}
@@ -219,19 +219,19 @@ export default function EstatisticasPage() {
                 {[
                   {
                     titulo: "Apostas com GREEN",
-                    sub: `${greens} ${greens === 1 ? "tip acertada" : "tips acertadas"}`,
+                    sub: `${formatarInteiro(greens)} ${greens === 1 ? "tip acertada" : "tips acertadas"}`,
                     valor: stats?.oddMediaGreen ?? 0,
                     cor: "var(--green)",
                   },
                   {
                     titulo: "Apostas com RED",
-                    sub: `${reds} ${reds === 1 ? "tip perdida" : "tips perdidas"}`,
+                    sub: `${formatarInteiro(reds)} ${reds === 1 ? "tip perdida" : "tips perdidas"}`,
                     valor: stats?.oddMediaRed ?? 0,
                     cor: "var(--red)",
                   },
                   {
                     titulo: "Média Geral",
-                    sub: `${totalBets} ${totalBets === 1 ? "tip no total" : "tips no total"}`,
+                    sub: `${formatarInteiro(totalBets)} ${totalBets === 1 ? "tip no total" : "tips no total"}`,
                     valor: stats?.oddMediaGeral ?? 0,
                     cor: "var(--accent)",
                   },
@@ -363,7 +363,7 @@ export default function EstatisticasPage() {
                       <div className="flex justify-between items-center text-xs font-semibold gap-3">
                         <BookieBadge bookie={b.casa} />
                         <span className="font-mono text-[var(--text-2)] text-xs">
-                          {b.apostas} {b.apostas === 1 ? "aposta" : "apostas"}
+                          {formatarInteiro(b.apostas)} {b.apostas === 1 ? "aposta" : "apostas"}
                         </span>
                       </div>
                       <div className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden">

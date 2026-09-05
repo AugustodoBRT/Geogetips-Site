@@ -22,6 +22,16 @@ export function formatarReaisComSinal(valor: number): string {
 }
 
 /** 1.72 -> "1,72" */
+/**
+ * Contagem inteira com separador de milhar.
+ *
+ * Os valores em real já saíam pelo Intl, mas as contagens iam cruas ao lado
+ * deles: a home mostrava "+R$ 39.867,60" e, no mesmo cartão, "1970 green".
+ */
+export function formatarInteiro(valor: number): string {
+  return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(valor);
+}
+
 export function formatarOdd(odd: number): string {
   return odd.toFixed(2).replace(".", ",");
 }

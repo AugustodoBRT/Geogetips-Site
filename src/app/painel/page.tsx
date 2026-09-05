@@ -16,6 +16,7 @@ import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { parseDateTimestamp } from "@/lib/date";
 import { ABA_TODOS } from "@/lib/constants";
 import {
+  formatarInteiro,
   formatarOdd,
   formatarReais,
   formatarReaisComSinal,
@@ -386,12 +387,12 @@ export default function PainelPage() {
             onChange={(e) => setSelectedDay(e.target.value)}
             className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-[var(--accent)]/60 transition-all"
           >
-            <option value="TODOS">Mês Completo ({allBets.length} tips)</option>
+            <option value="TODOS">Mês Completo ({formatarInteiro(allBets.length)} tips)</option>
             {availableDays.map((day) => {
               const count = contagemPorDia.get(day) ?? 0;
               return (
                 <option key={day} value={day}>
-                  Dia {day} ({count} {count === 1 ? "tip" : "tips"})
+                  Dia {day} ({formatarInteiro(count)} {count === 1 ? "tip" : "tips"})
                 </option>
               );
             })}
@@ -511,7 +512,8 @@ export default function PainelPage() {
             <NumberFlow value={totalBets} locales="pt-BR" />
           </div>
           <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
-            {greens} Green · {reds} Red{voids > 0 && ` · ${voids} Void`}
+            {formatarInteiro(greens)} Green · {formatarInteiro(reds)} Red
+            {voids > 0 && ` · ${formatarInteiro(voids)} Void`}
           </div>
         </div>
 
@@ -934,7 +936,8 @@ export default function PainelPage() {
                     <div className="flex items-center gap-2.5">
                       <SportBadge sport={sport.esporte} />
                       <div className="text-[11px] text-[var(--text-3)]">
-                        {sport.apostas} tips · {sport.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
+                        {formatarInteiro(sport.apostas)} tips ·{" "}
+                        {sport.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
                       </div>
                     </div>
                     <div
@@ -1134,7 +1137,8 @@ export default function PainelPage() {
                       {t.nome}
                     </div>
                     <div className="text-[10.5px] text-[var(--text-3)]">
-                      {t.totalApostas} tips · {t.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
+                      {formatarInteiro(t.totalApostas)} tips ·{" "}
+                      {t.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
                     </div>
                   </div>
                 </div>

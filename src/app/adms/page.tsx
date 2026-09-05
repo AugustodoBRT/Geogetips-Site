@@ -9,7 +9,7 @@ import { SkeletonLinhas } from "@/components/Skeleton";
 import { useBets } from "@/hooks/useBets";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
-import { formatarUnidades } from "@/lib/format";
+import { formatarInteiro, formatarUnidades } from "@/lib/format";
 
 export default function AdmsPage() {
   const {
@@ -137,7 +137,7 @@ export default function AdmsPage() {
                       Volume
                     </div>
                     <div className="font-mono text-base font-bold text-[var(--text)] mt-0.5">
-                      {adm.totalApostas} tips
+                      {formatarInteiro(adm.totalApostas)} tips
                     </div>
                   </div>
                   <div>

@@ -27,7 +27,12 @@ import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { parseDateTimestamp } from "@/lib/date";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
-import { formatarOdd, formatarReais, formatarReaisComSinal } from "@/lib/format";
+import {
+  formatarInteiro,
+  formatarOdd,
+  formatarReais,
+  formatarReaisComSinal,
+} from "@/lib/format";
 
 /**
  * Quantas apostas o feed desenha por vez.
@@ -369,12 +374,12 @@ export default function ApostasPage() {
             Green / Red
           </div>
           <div className="font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight">
-            <span className="text-[var(--green)]">{resumo.greens}</span>{" "}
+            <span className="text-[var(--green)]">{formatarInteiro(resumo.greens)}</span>{" "}
             <span className="text-[var(--text-3)] font-normal text-sm">/</span>{" "}
-            <span className="text-[var(--red)]">{resumo.reds}</span>
+            <span className="text-[var(--red)]">{formatarInteiro(resumo.reds)}</span>
             {resumo.voids > 0 && (
               <span className="text-[var(--text-2)] text-sm font-normal">
-                {" "}· {resumo.voids} void
+                {" "}· {formatarInteiro(resumo.voids)} void
               </span>
             )}
           </div>
@@ -486,12 +491,12 @@ export default function ApostasPage() {
                   onChange={(e) => setDayFilter(e.target.value)}
                   className="bg-[var(--bg)] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-[var(--accent)]/60 transition-colors"
                 >
-                  <option value="TODOS">Todos os Dias ({bets.length})</option>
+                  <option value="TODOS">Todos os Dias ({formatarInteiro(bets.length)})</option>
                   {availableDays.map((day) => {
                     const count = bets.filter((b) => b.data === day).length;
                     return (
                       <option key={day} value={day}>
-                        Dia {day} ({count} {count === 1 ? "tip" : "tips"})
+                        Dia {day} ({formatarInteiro(count)} {count === 1 ? "tip" : "tips"})
                       </option>
                     );
                   })}
@@ -821,7 +826,8 @@ export default function ApostasPage() {
                 Mostrar mais {Math.min(restantes, APOSTAS_POR_BLOCO)}
               </button>
               <p className="text-[11px] text-[var(--text-3)]">
-                Exibindo {betsVisiveis.length} de {filteredBets.length} apostas
+                Exibindo {formatarInteiro(betsVisiveis.length)} de{" "}
+                {formatarInteiro(filteredBets.length)} apostas
               </p>
             </div>
           )}
@@ -859,7 +865,7 @@ export default function ApostasPage() {
                     : "Em busca do próximo green"}
                 </p>
                 <p className="text-xs text-[var(--text-2)]">
-                  {pendentesNaAba}{" "}
+                  {formatarInteiro(pendentesNaAba)}{" "}
                   {pendentesNaAba === 1 ? "aposta em aberto" : "apostas em aberto"}
                 </p>
               </div>
@@ -894,7 +900,7 @@ export default function ApostasPage() {
                           {adm.nome}
                         </div>
                         <div className="text-[10.5px] text-[var(--text-3)]">
-                          {adm.total} tips ·{" "}
+                          {formatarInteiro(adm.total)} tips ·{" "}
                           {adm.winRate.toFixed(1).replace(".", ",")}% acerto
                         </div>
                       </div>
@@ -930,7 +936,7 @@ export default function ApostasPage() {
                     <div className="flex justify-between text-xs font-semibold gap-2">
                       <span className="text-[var(--text)] truncate">{b.casa}</span>
                       <span className="font-mono text-[var(--text-2)] text-[11px] shrink-0">
-                        {b.count} tips
+                        {formatarInteiro(b.count)} tips
                       </span>
                     </div>
                     <div className="h-1.5 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
