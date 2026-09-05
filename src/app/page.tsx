@@ -3,6 +3,7 @@ import {
   Sparkles,
   ArrowRight,
   TrendingUp,
+  TrendingDown,
   FileSpreadsheet,
   Target,
   Landmark,
@@ -188,7 +189,7 @@ export default async function HomePage() {
             <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
             <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
             <div className="ml-4 px-3 py-1 bg-white/70 rounded-md text-[11px] font-mono text-[var(--text-2)] border border-black/[0.04]">
-              geogetips.app/painel
+              /painel
             </div>
           </div>
           <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--bg-soft)]">
@@ -204,7 +205,11 @@ export default async function HomePage() {
                 {temNumeros && stats ? formatarReaisComSinal(stats.totalLucro) : "—"}
               </div>
               <div className="text-xs font-medium text-[var(--text-2)] mt-1.5 flex items-center gap-1">
-                <TrendingUp className="w-3.5 h-3.5" />
+                {(stats?.totalLucro ?? 0) >= 0 ? (
+                  <TrendingUp className="w-3.5 h-3.5" />
+                ) : (
+                  <TrendingDown className="w-3.5 h-3.5" />
+                )}
                 <span>
                   {temNumeros && stats
                     ? `${stats.totalUnidades.toFixed(2).replace(".", ",")}u acumuladas`
