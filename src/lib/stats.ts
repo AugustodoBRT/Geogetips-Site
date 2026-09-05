@@ -92,6 +92,8 @@ export function computeStatsFromBets(bets: BetItem[]) {
       total: number;
       lucro: number;
       apostado: number;
+      somaOdds: number;
+      finalizadas: number;
     }
   >();
 
@@ -103,12 +105,20 @@ export function computeStatsFromBets(bets: BetItem[]) {
       total: 0,
       lucro: 0,
       apostado: 0,
+      somaOdds: 0,
+      finalizadas: 0,
     };
     t.total += 1;
     t.lucro += b.lucro;
     if (b.esporte) t.esportes.add(b.esporte);
     if (b.resultado === "GREEN") t.greens += 1;
     if (b.resultado === "RED") t.reds += 1;
+    // Só apostas resolvidas entram na odd média: pendente ainda não é
+    // resultado, e anulada devolve o valor sem exercer a odd.
+    if (b.resultado === "GREEN" || b.resultado === "RED") {
+      t.somaOdds += b.odd;
+      t.finalizadas += 1;
+    }
     t.apostado += b.valor;
     tipsterMap.set(b.tipster, t);
   });
@@ -122,6 +132,12 @@ export function computeStatsFromBets(bets: BetItem[]) {
       taxaAcerto: taxaDeAcerto(d.greens, d.reds),
       totalApostas: d.total,
       lucroUnidades: reaisParaUnidades(d.lucro),
+      oddMedia:
+        d.finalizadas > 0 ? parseFloat((d.somaOdds / d.finalizadas).toFixed(2)) : 0,
+      acertoDeEquilibrio:
+        d.finalizadas > 0 && d.somaOdds > 0
+          ? parseFloat((100 / (d.somaOdds / d.finalizadas)).toFixed(1))
+          : 0,
       roi:
         d.apostado > 0
           ? parseFloat(((d.lucro / d.apostado) * 100).toFixed(2))

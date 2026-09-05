@@ -33,9 +33,11 @@ export default function AdmsPage() {
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
               Performance dos Adms
             </h1>
-            <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
-              Ranking
-            </span>
+            {!erro && !isMock && !loading && (
+              <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
+                Ranking
+              </span>
+            )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
             Assertividade e lucro por unidade calculados da aba{" "}
@@ -69,7 +71,19 @@ export default function AdmsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {adms.map((adm, index) => {
-            const isProfitable = adm.lucroUnidades > 0;
+            const isProfitable = adm.lucroUnidades >= 0;
+            /**
+             * O ponto de equilíbrio (100 / odd média) entra como CONTEXTO, não
+             * como veredito.
+             *
+             * Ele supõe aposta plana e a mesma odd em toda entrada. Se os greens
+             * do adm saem em odd menor que os reds, dá para ficar acima do
+             * equilíbrio e ainda assim perder — é o caso real do Meckler, com
+             * 29% de acerto, empate em 19,7% e ROI de -2,95%. Quem decide a cor
+             * é o resultado medido; a marca no trilho só explica por que 31% de
+             * acerto pode ser excelente.
+             */
+            const temEquilibrio = adm.acertoDeEquilibrio > 0;
             return (
               <motion.div
                 key={adm.nome}
@@ -150,33 +164,68 @@ export default function AdmsPage() {
                       }`}
                     >
                       {adm.roi >= 0 ? "+" : ""}
-                      {adm.roi.toFixed(1).replace(".", ",")}%
+                      {adm.roi.toFixed(2).replace(".", ",")}%
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-1 pt-1">
+                {/* A barra media acerto contra faixas fixas de 60% e 45%. Numa
+                    operação de odd alta isso é sem sentido: com odd média 5 o
+                    empate fica em 20%, então 31% de acerto dá lucro e saía
+                    vermelho. Agora a régua é o próprio ponto de equilíbrio. */}
+                <div className="space-y-1.5 pt-1">
                   <div className="flex justify-between text-[11px] font-semibold text-[var(--text-3)]">
-                    <span>Taxa de vitória</span>
-                    <span>{adm.taxaAcerto.toFixed(1).replace(".", ",")}%</span>
+                    <span>Acerto x ponto de equilíbrio</span>
                   </div>
+
                   <div
-                    className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden"
+                    className="h-2 bg-[var(--bg-tinted)] rounded-full relative"
                     role="img"
-                    aria-label={`Taxa de vitória de ${adm.nome}: ${adm.taxaAcerto.toFixed(1)} por cento`}
+                    aria-label={
+                      temEquilibrio
+                        ? `${adm.nome} acerta ${adm.taxaAcerto
+                            .toFixed(1)
+                            .replace(".", ",")} por cento e precisa de ${adm.acertoDeEquilibrio
+                            .toFixed(1)
+                            .replace(".", ",")} por cento para empatar, com odd média ${adm.oddMedia
+                            .toFixed(2)
+                            .replace(".", ",")}`
+                        : `${adm.nome} ainda não tem apostas resolvidas`
+                    }
                   >
-                    <motion.div
-                      className={`h-full rounded-full ${
-                        adm.taxaAcerto >= 60
-                          ? "bg-[var(--green)]"
-                          : adm.taxaAcerto >= 45
-                          ? "bg-[var(--amber)]"
-                          : "bg-[var(--red)]"
-                      }`}
-                      initial={{ width: "0%" }}
-                      animate={{ width: `${Math.min(adm.taxaAcerto, 100)}%` }}
-                      transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
-                    />
+                    <div className="absolute inset-0 rounded-full overflow-hidden">
+                      {/* Largura no estilo, transição em CSS: o valor não pode
+                          depender de a animação terminar. */}
+                      <div
+                        className={`h-full rounded-full transition-[width] duration-500 ease-out ${
+                          isProfitable ? "bg-[var(--green)]" : "bg-[var(--red)]"
+                        }`}
+                        style={{ width: `${Math.min(adm.taxaAcerto, 100)}%` }}
+                      />
+                    </div>
+
+                    {/* Marca de onde o resultado empata */}
+                    {temEquilibrio && (
+                      <div
+                        className="absolute top-[-3px] bottom-[-3px] w-0.5 bg-[var(--text)] rounded-full"
+                        style={{
+                          left: `${Math.min(adm.acertoDeEquilibrio, 100)}%`,
+                        }}
+                        aria-hidden="true"
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex justify-between text-[10px] text-[var(--text-3)] font-medium">
+                    <span>
+                      acerta {adm.taxaAcerto.toFixed(1).replace(".", ",")}%
+                    </span>
+                    {temEquilibrio && (
+                      <span>
+                        empata em {adm.acertoDeEquilibrio.toFixed(1).replace(".", ",")}%
+                        {" · "}odd {adm.oddMedia.toFixed(2).replace(".", ",")}
+                      </span>
+                    )}
                   </div>
                 </div>
               </motion.div>

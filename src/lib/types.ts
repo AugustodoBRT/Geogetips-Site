@@ -29,6 +29,16 @@ export interface TipsterStat {
   totalApostas: number;
   lucroUnidades: number;
   roi: number;
+  /** Odd média das apostas já resolvidas do adm. */
+  oddMedia: number;
+  /**
+   * Taxa de acerto que zera o resultado, em %: 100 / oddMedia.
+   *
+   * Sem ela não dá para julgar um acerto de 31%. Com odd média 5, o empate
+   * fica em 20% e 31% é excelente; com odd média 1,5, o empate é 67% e 31%
+   * seria desastroso. É o número que dá sentido a todos os outros.
+   */
+  acertoDeEquilibrio: number;
 }
 
 export interface SportBreakdown {

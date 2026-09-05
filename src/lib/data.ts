@@ -170,6 +170,8 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
     taxaAcerto: 72,
     totalApostas: 148,
     lucroUnidades: 0.64,
+    oddMedia: 1.45,
+    acertoDeEquilibrio: 69.0,
     roi: 2.05,
   },
   {
@@ -180,6 +182,8 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
     taxaAcerto: 65,
     totalApostas: 94,
     lucroUnidades: 0.36,
+    oddMedia: 1.58,
+    acertoDeEquilibrio: 63.3,
     roi: 1.15,
   },
   {
@@ -190,6 +194,8 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
     taxaAcerto: 58,
     totalApostas: 67,
     lucroUnidades: 0.16,
+    oddMedia: 1.78,
+    acertoDeEquilibrio: 56.2,
     roi: 0.51,
   },
   {
@@ -200,6 +206,8 @@ export const MOCK_TIPSTERS: TipsterStat[] = [
     taxaAcerto: 48,
     totalApostas: 33,
     lucroUnidades: -0.10,
+    oddMedia: 2.05,
+    acertoDeEquilibrio: 48.8,
     roi: -0.32,
   },
 ];
