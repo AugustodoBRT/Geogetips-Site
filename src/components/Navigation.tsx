@@ -99,7 +99,7 @@ export default function Navigation() {
               aria-expanded={aberto}
               aria-controls="menu-mobile"
               aria-label={aberto ? "Fechar menu" : "Abrir menu"}
-              className="md:hidden p-2 -mr-1 rounded-full text-[var(--text)] hover:bg-black/[0.05] active:scale-95 transition-all"
+              className="md:hidden p-2.5 -mr-1 rounded-full text-[var(--text)] hover:bg-black/[0.05] active:scale-95 transition-all"
             >
               {aberto ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>

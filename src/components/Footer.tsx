@@ -30,7 +30,7 @@ export function Footer() {
               href={TELEGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--text)] hover:text-[var(--accent)] transition-colors"
+              className="inline-flex items-center gap-1.5 py-1.5 text-xs font-bold text-[var(--text)] hover:text-[var(--accent)] transition-colors"
             >
               <IconeTelegram className="w-3.5 h-3.5" />
               <span>@vemproGeogeTips</span>
@@ -40,7 +40,7 @@ export function Footer() {
               href={X_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--text)] hover:text-[var(--accent)] transition-colors"
+              className="inline-flex items-center gap-1.5 py-1.5 text-xs font-bold text-[var(--text)] hover:text-[var(--accent)] transition-colors"
             >
               <IconeX className="w-3.5 h-3.5" />
               <span>@GeogeTips</span>
@@ -50,7 +50,7 @@ export function Footer() {
               href={PLANILHA_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] transition-colors"
+              className="inline-flex items-center gap-1.5 py-1.5 text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] transition-colors"
             >
               <Table2 className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Planilha pública</span>
@@ -63,7 +63,7 @@ export function Footer() {
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] transition-colors"
+                    className="inline-block py-1.5 text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] transition-colors"
                   >
                     {l.label}
                   </Link>
