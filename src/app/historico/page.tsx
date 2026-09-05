@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "framer-motion";
 import NumberFlow from "@number-flow/react";
 import { RefreshCw, TrendingUp, Percent, Layers, Activity } from "lucide-react";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
@@ -213,6 +212,12 @@ export default function HistoricoPage() {
                   .map((m) => `${abaCurta(m.aba)} ${m.unidades.toFixed(2)} unidades`)
                   .join(", ")}`}
               >
+                {/* Altura aplicada direto no estilo, com transição em CSS.
+                    Com initial/animate do framer a barra dependia de rAF para
+                    chegar no valor certo — e num carregamento com a aba em
+                    segundo plano ela congelava no meio: ago/26, o maior mês,
+                    chegou a ficar em 0% enquanto abr/26 marcava 76%. Gráfico
+                    não pode depender de animação terminar para estar correto. */}
                 {cronologico.map((m, i) => {
                   const positivo = m.lucro >= 0;
                   const altura = (Math.abs(m.lucro) / maiorAbs) * 100;
@@ -224,14 +229,11 @@ export default function HistoricoPage() {
                       {/* metade de cima: lucro */}
                       <div className="h-[90px] w-full flex flex-col justify-end">
                         {positivo && (
-                          <motion.div
-                            className="w-full rounded-t-md bg-[var(--green)]"
-                            initial={{ height: 0 }}
-                            animate={{ height: `${Math.max(altura, 2)}%` }}
-                            transition={{
-                              duration: 0.6,
-                              delay: i * 0.05,
-                              ease: [0.32, 0.72, 0, 1],
+                          <div
+                            className="w-full rounded-t-md bg-[var(--green)] transition-[height] duration-500 ease-out"
+                            style={{
+                              height: `${Math.max(altura, 2)}%`,
+                              transitionDelay: `${i * 50}ms`,
                             }}
                           />
                         )}
@@ -242,14 +244,11 @@ export default function HistoricoPage() {
                       {/* metade de baixo: prejuízo */}
                       <div className="h-[90px] w-full">
                         {!positivo && (
-                          <motion.div
-                            className="w-full rounded-b-md bg-[var(--red)]"
-                            initial={{ height: 0 }}
-                            animate={{ height: `${Math.max(altura, 2)}%` }}
-                            transition={{
-                              duration: 0.6,
-                              delay: i * 0.05,
-                              ease: [0.32, 0.72, 0, 1],
+                          <div
+                            className="w-full rounded-b-md bg-[var(--red)] transition-[height] duration-500 ease-out"
+                            style={{
+                              height: `${Math.max(altura, 2)}%`,
+                              transitionDelay: `${i * 50}ms`,
                             }}
                           />
                         )}

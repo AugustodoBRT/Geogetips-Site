@@ -322,13 +322,11 @@ export default function EstatisticasPage() {
                           </span>
                         </div>
                         <div className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
-                          <motion.div
-                            className={`h-full rounded-full ${
+                          <div
+                            className={`h-full rounded-full transition-[width] duration-500 ease-out ${
                               positivo ? "bg-[var(--green)]" : "bg-[var(--red)]"
                             }`}
-                            initial={{ width: "0%" }}
-                            animate={{ width: `${Math.max(largura, 2)}%` }}
-                            transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+                            style={{ width: `${Math.max(largura, 2)}%` }}
                           />
                         </div>
                       </div>
@@ -367,11 +365,9 @@ export default function EstatisticasPage() {
                         </span>
                       </div>
                       <div className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
-                        <motion.div
-                          className="h-full rounded-full bg-[var(--text)]"
-                          initial={{ width: "0%" }}
-                          animate={{ width: `${b.percentual}%` }}
-                          transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+                        <div
+                          className="h-full rounded-full bg-[var(--text)] transition-[width] duration-500 ease-out"
+                          style={{ width: `${b.percentual}%` }}
                         />
                       </div>
                     </div>

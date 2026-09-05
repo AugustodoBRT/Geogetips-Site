@@ -940,11 +940,9 @@ export default function ApostasPage() {
                       </span>
                     </div>
                     <div className="h-1.5 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full rounded-full bg-[var(--text)]"
-                        initial={{ width: "0%" }}
-                        animate={{ width: `${b.percent}%` }}
-                        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                      <div
+                        className="h-full rounded-full bg-[var(--text)] transition-[width] duration-500 ease-out"
+                        style={{ width: `${b.percent}%` }}
                       />
                     </div>
                   </div>
