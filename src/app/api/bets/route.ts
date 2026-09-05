@@ -9,12 +9,14 @@ import { abaDoMesAtual, abasRecentes } from "@/lib/constants";
 import { MOCK_BETS } from "@/lib/data";
 
 /**
- * Precisa bater com o revalidate da leitura da planilha em planilhaPublica.ts.
- * Estava em 15 enquanto a leitura ficava em cache por 60: três de cada quatro
- * revalidações refaziam o trabalho e devolviam exatamente o mesmo dado.
+ * Declarado por consistência, mas SEM efeito prático nesta rota: ela lê
+ * searchParams de request.url, o que a torna dinâmica, e rota dinâmica não é
+ * cacheada pelo segmento. O build confirma — /api/bets sai como ƒ (Dynamic)
+ * com a coluna Revalidate vazia, enquanto /api/resumo sai como ○ com 1m.
  *
- * O Next exige um literal aqui, então não dá para importar a constante — se
- * mudar um dos dois, mude o outro.
+ * Quem realmente controla a frescura é o `next: { revalidate: 60 }` da leitura
+ * da planilha em planilhaPublica.ts. Ao mudar um, mude o outro — o Next exige
+ * literal aqui, então não dá para os dois saírem de uma constante só.
  */
 export const revalidate = 60;
 
