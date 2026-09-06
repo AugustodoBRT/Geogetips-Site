@@ -586,8 +586,13 @@ export default function ApostasPage() {
             <div className="space-y-6">
               {groupedByDate.map(([date, dayBets]) => {
                 const lucroDia = dayBets.reduce((acc, b) => acc + b.lucro, 0);
+                // Sem `layout` do framer: ela anima mudanças de tamanho por
+                // transform, e ao mudar a altura das linhas a seção inteira
+                // travou em scaleY(11.67) com translateY de 1504px — o feed
+                // ficava esticado e ilegível. Mesmo motivo pelo qual o
+                // AnimatePresence saiu das linhas.
                 return (
-                  <motion.section key={date} layout className="space-y-2">
+                  <section key={date} className="space-y-2">
                     <div className="flex items-center gap-3">
                       <h2 className="text-xs font-mono font-bold text-[var(--text)]">
                         {date}
@@ -706,7 +711,7 @@ export default function ApostasPage() {
                           </motion.button>
                         );
                     })}
-                  </motion.section>
+                  </section>
                 );
               })}
             </div>
