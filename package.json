@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "next lint",
-    "checar:cores": "node scripts/checar-cores.mjs"
+    "checar:cores": "node scripts/checar-cores.mjs",
+    "otimizar:logos": "node scripts/otimizar-logos.mjs"
   },
   "dependencies": {
     "@number-flow/react": "^0.6.2",

@@ -15,6 +15,23 @@ interface Casa {
   alias?: string[];
   /** Marca desenhada à parte, quando o monograma não faz jus. */
   marca?: React.ReactNode;
+  /**
+   * Arquivo em /public/casas com a logo NEGATIVA (branca) da casa.
+   *
+   * SVG de preferência: medido nas duas primeiras, sai 82% e 37% menor que o
+   * PNG depois de arredondar as coordenadas para uma casa decimal, e fica
+   * nítido em qualquer densidade de tela.
+   *
+   * É a versão que as casas publicam para uso sobre fundo colorido, e é a que
+   * funciona aqui: medida sobre branco, a da Betano dá 1,08 de contraste — some.
+   * Sobre o laranja da própria marca dá 3,29. Por isso a logo vai direto na
+   * pílula colorida, sem círculo branco atrás.
+   *
+   * Quando existe, substitui monograma E nome: a logo já diz quem é.
+   */
+  logo?: string;
+  /** Proporção largura/altura da logo, para reservar o espaço certo. */
+  logoRatio?: number;
 }
 
 /**
@@ -33,7 +50,17 @@ interface Casa {
  * A Bet365 é a única exceção: fica na combinação oficial da marca.
  */
 const CASAS: Casa[] = [
-  { nome: "4play", bg: "#FF2442", fg: "#16131F" },
+  {
+    nome: "4play",
+    // Fundo escurecido de propósito. A logo tem um triângulo no mesmo vermelho
+    // da marca: sobre o #FF2442 original ele dava 1,03 de contraste e sumia,
+    // deixando "4 Play.bet" com um buraco no meio. Sobre este preto avermelhado
+    // o triângulo dá 5,27 e o branco 19,18.
+    bg: "#1A0A10",
+    fg: "#FFFFFF",
+    logo: "4play.svg",
+    logoRatio: 300 / 120,
+  },
   { nome: "4win", bg: "#DA5E15", fg: "#16131F" },
   { nome: "7Games", bg: "#DCF7D9", fg: "#16131F" }, // cor da marca
   { nome: "7K Bet", bg: "#A1CD3D", fg: "#16131F", alias: ["7K"] },
@@ -47,7 +74,13 @@ const CASAS: Casa[] = [
   { nome: "Bet MGM", bg: "#B19661", fg: "#16131F", alias: ["BetMGM"] }, // cor da marca
   { nome: "Bet365", bg: "#007B40", fg: "#FFDF1B" }, // cor da marca
   { nome: "Betaki", bg: "#A3E635", fg: "#16131F" }, // verde limão, escolha do grupo
-  { nome: "Betano", bg: "#FF3C00", fg: "#16131F" }, // cor da marca
+  {
+    nome: "Betano",
+    bg: "#FF3C00",
+    fg: "#16131F",
+    logo: "betano.svg",
+    logoRatio: 800 / 240,
+  }, // cor da marca
   { nome: "Betao", bg: "#0F2425", fg: "#FFFFFF", alias: ["Betão"] },
   { nome: "Betboo", bg: "#CA3B1B", fg: "#FFFFFF" }, // cor da marca
   { nome: "BetBoom", bg: "#B91C1C", fg: "#FFFFFF" },
@@ -172,6 +205,9 @@ export function encontrarCasa(bookie: string): Casa | undefined {
 const BASE =
   "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold tracking-tight shadow-sm whitespace-nowrap";
 
+/** Altura da logo dentro da pílula, em pixels. */
+const ALTURA_LOGO = 15;
+
 export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
   const nomeCru = bookie.trim();
   if (!nomeCru) return null;
@@ -200,7 +236,22 @@ export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
       style={{ backgroundColor: casa.bg, color: casa.fg }}
       title={casa.nome}
     >
-      {ehBet365 ? (
+      {casa.logo ? (
+        /* Logo negativa da casa: já traz o nome escrito, então substitui
+           monograma e texto. alt vazio porque o title do elemento pai já
+           anuncia a casa — repetir daria leitura dupla no leitor de tela. */
+        <img
+          src={`/casas/${casa.logo}`}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="block object-contain"
+          style={{
+            height: ALTURA_LOGO,
+            width: Math.round(ALTURA_LOGO * (casa.logoRatio ?? 3)),
+          }}
+        />
+      ) : ehBet365 ? (
         MARCA_BET365
       ) : (
         <>
