@@ -61,18 +61,61 @@ const CASAS: Casa[] = [
     logo: "4play.svg",
     logoRatio: 300 / 120,
   },
-  { nome: "4win", bg: "#DA5E15", fg: "#16131F" },
-  { nome: "7Games", bg: "#DCF7D9", fg: "#16131F" }, // cor da marca
-  { nome: "7K Bet", bg: "#A1CD3D", fg: "#16131F", alias: ["7K"] },
-  { nome: "Aposta Ganha", bg: "#FF3D00", fg: "#16131F" }, // cor da marca
+  {
+    nome: "4win",
+    bg: "#3D1A06",
+    fg: "#FFFFFF",
+    logo: "4win.svg",
+    logoRatio: 162 / 77,
+  },
+  {
+    nome: "7Games",
+    bg: "#0A2E12",
+    fg: "#FFFFFF",
+    logo: "7games.svg",
+    logoRatio: 500 / 158,
+  }, // cor da marca
+  {
+    nome: "7K Bet",
+    bg: "#26330F",
+    fg: "#FFFFFF",
+    alias: ["7K"],
+    logo: "7k.svg",
+    logoRatio: 72 / 57,
+  },
+  {
+    nome: "Aposta Ganha",
+    bg: "#FFF3EE",
+    fg: "#16131F",
+    logo: "aposta-ganha.svg",
+    logoRatio: 768 / 78,
+  }, // cor da marca
   { nome: "Aposta Tudo", bg: "#280AA3", fg: "#FFFFFF" },
-  { nome: "Aposta1", bg: "#4EB548", fg: "#16131F" },
-  { nome: "Apostou", bg: "#172448", fg: "#FFFFFF" },
+  {
+    nome: "Aposta1",
+    bg: "#0F2E0D",
+    fg: "#FFFFFF",
+    logo: "aposta1.svg",
+    logoRatio: 120 / 120,
+  },
+  {
+    nome: "Apostou",
+    bg: "#172448",
+    fg: "#FFFFFF",
+    logo: "apostou.svg",
+    logoRatio: 321 / 92,
+  },
   { nome: "B2X", bg: "#5B21B6", fg: "#FFFFFF" },
   { nome: "Band", bg: "#005498", fg: "#FFFFFF" },
-  { nome: "Bateu", bg: "#570433", fg: "#FFFFFF" },
+  {
+    nome: "Bateu",
+    bg: "#570433",
+    fg: "#FFFFFF",
+    logo: "bateu.svg",
+    logoRatio: 212 / 67,
+  },
   { nome: "Bet MGM", bg: "#B19661", fg: "#16131F", alias: ["BetMGM"] }, // cor da marca
-  { nome: "Bet365", bg: "#007B40", fg: "#FFDF1B" }, // cor da marca
+  { nome: "Bet365", bg: "#007B40", fg: "#FFDF1B" },
   { nome: "Betaki", bg: "#A3E635", fg: "#16131F" }, // verde limão, escolha do grupo
   {
     nome: "Betano",
@@ -81,9 +124,22 @@ const CASAS: Casa[] = [
     logo: "betano.svg",
     logoRatio: 800 / 240,
   }, // cor da marca
-  { nome: "Betao", bg: "#0F2425", fg: "#FFFFFF", alias: ["Betão"] },
-  { nome: "Betboo", bg: "#CA3B1B", fg: "#FFFFFF" }, // cor da marca
-  { nome: "BetBoom", bg: "#B91C1C", fg: "#FFFFFF" },
+  {
+    nome: "Betao",
+    bg: "#0F2425",
+    fg: "#FFFFFF",
+    alias: ["Betão"],
+    logo: "betao.svg",
+    logoRatio: 155 / 67,
+  },
+  { nome: "Betboo", bg: "#CA3B1B", fg: "#FFFFFF" },
+  {
+    nome: "BetBoom",
+    bg: "#B91C1C",
+    fg: "#FFFFFF",
+    logo: "betboom.svg",
+    logoRatio: 134 / 23,
+  },
   { nome: "BetBra", bg: "#0AA614", fg: "#16131F" },
   { nome: "BETesporte", bg: "#1D2F72", fg: "#FFFFFF", alias: ["Betesporte"] },
   { nome: "Betfair", bg: "#665327", fg: "#FFFFFF" }, // cor da marca
@@ -208,6 +264,22 @@ const BASE =
 /** Altura da logo dentro da pílula, em pixels. */
 const ALTURA_LOGO = 15;
 
+/**
+ * Teto de largura. Sem ele a Aposta Ganha, que é 768x78, sairia com 148px e
+ * dobraria a pílula. Passando do teto, a altura encolhe junto para manter a
+ * proporção.
+ */
+const LARGURA_MAX_LOGO = 96;
+
+/** Caixa da logo respeitando a altura padrão e o teto de largura. */
+function dimensoesDaLogo(ratio: number): { width: number; height: number } {
+  const larguraNatural = ALTURA_LOGO * ratio;
+  if (larguraNatural <= LARGURA_MAX_LOGO) {
+    return { width: Math.round(larguraNatural), height: ALTURA_LOGO };
+  }
+  return { width: LARGURA_MAX_LOGO, height: Math.round(LARGURA_MAX_LOGO / ratio) };
+}
+
 export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
   const nomeCru = bookie.trim();
   if (!nomeCru) return null;
@@ -246,10 +318,7 @@ export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
           loading="lazy"
           decoding="async"
           className="block object-contain"
-          style={{
-            height: ALTURA_LOGO,
-            width: Math.round(ALTURA_LOGO * (casa.logoRatio ?? 3)),
-          }}
+          style={dimensoesDaLogo(casa.logoRatio ?? 3)}
         />
       ) : ehBet365 ? (
         MARCA_BET365

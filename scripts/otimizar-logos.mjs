@@ -20,17 +20,27 @@ import { gzipSync } from "node:zlib";
 const PASTA = "public/casas";
 const CASAS_DECIMAIS = 1;
 
+/**
+ * Comandos minúsculos (m l h v c s q t a) são RELATIVOS: cada ponto parte do
+ * anterior. Arredondar ali soma o erro a cada segmento e o caminho vai
+ * derivando — foi assim que o "65" sumiu do logo da bet365, que tem 56
+ * comandos relativos. Em comando absoluto cada ponto é independente e o erro
+ * não se propaga, então só nesse caso o arredondamento é seguro.
+ */
+function temComandoRelativo(d) {
+  return /[mlhvcsqta]/.test(d);
+}
+
 function otimizar(svg) {
   const fator = 10 ** CASAS_DECIMAIS;
   return svg
     .replace(/<\?xml[^?]*\?>\s*/, "")
-    .replace(
-      /\sd="([^"]+)"/g,
-      (_, d) =>
-        ` d="${d.replace(/-?\d+\.\d+/g, (n) =>
-          String(Math.round(parseFloat(n) * fator) / fator)
-        )}"`
-    )
+    .replace(/\sd="([^"]+)"/g, (inteiro, d) => {
+      if (temComandoRelativo(d)) return inteiro;
+      return ` d="${d.replace(/-?\d+\.\d+/g, (n) =>
+        String(Math.round(parseFloat(n) * fator) / fator)
+      )}"`;
+    })
     .replace(/\s+/g, " ")
     .replace(/>\s+</g, "><")
     .trim();
