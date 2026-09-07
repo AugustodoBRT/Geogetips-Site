@@ -90,7 +90,13 @@ const CASAS: Casa[] = [
     logo: "aposta-ganha.svg",
     logoRatio: 768 / 78,
   }, // cor da marca
-  { nome: "Aposta Tudo", bg: "#280AA3", fg: "#FFFFFF" },
+  {
+    nome: "Aposta Tudo",
+    bg: "#280AA3",
+    fg: "#FFFFFF",
+    logo: "aposta-tudo.svg",
+    logoRatio: 272 / 72,
+  },
   {
     nome: "Aposta1",
     bg: "#0F2E0D",
@@ -115,7 +121,13 @@ const CASAS: Casa[] = [
     logoRatio: 212 / 67,
   },
   { nome: "Bet MGM", bg: "#B19661", fg: "#16131F", alias: ["BetMGM"] }, // cor da marca
-  { nome: "Bet365", bg: "#007B40", fg: "#FFDF1B" },
+  {
+    nome: "Bet365",
+    bg: "#007B40",
+    fg: "#FFDF1B",
+    logo: "bet365.svg",
+    logoRatio: 95 / 21,
+  },
   { nome: "Betaki", bg: "#A3E635", fg: "#16131F" }, // verde limão, escolha do grupo
   {
     nome: "Betano",
@@ -132,7 +144,13 @@ const CASAS: Casa[] = [
     logo: "betao.svg",
     logoRatio: 155 / 67,
   },
-  { nome: "Betboo", bg: "#CA3B1B", fg: "#FFFFFF" },
+  {
+    nome: "Betboo",
+    bg: "#CA3B1B",
+    fg: "#FFFFFF",
+    logo: "betboo.svg",
+    logoRatio: 156 / 50,
+  },
   {
     nome: "BetBoom",
     bg: "#B91C1C",
@@ -140,7 +158,13 @@ const CASAS: Casa[] = [
     logo: "betboom.svg",
     logoRatio: 134 / 23,
   },
-  { nome: "BetBra", bg: "#0AA614", fg: "#16131F" },
+  {
+    nome: "BetBra",
+    bg: "#022104",
+    fg: "#16131F",
+    logo: "betbra.svg",
+    logoRatio: 177 / 62,
+  },
   { nome: "BETesporte", bg: "#1D2F72", fg: "#FFFFFF", alias: ["Betesporte"] },
   { nome: "Betfair", bg: "#665327", fg: "#FFFFFF" }, // cor da marca
   { nome: "Betfast", bg: "#D61F26", fg: "#FFFFFF" }, // cor da marca
@@ -222,14 +246,6 @@ const CASAS: Casa[] = [
   { nome: "ZeroUm", bg: "#CC0036", fg: "#FFFFFF" },
 ];
 
-/** Marca própria da Bet365, que o monograma não representa bem. */
-const MARCA_BET365 = (
-  <>
-    <span className="text-white font-black text-[9.5px]">bet</span>
-    <span className="font-black">365</span>
-  </>
-);
-
 /**
  * Índice de busca: nome normalizado -> casa. Montado uma vez, na carga do
  * módulo, para a renderização de cada linha do feed ser O(1).
@@ -300,8 +316,6 @@ export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
     );
   }
 
-  const ehBet365 = casa.nome === "Bet365";
-
   return (
     <span
       className={`${BASE} ${className}`}
@@ -320,8 +334,6 @@ export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
           className="block object-contain"
           style={dimensoesDaLogo(casa.logoRatio ?? 3)}
         />
-      ) : ehBet365 ? (
-        MARCA_BET365
       ) : (
         <>
           <span
