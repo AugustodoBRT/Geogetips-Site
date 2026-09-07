@@ -112,7 +112,15 @@ const CASAS: Casa[] = [
     logoRatio: 291 / 58,
   },
   { nome: "B2X", bg: "#5B21B6", fg: "#FFFFFF" },
-  { nome: "Band", bg: "#005498", fg: "#FFFFFF" },
+  {
+    nome: "Band",
+    // No azul original 59% da logo sumia: o "BET" é azul e encostava no
+    // fundo. Escurecido, 0%.
+    bg: "#00111E",
+    fg: "#FFFFFF",
+    logo: "band.svg",
+    logoRatio: 422 / 64,
+  },
   {
     nome: "Bateu",
     bg: "#570433",
