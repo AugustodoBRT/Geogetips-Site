@@ -16,16 +16,21 @@ interface Casa {
   /** Marca desenhada à parte, quando o monograma não faz jus. */
   marca?: React.ReactNode;
   /**
-   * Arquivo em /public/casas com a logo NEGATIVA (branca) da casa.
+   * Arquivo em /public/casas com a logo da casa, de preferência a negativa.
    *
    * SVG de preferência: medido nas duas primeiras, sai 82% e 37% menor que o
    * PNG depois de arredondar as coordenadas para uma casa decimal, e fica
-   * nítido em qualquer densidade de tela.
+   * nítido em qualquer densidade de tela. Todo arquivo precisa de viewBox —
+   * sem ele o Chrome ainda escala, mas Safari e Firefox recortam a arte.
    *
-   * É a versão que as casas publicam para uso sobre fundo colorido, e é a que
-   * funciona aqui: medida sobre branco, a da Betano dá 1,08 de contraste — some.
-   * Sobre o laranja da própria marca dá 3,29. Por isso a logo vai direto na
-   * pílula colorida, sem círculo branco atrás.
+   * A logo vai direto na pílula colorida, sem círculo branco atrás. Quando a
+   * casa publica a negativa, o fundo é a cor da marca: a da Betano sobre
+   * branco dá 1,08 de contraste — some; sobre o laranja da própria marca dá
+   * 3,29. Quando só existe a colorida, o `bg` é uma versão escurecida do
+   * mesmo matiz, medida até a cor dominante da logo passar de 4,5:1 — os
+   * comentários de cada casa registram o número. Duas fogem disso: a Betfair,
+   * cuja logo é preta e usa o amarelo oficial da marca, e a Bravo, que mistura
+   * preto e vermelho e só fecha no branco.
    *
    * Quando existe, substitui monograma E nome: a logo já diz quem é.
    */
@@ -128,7 +133,17 @@ const CASAS: Casa[] = [
     logo: "bateu.svg",
     logoRatio: 208 / 46,
   },
-  { nome: "Bet MGM", bg: "#B19661", fg: "#16131F", alias: ["BetMGM"] }, // cor da marca
+  {
+    nome: "Bet MGM",
+    // O dourado #B19661 do registro era quase o mesmo tom do leão e das letras
+    // da marca: 63% da logo sumia, a 1,0 de contraste. Este marrom escuro
+    // devolve 4,2.
+    bg: "#191409",
+    fg: "#FFFFFF",
+    alias: ["BetMGM"],
+    logo: "bet-mgm.svg",
+    logoRatio: 99.8 / 48.3,
+  },
   {
     nome: "Bet365",
     bg: "#007B40",
@@ -173,27 +188,177 @@ const CASAS: Casa[] = [
     logo: "betbra.svg",
     logoRatio: 170 / 43,
   },
-  { nome: "BETesporte", bg: "#1D2F72", fg: "#FFFFFF", alias: ["Betesporte"] },
-  { nome: "Betfair", bg: "#665327", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Betfast", bg: "#D61F26", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Betnacional", bg: "#FCC135", fg: "#16131F" }, // cor da marca
-  { nome: "Betou", bg: "#062B45", fg: "#FFFFFF" },
-  { nome: "Betpix", bg: "#EDC317", fg: "#16131F" }, // cor da marca
-  { nome: "BetPonto", bg: "#2A1545", fg: "#FFFFFF" },
-  { nome: "Betsson", bg: "#FE6600", fg: "#16131F" }, // cor da marca
-  { nome: "Betsul", bg: "#7329C9", fg: "#FFFFFF" },
-  { nome: "Betvip", bg: "#035E01", fg: "#FFFFFF" },
-  { nome: "Bingo Plus", bg: "#21093D", fg: "#FFFFFF" },
-  { nome: "Bolsa de Aposta", bg: "#3EAD64", fg: "#16131F", alias: ["Bolsa de Apostas"] },
-  { nome: "Br4", bg: "#0D162D", fg: "#FFFFFF" },
-  { nome: "Brasil Bet", bg: "#FCDC00", fg: "#16131F" },
-  { nome: "Brasil da Sorte", bg: "#05B962", fg: "#16131F" },
-  { nome: "Bravo", bg: "#F03F45", fg: "#16131F" },
-  { nome: "BrBet", bg: "#02AD21", fg: "#16131F" },
-  { nome: "Brx", bg: "#22B573", fg: "#16131F" },
-  { nome: "Buffalos", bg: "#2A2540", fg: "#FFFFFF" },
-  { nome: "Bulls", bg: "#01FE7B", fg: "#16131F" },
-  { nome: "Casa de Apostas", bg: "#EE3C42", fg: "#16131F", alias: ["Casa de Aposta"] },
+  {
+    nome: "BETesporte",
+    bg: "#1D2F72",
+    fg: "#FFFFFF",
+    alias: ["Betesporte"],
+    logo: "betesporte.svg",
+    logoRatio: 764.5 / 155.2,
+  },
+  {
+    nome: "Betfair",
+    // A logo da Betfair é preta, não negativa. Sobre o dourado antigo dava 2,5 e
+    // saía embaçada; sobre o amarelo oficial da casa dá 10,9 — e é o par de
+    // cores que a própria Betfair usa.
+    bg: "#FFB80C",
+    fg: "#16131F",
+    logo: "betfair.svg",
+    logoRatio: 709.7 / 123.2,
+  },
+  {
+    nome: "Betfast",
+    // A logo é vermelha e o fundo era o mesmo vermelho: 1,0 de contraste, a
+    // pílula ficava vazia. O vermelho da marca não passa de 4,2 sobre nenhum
+    // fundo escuro — este quase-preto chega a 4,0, o teto prático.
+    bg: "#120305",
+    fg: "#FFFFFF",
+    logo: "betfast.svg",
+    logoRatio: 201.6 / 38.4,
+  },
+  {
+    nome: "Betnacional",
+    // Sobre o amarelo #FCC135 nem o branco da marca se salvava: 1,6. Este
+    // marrom escuro dá 5,6.
+    bg: "#372701",
+    fg: "#FFFFFF",
+    logo: "betnacional.svg",
+    logoRatio: 153.5 / 29.2,
+  },
+  {
+    nome: "Betou",
+    bg: "#062B45",
+    fg: "#FFFFFF",
+    logo: "betou.svg",
+    logoRatio: 196.8 / 32,
+  },
+  {
+    nome: "Betpix",
+    // Amarelo sobre amarelo: 100% da logo sumia. Escurecido, 4,5.
+    bg: "#675713",
+    fg: "#FFFFFF",
+    logo: "betpix.svg",
+    logoRatio: 200.8 / 38.4,
+  },
+  {
+    nome: "BetPonto",
+    bg: "#2A1545",
+    fg: "#FFFFFF",
+    logo: "betponto.svg",
+    logoRatio: 114.2 / 34,
+  },
+  {
+    nome: "Betsson",
+    // Laranja sobre o mesmo laranja: 1,0. Este marrom queimado dá 4,7.
+    bg: "#492208",
+    fg: "#FFFFFF",
+    logo: "betsson.svg",
+    logoRatio: 126.5 / 24.3,
+  },
+  {
+    nome: "Betsul",
+    bg: "#7329C9",
+    fg: "#FFFFFF",
+    logo: "betsul.svg",
+    logoRatio: 74.8 / 23.8,
+  },
+  {
+    nome: "Betvip",
+    bg: "#035E01",
+    fg: "#FFFFFF",
+    logo: "betvip.svg",
+    logoRatio: 98.3 / 36.2,
+  },
+  {
+    nome: "Bingo Plus",
+    bg: "#21093D",
+    fg: "#FFFFFF",
+    logo: "bingo-plus.svg",
+    logoRatio: 173.5 / 34.5,
+  },
+  {
+    nome: "Bolsa de Aposta",
+    // O verde da marca encostava no verde do fundo e comia 37% da logo.
+    // Escurecido, 4,5.
+    bg: "#183522",
+    fg: "#FFFFFF",
+    alias: ["Bolsa de Apostas"],
+    logo: "bolsa-de-aposta.svg",
+    logoRatio: 124.8 / 42.7,
+  },
+  {
+    nome: "Br4",
+    bg: "#0D162D",
+    fg: "#FFFFFF",
+    logo: "br4.svg",
+    logoRatio: 218 / 37.7,
+  },
+  {
+    nome: "Brasil Bet",
+    // Amarelo sobre amarelo: some inteira. Este ocre escuro dá 4,6.
+    bg: "#6E620C",
+    fg: "#FFFFFF",
+    logo: "brasil-bet.svg",
+    logoRatio: 176.5 / 45.7,
+  },
+  {
+    nome: "Brasil da Sorte",
+    // Metade da logo é o mesmo verde do fundo. Escurecido, 4,5.
+    bg: "#094327",
+    fg: "#FFFFFF",
+    logo: "brasil-da-sorte.svg",
+    logoRatio: 116.3 / 37.7,
+  },
+  {
+    nome: "Bravo",
+    // Única clara do lote: a marca é "BRAVO." em preto com "BET" em vermelho.
+    // Em fundo escuro some o preto, em fundo vermelho some o BET — no branco
+    // os dois passam (21,0 e 4,3).
+    bg: "#FFFFFF",
+    fg: "#16131F",
+    logo: "bravo.svg",
+    logoRatio: 357.4 / 32.2,
+  },
+  {
+    nome: "BrBet",
+    // Verde sobre verde comia 41% da logo. Escurecido, 4,6.
+    bg: "#06320E",
+    fg: "#FFFFFF",
+    logo: "brbet.svg",
+    logoRatio: 130.2 / 46.7,
+  },
+  {
+    nome: "Brx",
+    // Verde sobre verde comia 42%. Escurecido, 4,5.
+    bg: "#14432E",
+    fg: "#FFFFFF",
+    logo: "brx.svg",
+    logoRatio: 65.7 / 50.7,
+  },
+  {
+    nome: "Buffalos",
+    bg: "#2A2540",
+    fg: "#FFFFFF",
+    logo: "buffalos.svg",
+    logoRatio: 243.7 / 37.1,
+  },
+  {
+    nome: "Bulls",
+    // Verde neon sobre verde neon: 1,0. Escurecido, 4,7.
+    bg: "#0D6E3B",
+    fg: "#FFFFFF",
+    logo: "bulls.svg",
+    logoRatio: 172.5 / 40.7,
+  },
+  {
+    nome: "Casa de Apostas",
+    // O vermelho da marca sumia no vermelho do fundo. Escurecido, 4,5.
+    bg: "#2F0406",
+    fg: "#FFFFFF",
+    alias: ["Casa de Aposta"],
+    logo: "casa-de-apostas.svg",
+    logoRatio: 109.3 / 38.2,
+  },
   { nome: "Cassino", bg: "#2773B8", fg: "#FFFFFF" },
   { nome: "CBEsporte", bg: "#41C1EE", fg: "#16131F" },
   { nome: "Donald", bg: "#059669", fg: "#16131F" },
@@ -291,18 +456,20 @@ const ALTURA_LOGO = 15;
 /**
  * Faixa de largura da logo.
  *
- * As proporções vão de quadrada (Aposta1, 1:1) a 11:1 (Aposta Ganha). Só
- * respeitando a altura, as pílulas iam de 37px a 84px — variação de 2,3x, que
- * deixava o alinhamento do feed visivelmente irregular.
+ * As proporções vão de quadrada (Aposta1, 1:1) a 11:1 (Aposta Ganha e Bravo).
+ * Só respeitando a altura, as pílulas iam de 15px a 167px — variação de 11x,
+ * que deixava o alinhamento do feed visivelmente irregular.
  *
- * A faixa aperta isso para 1,3x. Logo estreita ganha folga em vez de virar um
+ * A faixa aperta isso para 1,45x. Logo estreita ganha folga em vez de virar um
  * selo minúsculo; logo comprida encolhe em altura, mantendo a proporção.
  * Largura fixa daria uniformidade perfeita, mas deixava as estreitas perdidas
  * num vazio grande demais.
  *
  * As proporções no registro são do CONTEÚDO, não do arquivo: os viewBox foram
- * recortados até a arte. Nove tinham margem vazia — a Betboo chegava a 62% —
- * o que encolhia a logo e falseava a proporção usada nesta conta.
+ * recortados até a arte. A maioria dos arquivos vem com margem — a Betboo
+ * chegava a 62% e a Bravo a 70% — o que encolhia a logo e falseava a proporção
+ * usada nesta conta. O preço de uma logo muito comprida é a altura: a Bravo,
+ * a 11:1, fica com 6px contra os 15px de quem é mais quadrada.
  */
 const LARGURA_MIN_LOGO = 44;
 const LARGURA_MAX_LOGO = 64;
