@@ -28,9 +28,20 @@ interface Casa {
    * branco dá 1,08 de contraste — some; sobre o laranja da própria marca dá
    * 3,29. Quando só existe a colorida, o `bg` é uma versão escurecida do
    * mesmo matiz, medida até a cor dominante da logo passar de 4,5:1 — os
-   * comentários de cada casa registram o número. Duas fogem disso: a Betfair,
-   * cuja logo é preta e usa o amarelo oficial da marca, e a Bravo, que mistura
-   * preto e vermelho e só fecha no branco.
+   * comentários de cada casa registram o número.
+   *
+   * Sete pílulas são claras, e não por descuido. Quatro casas publicam a logo
+   * em PRETO, não em negativa — Betfair, Fullt, King Panda e Vai de Bet — e
+   * ficam na cor clara da própria marca, onde chegam a 10 ou 19 de contraste;
+   * num fundo escuro sumiriam. Outras três misturam preto com uma cor: a
+   * Aposta Ganha, a Bravo e a B2X. Nelas o preto exige fundo claro e a cor
+   * exige fundo escuro, e o branco é o único ponto em que as duas metades
+   * passam.
+   *
+   * Onde nem o claro nem o escuro chegam a 4,5, o comentário da casa diz qual
+   * é o teto e onde ela parou. Acontece quando a logo é um tom médio saturado
+   * — vermelho da KTO, magenta da Vbet, cinza da Warrior — que não separa o
+   * bastante de nenhum fundo.
    *
    * Quando existe, substitui monograma E nome: a logo já diz quem é.
    */
@@ -42,17 +53,20 @@ interface Casa {
 /**
  * Registro das casas usadas pelo grupo.
  *
- * As marcadas com "cor da marca" usam a cor real da casa; as demais recebem
- * uma cor da paleta do site, escolhida para dar contraste entre vizinhas no
- * feed. Trocar qualquer uma é editar um hex aqui.
+ * As 99 casas têm logo. O `bg` de cada uma deixou de ser enfeite e virou o
+ * fundo sobre o qual a logo precisa ser lida: as marcadas com "cor da marca"
+ * são as em que a cor real da casa já dá esse contraste; nas demais é uma
+ * versão escurecida do mesmo matiz. Trocar qualquer uma é editar um hex aqui,
+ * mas vale medir a logo por cima antes.
  *
  * A busca é por nome EXATO normalizado, não por substring: com quase cem
  * casas, "Ona" casaria dentro de "Betnacional" e "Loto" dentro de "Lottoland".
  *
- * O `fg` de cada casa foi escolhido pela luminância do fundo, para o texto de
- * 10,5px passar em 4,5:1 de contraste. Ao trocar um `bg`, confira o `fg`
- * junto — laranja e verde claro precisam de texto escuro, não branco.
- * A Bet365 é a única exceção: fica na combinação oficial da marca.
+ * O `fg` não aparece mais no feed: com todas as casas tendo logo, o caminho
+ * do monograma e do nome virou rede de segurança para uma casa nova que entre
+ * sem arquivo. Continua correto mesmo assim — escolhido pela luminância do
+ * fundo, para o texto de 10,5px passar em 4,5:1. Ao trocar um `bg`, mexa no
+ * `fg` junto: fundo claro pede texto escuro.
  */
 const CASAS: Casa[] = [
   {
@@ -116,7 +130,18 @@ const CASAS: Casa[] = [
     logo: "apostou.svg",
     logoRatio: 291 / 58,
   },
-  { nome: "B2X", bg: "#5B21B6", fg: "#FFFFFF" },
+  {
+    nome: "B2X",
+    // "B2" e "BET" são pretos e só o "X" é verde-limão: no roxo do registro o
+    // preto dava 2,1 e a marca ficava borrada; num fundo escuro ele sumiria de
+    // vez. No branco o preto dá 18,9 e o limão 5,0. Um lilás claro pareceria
+    // mais com o site, mas a página já é lilás clara — a pílula desapareceria
+    // nela e o limão cairia para 4,1.
+    bg: "#FFFFFF",
+    fg: "#16131F",
+    logo: "b2x.svg",
+    logoRatio: 353.9 / 78.3,
+  },
   {
     nome: "Band",
     // No azul original 59% da logo sumia: o "BET" é azul e encostava no
@@ -151,7 +176,15 @@ const CASAS: Casa[] = [
     logo: "bet365.svg",
     logoRatio: 800 / 178,
   },
-  { nome: "Betaki", bg: "#A3E635", fg: "#16131F" }, // verde limão, escolha do grupo
+  {
+    nome: "Betaki",
+    // Verde-limão sobre verde-limão: a logo sumia inteira, a 1,0. Escurecido,
+    // 4,7.
+    bg: "#405F0C",
+    fg: "#FFFFFF",
+    logo: "betaki.svg",
+    logoRatio: 467.3 / 165.1,
+  },
   {
     nome: "Betano",
     bg: "#FF3C00",
