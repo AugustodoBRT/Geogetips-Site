@@ -693,24 +693,168 @@ const CASAS: Casa[] = [
     logo: "r7.svg",
     logoRatio: 113.2 / 41.3,
   },
-  { nome: "Rei do Pitaco", bg: "#261168", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Seguro", bg: "#DAA00E", fg: "#16131F" },
-  { nome: "Seu Bet", bg: "#01AF4E", fg: "#16131F", alias: ["SeuBet"] },
-  { nome: "Sorte na Bet", bg: "#26380E", fg: "#FFFFFF" },
-  { nome: "SportingBet", bg: "#035C8E", fg: "#FFFFFF", alias: ["Sporting Bet", "Sporting"] }, // cor da marca
-  { nome: "Stake", bg: "#1A2C38", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Superbet", bg: "#350103", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Suprema", bg: "#009D1F", fg: "#16131F" },
-  { nome: "Tivo", bg: "#000E1D", fg: "#FFFFFF" },
-  { nome: "Ultra", bg: "#FF3D00", fg: "#16131F" },
-  { nome: "Vai de Bet", bg: "#FFC300", fg: "#16131F", alias: ["VaideBet"] }, // cor da marca
-  { nome: "Vbet", bg: "#D80D83", fg: "#FFFFFF" },
-  { nome: "Vera", bg: "#00E054", fg: "#16131F" },
-  { nome: "Versus", bg: "#06FFD8", fg: "#16131F" },
-  { nome: "Viva", bg: "#FE7811", fg: "#16131F" },
-  { nome: "Vupi", bg: "#C4A0E8", fg: "#16131F" }, // lilás, escolha do grupo
-  { nome: "Warrior", bg: "#661700", fg: "#FFFFFF" },
-  { nome: "ZeroUm", bg: "#CC0036", fg: "#FFFFFF" },
+  {
+    nome: "Rei do Pitaco",
+    // A logo vem num degradê prateado, não em branco: no roxo do registro dava
+    // 2,7 e ficava embaçada. Neste roxo quase preto vai a 4,7 — o prateado
+    // não passa de 5,2 sobre fundo escuro nenhum.
+    bg: "#0E0626",
+    fg: "#FFFFFF",
+    logo: "rei-do-pitaco.svg",
+    logoRatio: 161.5 / 44.8,
+  },
+  {
+    nome: "Seguro",
+    // Dourado sobre o mesmo dourado: a logo sumia inteira. Escurecido, o
+    // dourado dá 7,6 e o verde do símbolo 4,1.
+    bg: "#1A1302",
+    fg: "#FFFFFF",
+    logo: "seguro.svg",
+    logoRatio: 204.5 / 47.9,
+  },
+  {
+    nome: "Seu Bet",
+    // Verde sobre o mesmo verde comia metade da logo. Escurecido, 4,6.
+    bg: "#003317",
+    fg: "#FFFFFF",
+    alias: ["SeuBet"],
+    logo: "seu-bet.svg",
+    logoRatio: 146.2 / 34.3,
+  },
+  {
+    nome: "Sorte na Bet",
+    bg: "#26380E",
+    fg: "#FFFFFF",
+    logo: "sorte-na-bet.svg",
+    logoRatio: 253.5 / 50.6,
+  },
+  {
+    nome: "SportingBet",
+    bg: "#035C8E", // cor da marca
+    fg: "#FFFFFF",
+    alias: ["Sporting Bet", "Sporting"],
+    logo: "sportingbet.svg",
+    logoRatio: 119.8 / 20.3,
+  },
+  {
+    nome: "Stake",
+    bg: "#1A2C38", // cor da marca
+    fg: "#FFFFFF",
+    logo: "stake.svg",
+    logoRatio: 86.5 / 45.3,
+  },
+  {
+    nome: "Start",
+    // Casa que ainda não tinha entrada: entrou junto com a logo.
+    bg: "#0F1B14",
+    fg: "#FFFFFF",
+    alias: ["Start Bet", "StartBet"],
+    logo: "start.svg",
+    logoRatio: 149.5 / 32,
+  },
+  {
+    nome: "Superbet",
+    bg: "#350103", // cor da marca
+    fg: "#FFFFFF",
+    logo: "superbet.svg",
+    logoRatio: 199.4 / 36.5,
+  },
+  {
+    nome: "Suprema",
+    // Fica no verde da marca: a logo da Suprema é preta, não negativa, e aqui
+    // dá 5,8.
+    bg: "#009D1F",
+    fg: "#16131F",
+    logo: "suprema.svg",
+    logoRatio: 86.8 / 26.8,
+  },
+  {
+    nome: "Tivo",
+    bg: "#000E1D",
+    fg: "#FFFFFF",
+    logo: "tivo.svg",
+    logoRatio: 157.3 / 42.2,
+  },
+  {
+    nome: "Ultra",
+    // Laranja um tom mais fechado: leva a logo branca de 3,5 a 4,6.
+    bg: "#CC3100",
+    fg: "#FFFFFF",
+    logo: "ultra.svg",
+    logoRatio: 158 / 29,
+  },
+  {
+    nome: "Vai de Bet",
+    // Fica no amarelo da marca: a logo da Vai de Bet é escura, não negativa, e
+    // aqui dá 9,5.
+    bg: "#FFC300", // cor da marca
+    fg: "#16131F",
+    alias: ["VaideBet"],
+    logo: "vai-de-bet.svg",
+    logoRatio: 173.8 / 36.5,
+  },
+  {
+    nome: "Vbet",
+    // Magenta sobre o mesmo magenta: 1,0, a pílula ficava vazia. Este
+    // quase-preto chega a 4,2 — o teto desse magenta é 4,4.
+    bg: "#1A0210",
+    fg: "#FFFFFF",
+    logo: "v-bet.svg",
+    logoRatio: 117.3 / 40.3,
+  },
+  {
+    nome: "Vera",
+    // Verde sobre verde: sumia inteira. Escurecido, 4,8.
+    bg: "#005721",
+    fg: "#FFFFFF",
+    logo: "vera.svg",
+    logoRatio: 130.8 / 35.7,
+  },
+  {
+    nome: "Versus",
+    // Ciano sobre ciano: 1,0. Escurecido, 4,7.
+    bg: "#00705F",
+    fg: "#FFFFFF",
+    logo: "versus.svg",
+    logoRatio: 285.4 / 48.2,
+  },
+  {
+    nome: "Viva",
+    // O ".BET" é laranja e o fundo era o mesmo laranja. Escurecido, 4,5.
+    bg: "#5B2800",
+    fg: "#FFFFFF",
+    logo: "viva.svg",
+    logoRatio: 145.3 / 14.7,
+  },
+  {
+    nome: "Vupi",
+    // Logo branca sobre o lilás claro da marca: 2,2. Num lilás mais fechado,
+    // 4,5 — foi o suficiente, sem precisar escurecer até o quase preto.
+    bg: "#9657D6",
+    fg: "#FFFFFF",
+    logo: "vupi.svg",
+    logoRatio: 96.2 / 51.7,
+  },
+  {
+    nome: "Warrior",
+    // A logo vem em cinza médio, não em branco: no marrom do registro dava 2,1.
+    // Esse cinza não passa de 3,6 sobre fundo escuro nenhum; este quase-preto
+    // chega a 3,5.
+    bg: "#160500",
+    fg: "#FFFFFF",
+    logo: "warrior.svg",
+    logoRatio: 149.7 / 23.8,
+  },
+  {
+    nome: "ZeroUm",
+    // Metade da logo é o vermelho da marca e o fundo era esse vermelho: só o
+    // branco aparecia. Escurecido, o vermelho dá 3,5 — seu teto é 3,6 — e o
+    // branco 20,3. Sobre branco o problema inverteria.
+    bg: "#160006",
+    fg: "#FFFFFF",
+    logo: "zero-um.svg",
+    logoRatio: 145.3 / 33.3,
+  },
 ];
 
 /**
