@@ -66,7 +66,7 @@ const CASAS: Casa[] = [
     bg: "#3D1A06",
     fg: "#FFFFFF",
     logo: "4win.svg",
-    logoRatio: 162 / 77,
+    logoRatio: 156 / 62,
   },
   {
     nome: "7Games",
@@ -81,21 +81,21 @@ const CASAS: Casa[] = [
     fg: "#FFFFFF",
     alias: ["7K"],
     logo: "7k.svg",
-    logoRatio: 72 / 57,
+    logoRatio: 65 / 34,
   },
   {
     nome: "Aposta Ganha",
     bg: "#FFF3EE",
     fg: "#16131F",
     logo: "aposta-ganha.svg",
-    logoRatio: 768 / 78,
+    logoRatio: 757 / 68,
   }, // cor da marca
   {
     nome: "Aposta Tudo",
     bg: "#280AA3",
     fg: "#FFFFFF",
     logo: "aposta-tudo.svg",
-    logoRatio: 272 / 72,
+    logoRatio: 263 / 65,
   },
   {
     nome: "Aposta1",
@@ -109,7 +109,7 @@ const CASAS: Casa[] = [
     bg: "#172448",
     fg: "#FFFFFF",
     logo: "apostou.svg",
-    logoRatio: 321 / 92,
+    logoRatio: 291 / 58,
   },
   { nome: "B2X", bg: "#5B21B6", fg: "#FFFFFF" },
   { nome: "Band", bg: "#005498", fg: "#FFFFFF" },
@@ -118,7 +118,7 @@ const CASAS: Casa[] = [
     bg: "#570433",
     fg: "#FFFFFF",
     logo: "bateu.svg",
-    logoRatio: 212 / 67,
+    logoRatio: 208 / 46,
   },
   { nome: "Bet MGM", bg: "#B19661", fg: "#16131F", alias: ["BetMGM"] }, // cor da marca
   {
@@ -126,7 +126,7 @@ const CASAS: Casa[] = [
     bg: "#007B40",
     fg: "#FFDF1B",
     logo: "bet365.svg",
-    logoRatio: 95 / 21,
+    logoRatio: 800 / 178,
   },
   { nome: "Betaki", bg: "#A3E635", fg: "#16131F" }, // verde limão, escolha do grupo
   {
@@ -134,7 +134,7 @@ const CASAS: Casa[] = [
     bg: "#FF3C00",
     fg: "#16131F",
     logo: "betano.svg",
-    logoRatio: 800 / 240,
+    logoRatio: 775 / 169,
   }, // cor da marca
   {
     nome: "Betao",
@@ -142,14 +142,14 @@ const CASAS: Casa[] = [
     fg: "#FFFFFF",
     alias: ["Betão"],
     logo: "betao.svg",
-    logoRatio: 155 / 67,
+    logoRatio: 145 / 42,
   },
   {
     nome: "Betboo",
     bg: "#CA3B1B",
     fg: "#FFFFFF",
     logo: "betboo.svg",
-    logoRatio: 156 / 50,
+    logoRatio: 141 / 21,
   },
   {
     nome: "BetBoom",
@@ -163,7 +163,7 @@ const CASAS: Casa[] = [
     bg: "#022104",
     fg: "#16131F",
     logo: "betbra.svg",
-    logoRatio: 177 / 62,
+    logoRatio: 170 / 43,
   },
   { nome: "BETesporte", bg: "#1D2F72", fg: "#FFFFFF", alias: ["Betesporte"] },
   { nome: "Betfair", bg: "#665327", fg: "#FFFFFF" }, // cor da marca
@@ -281,19 +281,34 @@ const BASE =
 const ALTURA_LOGO = 15;
 
 /**
- * Teto de largura. Sem ele a Aposta Ganha, que é 768x78, sairia com 148px e
- * dobraria a pílula. Passando do teto, a altura encolhe junto para manter a
- * proporção.
+ * Faixa de largura da logo.
+ *
+ * As proporções vão de quadrada (Aposta1, 1:1) a 11:1 (Aposta Ganha). Só
+ * respeitando a altura, as pílulas iam de 37px a 84px — variação de 2,3x, que
+ * deixava o alinhamento do feed visivelmente irregular.
+ *
+ * A faixa aperta isso para 1,3x. Logo estreita ganha folga em vez de virar um
+ * selo minúsculo; logo comprida encolhe em altura, mantendo a proporção.
+ * Largura fixa daria uniformidade perfeita, mas deixava as estreitas perdidas
+ * num vazio grande demais.
+ *
+ * As proporções no registro são do CONTEÚDO, não do arquivo: os viewBox foram
+ * recortados até a arte. Nove tinham margem vazia — a Betboo chegava a 62% —
+ * o que encolhia a logo e falseava a proporção usada nesta conta.
  */
-const LARGURA_MAX_LOGO = 96;
+const LARGURA_MIN_LOGO = 44;
+const LARGURA_MAX_LOGO = 64;
 
-/** Caixa da logo respeitando a altura padrão e o teto de largura. */
+/** Caixa da logo, com a largura presa à faixa e a altura seguindo a proporção. */
 function dimensoesDaLogo(ratio: number): { width: number; height: number } {
-  const larguraNatural = ALTURA_LOGO * ratio;
-  if (larguraNatural <= LARGURA_MAX_LOGO) {
-    return { width: Math.round(larguraNatural), height: ALTURA_LOGO };
-  }
-  return { width: LARGURA_MAX_LOGO, height: Math.round(LARGURA_MAX_LOGO / ratio) };
+  const natural = ALTURA_LOGO * ratio;
+  const width = Math.round(
+    Math.min(LARGURA_MAX_LOGO, Math.max(LARGURA_MIN_LOGO, natural))
+  );
+  // Nunca estica além da altura padrão: fica o menor entre ela e o que a
+  // proporção pede para a largura escolhida.
+  const height = Math.round(Math.min(ALTURA_LOGO, width / ratio));
+  return { width, height };
 }
 
 export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
@@ -331,7 +346,7 @@ export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
           alt=""
           loading="lazy"
           decoding="async"
-          className="block object-contain"
+          className="block object-contain mx-auto"
           style={dimensoesDaLogo(casa.logoRatio ?? 3)}
         />
       ) : (
