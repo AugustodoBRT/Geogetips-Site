@@ -359,26 +359,175 @@ const CASAS: Casa[] = [
     logo: "casa-de-apostas.svg",
     logoRatio: 109.3 / 38.2,
   },
-  { nome: "Cassino", bg: "#2773B8", fg: "#FFFFFF" },
-  { nome: "CBEsporte", bg: "#41C1EE", fg: "#16131F" },
-  { nome: "Donald", bg: "#059669", fg: "#16131F" },
-  { nome: "Donos", bg: "#FE5400", fg: "#16131F" },
-  { nome: "Esportes da Sorte", bg: "#02003A", fg: "#FFFFFF", alias: ["Esporte da Sorte"] }, // cor da marca
-  { nome: "Esportiva", bg: "#FF3901", fg: "#16131F" },
-  { nome: "Estrela", bg: "#C3985A", fg: "#16131F" }, // cor da marca
-  { nome: "EVip", bg: "#312E81", fg: "#FFFFFF" },
-  { nome: "F12", bg: "#59DA00", fg: "#16131F" },
-  { nome: "Falcons", bg: "#130138", fg: "#FFFFFF" },
-  { nome: "Faz1", bg: "#FDC418", fg: "#16131F" },
-  { nome: "Fla / Ganhei", bg: "#FFD700", fg: "#16131F", alias: ["Fla/Ganhei", "Fla Ganhei", "Ganhei"] },
-  { nome: "Fullt", bg: "#FDB80F", fg: "#16131F" },
-  { nome: "Galera", bg: "#000A17", fg: "#FFFFFF" },
-  { nome: "Ginga", bg: "#FEE403", fg: "#16131F" },
-  { nome: "Gol de Bet", bg: "#FBCA03", fg: "#16131F", alias: ["GoldeBet"] },
-  { nome: "Gorillas", bg: "#C8FF00", fg: "#16131F" },
-  { nome: "Hiper", bg: "#DE002F", fg: "#FFFFFF" },
-  { nome: "Ice", bg: "#66C6E6", fg: "#16131F" },
-  { nome: "Jogo de Ouro", bg: "#FFC32A", fg: "#16131F" },
+  {
+    nome: "Cassino",
+    // O azul da marca era o mesmo do losango da logo: o símbolo sumia e sobrava
+    // só "CASSINO". Neste azul-noite o losango dá 3,6 e o branco 17,1.
+    bg: "#0A1D2E",
+    fg: "#FFFFFF",
+    logo: "cassino.svg",
+    logoRatio: 213.9 / 37.3,
+  },
+  {
+    nome: "CBEsporte",
+    // Logo branca sobre o ciano claro da marca: 2,1 de contraste, ilegível.
+    // Escurecido, 4,6.
+    bg: "#08475E",
+    fg: "#FFFFFF",
+    logo: "cb-esportes.svg",
+    logoRatio: 192.6 / 38.3,
+  },
+  {
+    nome: "Donald",
+    // Verde só um tom mais escuro que o da marca: leva o branco de 3,8 a 4,6.
+    bg: "#04855D",
+    fg: "#FFFFFF",
+    logo: "donald.svg",
+    logoRatio: 156.5 / 36.3,
+  },
+  {
+    nome: "Donos",
+    // "DonosDa" é laranja e o fundo era o mesmo laranja: 65% da logo sumia.
+    // Escurecido, 4,5.
+    bg: "#4D1900",
+    fg: "#FFFFFF",
+    logo: "donos.svg",
+    logoRatio: 213.9 / 26.7,
+  },
+  {
+    nome: "Esportes da Sorte",
+    bg: "#02003A", // cor da marca
+    fg: "#FFFFFF",
+    alias: ["Esporte da Sorte"],
+    logo: "esportes-da-sorte.svg",
+    logoRatio: 188.5 / 65.5,
+  },
+  {
+    nome: "Esportiva",
+    // Laranja um tom mais fechado: leva o branco de 3,6 a 4,6.
+    bg: "#E03100",
+    fg: "#FFFFFF",
+    logo: "esportiva.svg",
+    logoRatio: 230.9 / 23.5,
+  },
+  {
+    nome: "Estrela",
+    // O bege da marca engolia a estrela dourada da logo, a 1,0. Neste marrom
+    // escuro ela dá 4,6.
+    bg: "#47351A",
+    fg: "#FFFFFF",
+    logo: "estrela.svg",
+    logoRatio: 196.8 / 33,
+  },
+  {
+    nome: "EVip",
+    bg: "#312E81",
+    fg: "#FFFFFF",
+    logo: "e-vip.svg",
+    logoRatio: 205 / 30.9,
+  },
+  {
+    nome: "F12",
+    // Verde-limão sobre verde-limão: o "12" sumia. Escurecido, 4,8.
+    bg: "#235700",
+    fg: "#FFFFFF",
+    logo: "f12.svg",
+    logoRatio: 148.3 / 39,
+  },
+  {
+    nome: "Falcons",
+    // Fica no roxo da marca: as letras brancas dão 19,3 e a águia dourada 3,1.
+    // O contorno escuro das letras encosta no fundo, mas é detalhe interno —
+    // quem desenha a silhueta é o branco.
+    bg: "#130138",
+    fg: "#FFFFFF",
+    logo: "falcons.svg",
+    logoRatio: 137.2 / 35,
+  },
+  {
+    nome: "Faz1",
+    // Logo branca sobre o amarelo da marca: 1,6. Escurecido, 4,7.
+    bg: "#6F5401",
+    fg: "#FFFFFF",
+    logo: "faz1.svg",
+    logoRatio: 171.7 / 42.7,
+  },
+  {
+    nome: "Fla / Ganhei",
+    // Amarelo sobre amarelo: a logo sumia inteira. Escurecido, 4,7.
+    bg: "#705F00",
+    fg: "#FFFFFF",
+    alias: ["Fla/Ganhei", "Fla Ganhei", "Ganhei"],
+    logo: "ganhei.svg",
+    logoRatio: 98.3 / 35.3,
+  },
+  {
+    nome: "Fullt",
+    // Fica no amarelo da marca: a logo da Fullt é preta, não negativa, e aqui
+    // dá 12,0. Num fundo escuro ela desapareceria.
+    bg: "#FDB80F",
+    fg: "#16131F",
+    logo: "fullt.svg",
+    logoRatio: 143 / 19,
+  },
+  {
+    nome: "Galera",
+    bg: "#000A17",
+    fg: "#FFFFFF",
+    logo: "galera.svg",
+    logoRatio: 277.1 / 57.1,
+  },
+  {
+    nome: "Ginga",
+    // Amarelo sobre amarelo: 1,1. Escurecido, 4,6.
+    bg: "#756900",
+    fg: "#FFFFFF",
+    logo: "ginga.svg",
+    logoRatio: 158 / 39.2,
+  },
+  {
+    nome: "Gol de Bet",
+    // Logo branca sobre o amarelo da marca: 1,5. Escurecido, 4,6.
+    bg: "#8D7202",
+    fg: "#FFFFFF",
+    alias: ["GoldeBet"],
+    logo: "gol-de-bet.svg",
+    logoRatio: 154.8 / 27.8,
+  },
+  {
+    nome: "Gorillas",
+    // Verde-limão sobre verde-limão: sumia inteira. Escurecido, 4,8.
+    bg: "#587000",
+    fg: "#FFFFFF",
+    logo: "gorillas.svg",
+    logoRatio: 124.5 / 17.7,
+  },
+  {
+    nome: "Hiper",
+    // O "BET" é vermelho e o fundo era o mesmo vermelho: sobrava só "HIPER".
+    // Neste vinho escuro o BET dá 3,5 — o teto para esse vermelho é 4,0 — e o
+    // branco 17,9.
+    bg: "#38000C",
+    fg: "#FFFFFF",
+    logo: "hiper.svg",
+    logoRatio: 213.8 / 52.9,
+  },
+  {
+    nome: "Ice",
+    // Logo branca sobre o azul-claro da marca: 1,9. Escurecido, 4,6.
+    bg: "#115369",
+    fg: "#FFFFFF",
+    logo: "ice.svg",
+    logoRatio: 126.3 / 35,
+  },
+  {
+    nome: "Jogo de Ouro",
+    // Dourado sobre dourado: sumia inteira. Escurecido, 4,7.
+    bg: "#664900",
+    fg: "#FFFFFF",
+    logo: "jogo-de-ouro.svg",
+    logoRatio: 174.2 / 31.2,
+  },
   { nome: "King Panda", bg: "#F5F4EA", fg: "#16131F" },
   { nome: "KTO", bg: "#DA0000", fg: "#FFFFFF" }, // cor da marca
   { nome: "Lance de Sorte", bg: "#5400B2", fg: "#FFFFFF" },
