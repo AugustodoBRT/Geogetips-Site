@@ -528,26 +528,171 @@ const CASAS: Casa[] = [
     logo: "jogo-de-ouro.svg",
     logoRatio: 174.2 / 31.2,
   },
-  { nome: "King Panda", bg: "#F5F4EA", fg: "#16131F" },
-  { nome: "KTO", bg: "#DA0000", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Lance de Sorte", bg: "#5400B2", fg: "#FFFFFF" },
-  { nome: "Lider", bg: "#D01917", fg: "#FFFFFF", alias: ["Líder"] },
-  { nome: "Loto", bg: "#00D225", fg: "#16131F" },
-  { nome: "Lottoland", bg: "#4EFF83", fg: "#16131F" }, // cor da marca
-  { nome: "Lottu", bg: "#F2B74B", fg: "#16131F" }, // cor da marca
-  { nome: "Match", bg: "#C51A1B", fg: "#FFFFFF" },
-  { nome: "Maxima", bg: "#00FF99", fg: "#16131F", alias: ["Máxima"] },
-  { nome: "MC Games", bg: "#FB212F", fg: "#16131F" },
-  { nome: "Meridian", bg: "#A9090D", fg: "#FFFFFF" },
-  { nome: "Milhao", bg: "#001F23", fg: "#FFFFFF", alias: ["Milhão"] },
-  { nome: "Multi", bg: "#F7F716", fg: "#16131F" },
-  { nome: "Nossa", bg: "#1C0244", fg: "#FFFFFF" },
-  { nome: "Novibet", bg: "#0A1324", fg: "#FFFFFF" }, // cor da marca
-  { nome: "Ona", bg: "#FE263D", fg: "#16131F" }, // cor da marca
-  { nome: "Pagol", bg: "#13D299", fg: "#16131F" },
-  { nome: "Pinnacle", bg: "#FE5500", fg: "#16131F" }, // cor da marca
-  { nome: "Pixbet", bg: "#035FAF", fg: "#FFFFFF" }, // cor da marca
-  { nome: "R7", bg: "#FD9800", fg: "#16131F" }, // cor da marca
+  {
+    nome: "King Panda",
+    // Fica no creme da marca: a logo do King Panda é preta, não negativa, e
+    // aqui dá 19,0. Num fundo escuro sumiria.
+    bg: "#F5F4EA",
+    fg: "#16131F",
+    logo: "king-panda.svg",
+    logoRatio: 170.7 / 35,
+  },
+  {
+    nome: "KTO",
+    // A logo é um vermelho sólido e o fundo era o mesmo vermelho: 1,0 de
+    // contraste, a pílula ficava vazia. Esse vermelho não passa de 4,0 sobre
+    // fundo escuro nenhum; este quase-preto chega a 3,9.
+    bg: "#1A0000",
+    fg: "#FFFFFF",
+    logo: "kto.svg",
+    logoRatio: 143.8 / 37.2,
+  },
+  {
+    nome: "Lance de Sorte",
+    bg: "#5400B2",
+    fg: "#FFFFFF",
+    logo: "lance-de-sorte.svg",
+    logoRatio: 94 / 31.3,
+  },
+  {
+    nome: "Lider",
+    bg: "#D01917",
+    fg: "#FFFFFF",
+    alias: ["Líder"],
+    logo: "lider.svg",
+    logoRatio: 90.3 / 26.5,
+  },
+  {
+    nome: "Loto",
+    // Verde sobre o mesmo verde: 1,1. Escurecido, 4,6.
+    bg: "#003309",
+    fg: "#FFFFFF",
+    logo: "loto.svg",
+    logoRatio: 222.3 / 42.3,
+  },
+  {
+    nome: "Lottoland",
+    // Verde-menta sobre verde-menta: sumia inteira. Escurecido, 4,7.
+    bg: "#006B20",
+    fg: "#FFFFFF",
+    logo: "lottoland.svg",
+    logoRatio: 139.7 / 39.2,
+  },
+  {
+    nome: "Lottu",
+    // A logo é dourada com contorno preto. No dourado da marca o preenchimento
+    // encostava no fundo e sobrava só o contorno — a 15px virava um borrão.
+    // Neste marrom escuro o dourado dá 9,2 e as letras ficam sólidas.
+    bg: "#1A1206",
+    fg: "#FFFFFF",
+    logo: "lottu.svg",
+    logoRatio: 147.7 / 80.7,
+  },
+  {
+    nome: "Match",
+    bg: "#C51A1B",
+    fg: "#FFFFFF",
+    logo: "match.svg",
+    logoRatio: 242.8 / 31.4,
+  },
+  {
+    nome: "Maxima",
+    // Verde neon sobre verde neon: 1,0. Escurecido, 4,5.
+    bg: "#00613A",
+    fg: "#FFFFFF",
+    alias: ["Máxima"],
+    logo: "maxima.svg",
+    logoRatio: 136.8 / 36.2,
+  },
+  {
+    nome: "MC Games",
+    // O selo "MC" é vermelho e o fundo era o mesmo vermelho: o símbolo sumia
+    // e sobrava só "GAMES.BET.BR". Escurecido, 4,5.
+    bg: "#190002",
+    fg: "#FFFFFF",
+    logo: "mc-games.svg",
+    logoRatio: 170.8 / 31.3,
+  },
+  {
+    nome: "Meridian",
+    bg: "#A9090D",
+    fg: "#FFFFFF",
+    logo: "meridian.svg",
+    logoRatio: 162.7 / 25.2,
+  },
+  {
+    nome: "Milhao",
+    bg: "#001F23",
+    fg: "#FFFFFF",
+    alias: ["Milhão"],
+    logo: "milhao.svg",
+    logoRatio: 293.2 / 63.8,
+  },
+  {
+    nome: "Multi",
+    // Logo branca sobre o amarelo da marca: 1,1. Escurecido, 4,8.
+    bg: "#717104",
+    fg: "#FFFFFF",
+    logo: "multi.svg",
+    logoRatio: 112.3 / 25.5,
+  },
+  {
+    nome: "Nossa",
+    // Fica no roxo da marca: o branco dá 18,4 e o dourado 12,2. A placa roxa
+    // atrás encosta no fundo, mas é a sombra da marca, não o desenho.
+    bg: "#1C0244",
+    fg: "#FFFFFF",
+    logo: "nossa.svg",
+    logoRatio: 259.3 / 97.4,
+  },
+  {
+    nome: "Novibet",
+    bg: "#0A1324", // cor da marca
+    fg: "#FFFFFF",
+    logo: "novibet.svg",
+    logoRatio: 131 / 31,
+  },
+  {
+    nome: "Ona",
+    // Vermelho sobre o mesmo vermelho comia 60% da logo. Escurecido, 4,6.
+    bg: "#240004",
+    fg: "#FFFFFF",
+    logo: "ona.svg",
+    logoRatio: 138.2 / 35,
+  },
+  {
+    nome: "Pagol",
+    // Verde-água sobre verde-água: sumia inteira. Escurecido, 4,6.
+    bg: "#07503A",
+    fg: "#FFFFFF",
+    logo: "pagol.svg",
+    logoRatio: 96.5 / 25.8,
+  },
+  {
+    nome: "Pinnacle",
+    // O traço laranja embaixo do nome era da cor do fundo e desaparecia.
+    // Escurecido, 4,7.
+    bg: "#471800",
+    fg: "#FFFFFF",
+    logo: "pinnacle.svg",
+    logoRatio: 256.7 / 63.8,
+  },
+  {
+    nome: "Pixbet",
+    bg: "#035FAF", // cor da marca
+    fg: "#FFFFFF",
+    logo: "pixbet.svg",
+    logoRatio: 112.5 / 39.3,
+  },
+  {
+    nome: "R7",
+    // A moldura dourada em volta do nome era da cor do fundo e sumia.
+    // Escurecido, 4,6.
+    bg: "#613A00",
+    fg: "#FFFFFF",
+    logo: "r7.svg",
+    logoRatio: 113.2 / 41.3,
+  },
   { nome: "Rei do Pitaco", bg: "#261168", fg: "#FFFFFF" }, // cor da marca
   { nome: "Seguro", bg: "#DAA00E", fg: "#16131F" },
   { nome: "Seu Bet", bg: "#01AF4E", fg: "#16131F", alias: ["SeuBet"] },
