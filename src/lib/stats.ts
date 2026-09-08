@@ -39,30 +39,6 @@ export function mediaDeOdd(bets: BetItem[]): number {
   return parseFloat((soma / bets.length).toFixed(2));
 }
 
-/**
- * Gradientes de avatar. Nenhum usa o verde nem o vermelho da paleta de
- * propósito: nesta interface essas duas cores significam lucro e prejuízo, e
- * um adm com avatar vermelho parecia estar no negativo.
- */
-const CORES_AVATAR = [
-  "from-[#6B3FE4] to-[#a78bfa]",
-  "from-[#3b82f6] to-[#60a5fa]",
-  "from-[#0891B2] to-[#22d3ee]",
-  "from-[#8A6408] to-[#f59e0b]",
-  "from-[#BE185D] to-[#f472b6]",
-];
-
-/**
- * Cor derivada do nome, não da posição na lista. Antes vinha do índice de
- * iteração, então o mesmo adm trocava de cor a cada aba — a ordem de aparição
- * nos dados muda de mês para mês.
- */
-function corDoAvatar(nome: string): string {
-  let h = 0;
-  for (let i = 0; i < nome.length; i++) h = (h * 31 + nome.charCodeAt(i)) | 0;
-  return CORES_AVATAR[Math.abs(h) % CORES_AVATAR.length];
-}
-
 export function computeStatsFromBets(bets: BetItem[]) {
   const totalBets = bets.length;
   const greenBets = bets.filter((b) => b.resultado === "GREEN");
@@ -90,6 +66,8 @@ export function computeStatsFromBets(bets: BetItem[]) {
       greens: number;
       reds: number;
       total: number;
+      voids: number;
+      pendentes: number;
       lucro: number;
       apostado: number;
       somaOdds: number;
@@ -102,6 +80,8 @@ export function computeStatsFromBets(bets: BetItem[]) {
       esportes: new Set<string>(),
       greens: 0,
       reds: 0,
+      voids: 0,
+      pendentes: 0,
       total: 0,
       lucro: 0,
       apostado: 0,
@@ -113,6 +93,8 @@ export function computeStatsFromBets(bets: BetItem[]) {
     if (b.esporte) t.esportes.add(b.esporte);
     if (b.resultado === "GREEN") t.greens += 1;
     if (b.resultado === "RED") t.reds += 1;
+    if (b.resultado === "VOID") t.voids += 1;
+    if (b.resultado === "PENDENTE") t.pendentes += 1;
     // Só apostas resolvidas entram na odd média: pendente ainda não é
     // resultado, e anulada devolve o valor sem exercer a odd.
     if (b.resultado === "GREEN" || b.resultado === "RED") {
@@ -127,17 +109,15 @@ export function computeStatsFromBets(bets: BetItem[]) {
     .map(([nome, d]) => ({
       nome,
       esportes: Array.from(d.esportes),
-      avatarColor: corDoAvatar(nome),
-      initial: nome.charAt(0).toUpperCase() || "T",
       taxaAcerto: taxaDeAcerto(d.greens, d.reds),
       totalApostas: d.total,
       lucroUnidades: reaisParaUnidades(d.lucro),
       oddMedia:
         d.finalizadas > 0 ? parseFloat((d.somaOdds / d.finalizadas).toFixed(2)) : 0,
-      acertoDeEquilibrio:
-        d.finalizadas > 0 && d.somaOdds > 0
-          ? parseFloat((100 / (d.somaOdds / d.finalizadas)).toFixed(1))
-          : 0,
+      greens: d.greens,
+      reds: d.reds,
+      voids: d.voids,
+      pendentes: d.pendentes,
       roi:
         d.apostado > 0
           ? parseFloat(((d.lucro / d.apostado) * 100).toFixed(2))

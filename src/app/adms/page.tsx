@@ -72,18 +72,13 @@ export default function AdmsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {adms.map((adm, index) => {
             const isProfitable = adm.lucroUnidades >= 0;
-            /**
-             * O ponto de equilíbrio (100 / odd média) entra como CONTEXTO, não
-             * como veredito.
-             *
-             * Ele supõe aposta plana e a mesma odd em toda entrada. Se os greens
-             * do adm saem em odd menor que os reds, dá para ficar acima do
-             * equilíbrio e ainda assim perder — é o caso real do Meckler, com
-             * 29% de acerto, empate em 19,7% e ROI de -2,95%. Quem decide a cor
-             * é o resultado medido; a marca no trilho só explica por que 31% de
-             * acerto pode ser excelente.
-             */
-            const temEquilibrio = adm.acertoDeEquilibrio > 0;
+            const total = adm.totalApostas || 1;
+            const fatias = [
+              { rotulo: "green", n: adm.greens, cor: "var(--green)" },
+              { rotulo: "red", n: adm.reds, cor: "var(--red)" },
+              { rotulo: "void", n: adm.voids, cor: "var(--text-3)" },
+              { rotulo: "pendente", n: adm.pendentes, cor: "var(--accent)" },
+            ].filter((f) => f.n > 0);
             return (
               <motion.div
                 key={adm.nome}
@@ -94,32 +89,25 @@ export default function AdmsPage() {
                 className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm transition-colors space-y-5 flex flex-col justify-between"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div
-                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${adm.avatarColor} text-white font-bold text-lg flex items-center justify-center shadow-sm shrink-0`}
-                    >
-                      {adm.initial}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-base font-bold text-[var(--text)] tracking-tight">
-                          {adm.nome}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-base font-bold text-[var(--text)] tracking-tight">
+                        {adm.nome}
+                      </span>
+                      {index === 0 && adm.totalApostas >= 3 && (
+                        <span className="px-2 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-[10.5px] font-bold rounded-full flex items-center gap-1">
+                          <Award className="w-3 h-3" /> Top #1
                         </span>
-                        {index === 0 && adm.totalApostas >= 3 && (
-                          <span className="px-2 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-[10.5px] font-bold rounded-full flex items-center gap-1">
-                            <Award className="w-3 h-3" /> Top #1
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 flex-wrap mt-1">
-                        {adm.esportes.map((sp) => (
-                          <SportBadge
-                            key={sp}
-                            sport={sp}
-                            className="scale-90 origin-left"
-                          />
-                        ))}
-                      </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                      {adm.esportes.map((sp) => (
+                        <SportBadge
+                          key={sp}
+                          sport={sp}
+                          className="scale-90 origin-left"
+                        />
+                      ))}
                     </div>
                   </div>
 
@@ -169,63 +157,58 @@ export default function AdmsPage() {
                   </div>
                 </div>
 
-                {/* A barra media acerto contra faixas fixas de 60% e 45%. Numa
-                    operação de odd alta isso é sem sentido: com odd média 5 o
-                    empate fica em 20%, então 31% de acerto dá lucro e saía
-                    vermelho. Agora a régua é o próprio ponto de equilíbrio. */}
+                {/*
+                  Antes daqui saía uma régua de "ponto de equilíbrio": 100 / odd
+                  média, marcada sobre a taxa de acerto. A conta só fecha quando
+                  toda entrada usa a MESMA stake e a MESMA odd — aqui a stake
+                  varia por aposta, então a marca sugeria um limiar que não
+                  existe. Quem responde "esse adm está no lucro?" é o ROI, logo
+                  acima, que já pesa cada entrada pelo valor apostado.
+
+                  No lugar entrou a composição das tips, que não depende de
+                  staking nenhum e explica a taxa de acerto: 0% em 11 tips muda
+                  de sentido quando várias ainda estão pendentes.
+                */}
                 <div className="space-y-1.5 pt-1">
-                  <div className="flex justify-between text-[11px] font-semibold text-[var(--text-3)]">
-                    <span>Acerto x ponto de equilíbrio</span>
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-[var(--text-3)]">
+                    <span>Composição das tips</span>
+                    {adm.oddMedia > 0 && (
+                      <span className="font-normal">
+                        odd média {adm.oddMedia.toFixed(2).replace(".", ",")}
+                      </span>
+                    )}
                   </div>
 
                   <div
-                    className="h-2 bg-[var(--bg-tinted)] rounded-full relative"
+                    className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden flex"
                     role="img"
-                    aria-label={
-                      temEquilibrio
-                        ? `${adm.nome} acerta ${adm.taxaAcerto
-                            .toFixed(1)
-                            .replace(".", ",")} por cento e precisa de ${adm.acertoDeEquilibrio
-                            .toFixed(1)
-                            .replace(".", ",")} por cento para empatar, com odd média ${adm.oddMedia
-                            .toFixed(2)
-                            .replace(".", ",")}`
-                        : `${adm.nome} ainda não tem apostas resolvidas`
-                    }
+                    aria-label={`${adm.nome}: ${formatarInteiro(adm.greens)} green, ${formatarInteiro(
+                      adm.reds
+                    )} red, ${formatarInteiro(adm.voids)} anuladas e ${formatarInteiro(
+                      adm.pendentes
+                    )} pendentes, de ${formatarInteiro(adm.totalApostas)} tips`}
                   >
-                    <div className="absolute inset-0 rounded-full overflow-hidden">
-                      {/* Largura no estilo, transição em CSS: o valor não pode
-                          depender de a animação terminar. */}
+                    {fatias.map((f) => (
                       <div
-                        className={`h-full rounded-full transition-[width] duration-500 ease-out ${
-                          isProfitable ? "bg-[var(--green)]" : "bg-[var(--red)]"
-                        }`}
-                        style={{ width: `${Math.min(adm.taxaAcerto, 100)}%` }}
+                        key={f.rotulo}
+                        className="h-full transition-[width] duration-500 ease-out"
+                        style={{ width: `${(f.n / total) * 100}%`, background: f.cor }}
                       />
-                    </div>
-
-                    {/* Marca de onde o resultado empata */}
-                    {temEquilibrio && (
-                      <div
-                        className="absolute top-[-3px] bottom-[-3px] w-0.5 bg-[var(--text)] rounded-full"
-                        style={{
-                          left: `${Math.min(adm.acertoDeEquilibrio, 100)}%`,
-                        }}
-                        aria-hidden="true"
-                      />
-                    )}
+                    ))}
                   </div>
 
-                  <div className="flex justify-between text-[10px] text-[var(--text-3)] font-medium">
-                    <span>
-                      acerta {adm.taxaAcerto.toFixed(1).replace(".", ",")}%
-                    </span>
-                    {temEquilibrio && (
-                      <span>
-                        empata em {adm.acertoDeEquilibrio.toFixed(1).replace(".", ",")}%
-                        {" · "}odd {adm.oddMedia.toFixed(2).replace(".", ",")}
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-[var(--text-3)] font-medium">
+                    {fatias.map((f) => (
+                      <span key={f.rotulo} className="flex items-center gap-1">
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ background: f.cor }}
+                          aria-hidden="true"
+                        />
+                        {formatarInteiro(f.n)} {f.rotulo}
+                        {f.n > 1 ? "s" : ""}
                       </span>
-                    )}
+                    ))}
                   </div>
                 </div>
               </motion.div>

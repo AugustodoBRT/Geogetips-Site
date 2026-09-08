@@ -27,3 +27,29 @@ export function diaEMes(dateStr: string): string {
   const parts = dateStr.split("/");
   return parts.length === 3 ? `${parts[0]}/${parts[1]}` : dateStr;
 }
+
+/**
+ * "DD/MM/YYYY" -> "YYYY-MM-DD", que é o formato que input[type=date] usa.
+ * Devolve "" para entradas inválidas.
+ */
+export function paraISO(dateStr: string): string {
+  if (!dateStr || dateStr === "—") return "";
+  const [d, m, a] = dateStr.split("/");
+  if (!d || !m || !a) return "";
+  return `${a}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
+
+/** "YYYY-MM-DD" -> timestamp local. 0 para entradas inválidas. */
+export function timestampDoISO(iso: string): number {
+  if (!iso) return 0;
+  const [a, m, d] = iso.split("-").map((n) => parseInt(n, 10));
+  if (!a || !m || !d) return 0;
+  return new Date(a, m - 1, d).getTime();
+}
+
+/** "YYYY-MM-DD" -> "DD/MM/YYYY", para exibir no padrão do grupo. */
+export function doISO(iso: string): string {
+  if (!iso) return "";
+  const [a, m, d] = iso.split("-");
+  return a && m && d ? `${d}/${m}/${a}` : iso;
+}

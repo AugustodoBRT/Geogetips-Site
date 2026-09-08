@@ -7,7 +7,6 @@ import {
   Search,
   LayoutGrid,
   List,
-  Flame,
   X,
   Copy,
   Check,
@@ -25,7 +24,9 @@ import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
-import { parseDateTimestamp } from "@/lib/date";
+import { parseDateTimestamp, paraISO, timestampDoISO, doISO } from "@/lib/date";
+import { SeletorMultiplo } from "@/components/SeletorMultiplo";
+import { FiltroPeriodo } from "@/components/FiltroPeriodo";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
 import {
   formatarInteiro,
@@ -63,9 +64,12 @@ export default function ApostasPage() {
   const [search, setSearch] = useState("");
   const [buscaAplicada, setBuscaAplicada] = useState("");
   const [statusFilter, setStatusFilter] = useState<"TODAS" | BetResult>("TODAS");
-  const [sportFilter, setSportFilter] = useState("TODOS");
-  const [bookieFilter, setBookieFilter] = useState("TODAS");
-  const [dayFilter, setDayFilter] = useState("TODOS");
+  // Listas vazias = sem filtro. Ver SeletorMultiplo para o porquê.
+  const [sportsFilter, setSportsFilter] = useState<string[]>([]);
+  const [bookiesFilter, setBookiesFilter] = useState<string[]>([]);
+  // Intervalo em "YYYY-MM-DD"; string vazia deixa o lado em aberto.
+  const [de, setDe] = useState("");
+  const [ate, setAte] = useState("");
   const [oddRangeFilter, setOddRangeFilter] = useState<
     "TODAS" | "BAIXA" | "MEDIA" | "ALTA"
   >("TODAS");
@@ -80,8 +84,13 @@ export default function ApostasPage() {
     return () => clearTimeout(id);
   }, [search]);
 
+  // Trocar de aba zera os recortes presos ao mês anterior: as datas não
+  // existem na aba nova e as casas/esportes podem não existir também.
   useEffect(() => {
-    setDayFilter("TODOS");
+    setDe("");
+    setAte("");
+    setSportsFilter([]);
+    setBookiesFilter([]);
   }, [activeTab]);
 
   // Listas de filtro em ordem alfabética, para o usuário achar o item
@@ -109,8 +118,33 @@ export default function ApostasPage() {
     return dates;
   }, [bets]);
 
+  // Extremos da aba, para o calendário não abrir em dia sem aposta nenhuma.
+  const limitesDeData = useMemo(() => {
+    if (availableDays.length === 0) return { min: undefined, max: undefined };
+    return {
+      min: paraISO(availableDays[availableDays.length - 1]) || undefined,
+      max: paraISO(availableDays[0]) || undefined,
+    };
+  }, [availableDays]);
+
+  // Um Map em vez de um filter por opção: com 99 casas o segundo caminho
+  // varria a lista inteira uma vez por linha do menu.
+  const contagemPorEsporte = useMemo(() => {
+    const m = new Map<string, number>();
+    bets.forEach((b) => b.esporte && m.set(b.esporte, (m.get(b.esporte) ?? 0) + 1));
+    return m;
+  }, [bets]);
+
+  const contagemPorCasa = useMemo(() => {
+    const m = new Map<string, number>();
+    bets.forEach((b) => b.casa && m.set(b.casa, (m.get(b.casa) ?? 0) + 1));
+    return m;
+  }, [bets]);
+
   const filteredBets = useMemo(() => {
     const termo = buscaAplicada.toLowerCase();
+    const deTs = timestampDoISO(de);
+    const ateTs = timestampDoISO(ate);
     return bets.filter((bet) => {
       const matchesSearch =
         termo === "" ||
@@ -121,9 +155,19 @@ export default function ApostasPage() {
 
       const matchesStatus =
         statusFilter === "TODAS" || bet.resultado === statusFilter;
-      const matchesSport = sportFilter === "TODOS" || bet.esporte === sportFilter;
-      const matchesBookie = bookieFilter === "TODAS" || bet.casa === bookieFilter;
-      const matchesDay = dayFilter === "TODOS" || bet.data === dayFilter;
+      const matchesSport =
+        sportsFilter.length === 0 || sportsFilter.includes(bet.esporte);
+      const matchesBookie =
+        bookiesFilter.length === 0 || bookiesFilter.includes(bet.casa);
+
+      // Intervalo fechado dos dois lados quando ambos estão preenchidos.
+      let matchesDay = true;
+      if (deTs || ateTs) {
+        const ts = parseDateTimestamp(bet.data);
+        if (ts === 0) matchesDay = false;
+        else if (deTs && ts < deTs) matchesDay = false;
+        else if (ateTs && ts > ateTs) matchesDay = false;
+      }
 
       let matchesOdd = true;
       if (oddRangeFilter === "BAIXA") matchesOdd = bet.odd < 1.8;
@@ -144,9 +188,10 @@ export default function ApostasPage() {
     bets,
     buscaAplicada,
     statusFilter,
-    sportFilter,
-    bookieFilter,
-    dayFilter,
+    sportsFilter,
+    bookiesFilter,
+    de,
+    ate,
     oddRangeFilter,
   ]);
 
@@ -172,30 +217,6 @@ export default function ApostasPage() {
       roi: calcularRoi(filteredBets),
     };
   }, [filteredBets, converter]);
-
-  /**
-   * Pendentes da aba inteira, não do recorte filtrado.
-   *
-   * Este card mostrava o streak (sem filtro) logo acima de "apostas em aberto"
-   * (com filtro): filtrar por Red zerava o segundo e não mexia no primeiro,
-   * dois comportamentos opostos a duas linhas de distância. Agora o card todo
-   * fala da aba, e o título diz isso.
-   */
-  const pendentesNaAba = useMemo(
-    () => bets.filter((b) => b.resultado === "PENDENTE").length,
-    [bets]
-  );
-
-  const currentStreak = useMemo(() => {
-    let streak = 0;
-    for (const b of bets.filter(
-      (x) => x.resultado === "GREEN" || x.resultado === "RED"
-    )) {
-      if (b.resultado === "GREEN") streak++;
-      else break;
-    }
-    return streak;
-  }, [bets]);
 
   const topAdms = useMemo(() => {
     const map = new Map<
@@ -243,7 +264,16 @@ export default function ApostasPage() {
   // continuaria vendo 500 linhas depois de restringir o filtro.
   useEffect(() => {
     setVisiveis(APOSTAS_POR_BLOCO);
-  }, [buscaAplicada, statusFilter, sportFilter, bookieFilter, dayFilter, oddRangeFilter, activeTab]);
+  }, [
+    buscaAplicada,
+    statusFilter,
+    sportsFilter,
+    bookiesFilter,
+    de,
+    ate,
+    oddRangeFilter,
+    activeTab,
+  ]);
 
   /**
    * O que de fato vai para a tela. Os totais do resumo continuam saindo de
@@ -254,6 +284,14 @@ export default function ApostasPage() {
     [filteredBets, visiveis]
   );
   const restantes = filteredBets.length - betsVisiveis.length;
+
+  /** Frase curta do recorte de data, para o subtítulo dizer o que está na tela. */
+  const rotuloDoPeriodo = useMemo(() => {
+    if (de && ate) return de === ate ? `dia ${doISO(de)}` : `${doISO(de)} a ${doISO(ate)}`;
+    if (de) return `a partir de ${doISO(de)}`;
+    if (ate) return `até ${doISO(ate)}`;
+    return "";
+  }, [de, ate]);
 
   const groupedByDate = useMemo(() => {
     const map = new Map<string, BetItem[]>();
@@ -283,13 +321,16 @@ export default function ApostasPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
-        <div>
+        <div className="min-w-0">
           <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
             Feed de Apostas
           </h1>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
             Feed cronológico lido da aba{" "}
-            <span className="font-semibold text-[var(--text)]">{activeTab}</span>.
+            <span className="font-semibold text-[var(--text)]">{activeTab}</span>
+            {rotuloDoPeriodo && (
+              <span> ({rotuloDoPeriodo})</span>
+            )}.
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
@@ -482,59 +523,34 @@ export default function ApostasPage() {
 
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-black/[0.05]">
               <div className="flex items-center gap-2 flex-wrap">
-                <label htmlFor="filtro-dia" className="sr-only">
-                  Filtrar por dia
-                </label>
-                <select
-                  id="filtro-dia"
-                  value={dayFilter}
-                  onChange={(e) => setDayFilter(e.target.value)}
-                  className="bg-[var(--bg)] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-[var(--accent)]/60 transition-colors"
-                >
-                  <option value="TODOS">Todos os Dias ({formatarInteiro(bets.length)})</option>
-                  {availableDays.map((day) => {
-                    const count = bets.filter((b) => b.data === day).length;
-                    return (
-                      <option key={day} value={day}>
-                        Dia {day} ({formatarInteiro(count)} {count === 1 ? "tip" : "tips"})
-                      </option>
-                    );
-                  })}
-                </select>
+                <FiltroPeriodo
+                  de={de}
+                  ate={ate}
+                  onChange={(novoDe, novoAte) => {
+                    setDe(novoDe);
+                    setAte(novoAte);
+                  }}
+                  min={limitesDeData.min}
+                  max={limitesDeData.max}
+                />
 
-                <label htmlFor="filtro-esporte" className="sr-only">
-                  Filtrar por esporte
-                </label>
-                <select
-                  id="filtro-esporte"
-                  value={sportFilter}
-                  onChange={(e) => setSportFilter(e.target.value)}
-                  className="bg-[var(--bg)] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-semibold text-[var(--text-2)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-[var(--accent)]/60 transition-colors"
-                >
-                  <option value="TODOS">Todos os Esportes</option>
-                  {sports.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
+                <SeletorMultiplo
+                  rotuloVazio="Todos os Esportes"
+                  substantivo="esportes"
+                  opcoes={sports}
+                  selecionadas={sportsFilter}
+                  onChange={setSportsFilter}
+                  contagem={contagemPorEsporte}
+                />
 
-                <label htmlFor="filtro-casa" className="sr-only">
-                  Filtrar por casa de apostas
-                </label>
-                <select
-                  id="filtro-casa"
-                  value={bookieFilter}
-                  onChange={(e) => setBookieFilter(e.target.value)}
-                  className="bg-[var(--bg)] border border-black/[0.06] rounded-full px-3 py-1 text-xs font-semibold text-[var(--text-2)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-[var(--accent)]/60 transition-colors"
-                >
-                  <option value="TODAS">Todas as Casas</option>
-                  {bookies.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
+                <SeletorMultiplo
+                  rotuloVazio="Todas as Casas"
+                  substantivo="casas"
+                  opcoes={bookies}
+                  selecionadas={bookiesFilter}
+                  onChange={setBookiesFilter}
+                  contagem={contagemPorCasa}
+                />
               </div>
 
               <div
@@ -840,43 +856,6 @@ export default function ApostasPage() {
 
         {/* Coluna lateral */}
         <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24">
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">
-                Momento Atual ({activeTab})
-              </h2>
-              <Flame className="w-4 h-4 text-[var(--accent)]" aria-hidden="true" />
-            </div>
-
-            <div className="flex items-center gap-3">
-              <motion.div
-                key={currentStreak}
-                initial={{ scale: 0.85 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 420, damping: 18 }}
-                className="w-12 h-12 rounded-xl bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center font-bold text-base gap-1 shrink-0"
-              >
-                <Flame className="w-5 h-5" strokeWidth={2} aria-hidden="true" />
-                <span className="font-mono text-lg">{currentStreak}</span>
-              </motion.div>
-              <div>
-                <p className="text-sm font-bold text-[var(--text)]">
-                  {currentStreak > 0
-                    ? `${currentStreak} ${
-                        currentStreak === 1
-                          ? "green consecutivo"
-                          : "greens consecutivos"
-                      }`
-                    : "Em busca do próximo green"}
-                </p>
-                <p className="text-xs text-[var(--text-2)]">
-                  {formatarInteiro(pendentesNaAba)}{" "}
-                  {pendentesNaAba === 1 ? "aposta em aberto" : "apostas em aberto"}
-                </p>
-              </div>
-            </div>
-          </div>
-
           <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">

@@ -23,8 +23,6 @@ export interface BetItem {
 export interface TipsterStat {
   nome: string;
   esportes: string[];
-  avatarColor: string;
-  initial: string;
   taxaAcerto: number;
   totalApostas: number;
   lucroUnidades: number;
@@ -32,13 +30,18 @@ export interface TipsterStat {
   /** Odd média das apostas já resolvidas do adm. */
   oddMedia: number;
   /**
-   * Taxa de acerto que zera o resultado, em %: 100 / oddMedia.
+   * Composição das tips do adm por resultado.
    *
-   * Sem ela não dá para julgar um acerto de 31%. Com odd média 5, o empate
-   * fica em 20% e 31% é excelente; com odd média 1,5, o empate é 67% e 31%
-   * seria desastroso. É o número que dá sentido a todos os outros.
+   * É o que explica a taxa de acerto: 0% de acerto em 11 tips soa terrível,
+   * mas muda de sentido se 8 delas ainda estão pendentes. Substituiu o antigo
+   * "ponto de equilíbrio" (100 / odd média), que só vale quando toda entrada
+   * usa a mesma stake e a mesma odd — não é o caso aqui, onde a stake varia
+   * por aposta, e o número saía enganoso.
    */
-  acertoDeEquilibrio: number;
+  greens: number;
+  reds: number;
+  voids: number;
+  pendentes: number;
 }
 
 export interface SportBreakdown {

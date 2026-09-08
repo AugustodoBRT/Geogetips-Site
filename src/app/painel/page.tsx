@@ -346,7 +346,9 @@ export default function PainelPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header with Month & Day Selectors */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
+        {/* min-w-0: sem isso o parágrafo cresce ao filtrar um dia e espreme os
+            filtros até quebrarem em duas linhas. Quem reflui é o texto. */}
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
               Painel de Performance
@@ -377,7 +379,9 @@ export default function PainelPage() {
           <LinkPlanilha className="mt-2" />
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
+        {/* Controles de tamanho fixo: nunca encolhem nem quebram a partir de sm.
+            Abaixo disso o cabeçalho já empilha e a quebra é bem-vinda. */}
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap sm:shrink-0">
           <label htmlFor="seletor-dia" className="sr-only">
             Filtrar por dia
           </label>
@@ -1127,11 +1131,6 @@ export default function PainelPage() {
                   <span className="font-mono text-xs font-bold text-[var(--text-3)] w-4">
                     #{idx + 1}
                   </span>
-                  <div
-                    className={`w-9 h-9 rounded-full bg-gradient-to-br ${t.avatarColor} text-white font-bold text-xs flex items-center justify-center`}
-                  >
-                    {t.initial}
-                  </div>
                   <div>
                     <div className="text-xs font-bold text-[var(--text)]">
                       {t.nome}
