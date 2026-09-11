@@ -5,6 +5,11 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    // lib e hooks também montam classes. Fora daqui, o avatar dos adms (em
+    // lib/stats.ts) nunca teve o gradiente gerado, e o maior degrau de
+    // tamanhoDoValor (em lib/format.ts) perdia o sm:text-xl.
+    "./src/lib/**/*.{js,ts,jsx,tsx}",
+    "./src/hooks/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {

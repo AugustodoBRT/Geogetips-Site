@@ -21,7 +21,8 @@ export function formatarReaisComSinal(valor: number): string {
   return BRL_SINAL.format(valor);
 }
 
-/** 1.72 -> "1,72" */
+const INTEIRO = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
+
 /**
  * Contagem inteira com separador de milhar.
  *
@@ -29,9 +30,10 @@ export function formatarReaisComSinal(valor: number): string {
  * deles: a home mostrava "+R$ 39.867,60" e, no mesmo cartão, "1970 green".
  */
 export function formatarInteiro(valor: number): string {
-  return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(valor);
+  return INTEIRO.format(valor);
 }
 
+/** 1.72 -> "1,72" */
 export function formatarOdd(odd: number): string {
   return odd.toFixed(2).replace(".", ",");
 }
@@ -62,7 +64,7 @@ export function tamanhoDoValor(texto: string): string {
  * "há 3 min" a partir de um ISO. Usado no selo de frescura do painel.
  *
  * A precisão é limitada pelo cache da API: o carimbo marca quando o servidor
- * montou a resposta, e essa resposta vale por CACHE_SEGUNDOS. Por isso o menor
+ * montou a resposta, e ela vale até a leitura da planilha expirar (60 s). Por isso o menor
  * degrau é "agora" em vez de contar segundos, que daria falsa precisão.
  */
 export function tempoRelativo(iso: string, agora: Date = new Date()): string {

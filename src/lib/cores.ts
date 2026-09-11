@@ -17,7 +17,7 @@ export const CORES = {
   bgCard: "#FFFFFF",
   text: "#16131F",
   text2: "#5D5670",
-  text3: "#736C82",
+  text3: "#6C667A",
   accent: "#6B3FE4",
   green: "#0E7A50",
   red: "#C41E3A",

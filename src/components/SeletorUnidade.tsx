@@ -34,7 +34,7 @@ export function SeletorUnidade() {
     >
       <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="w-9 h-9 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-[var(--green-soft)] text-[var(--green)] flex items-center justify-center shrink-0">
             <Coins className="w-4 h-4" aria-hidden="true" />
           </div>
           <div className="min-w-0">
@@ -82,12 +82,15 @@ export function SeletorUnidade() {
               >
                 R$
               </span>
+              {/* type="text" com teclado decimal: um type="number" descarta o
+                  valor inteiro ao receber vírgula em parte dos navegadores, e o
+                  campo voltava sozinho ao número anterior. A vírgula já é
+                  convertida em aplicar(). */}
               <input
                 id="campo-unidade"
-                type="number"
+                type="text"
                 inputMode="decimal"
-                min="0.01"
-                step="any"
+                autoComplete="off"
                 value={rascunho}
                 onChange={(e) => setRascunho(e.target.value)}
                 onBlur={(e) => aplicar(e.target.value)}

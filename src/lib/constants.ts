@@ -19,16 +19,42 @@ const MESES = [
   "Dezembro",
 ];
 
+/** Fuso em que o grupo opera e em que as abas da planilha são nomeadas. */
+const FUSO_DO_GRUPO = "America/Sao_Paulo";
+
+/**
+ * Mês (0-11) e ano no fuso do grupo.
+ *
+ * `getMonth()` usa o fuso da máquina. No Vercel ela roda em UTC, então entre
+ * 21h e meia-noite do último dia do mês o servidor já achava que era o mês
+ * seguinte enquanto o navegador, no Brasil, ainda não — a API pedia a aba
+ * errada e a tela hidratava com um mês diferente do que o servidor desenhou.
+ */
+function mesEAnoDoGrupo(ref: Date): { mes: number; ano: number } {
+  const partes = new Intl.DateTimeFormat("en-US", {
+    timeZone: FUSO_DO_GRUPO,
+    year: "numeric",
+    month: "numeric",
+  }).formatToParts(ref);
+  return {
+    mes: Number(partes.find((p) => p.type === "month")?.value) - 1,
+    ano: Number(partes.find((p) => p.type === "year")?.value),
+  };
+}
+
 /** Nome da aba do mês corrente, no padrão da planilha: "Agosto26". */
 export function abaDoMesAtual(ref: Date = new Date()): string {
-  return `${MESES[ref.getMonth()]}${String(ref.getFullYear()).slice(-2)}`;
+  const { mes, ano } = mesEAnoDoGrupo(ref);
+  return `${MESES[mes]}${String(ano).slice(-2)}`;
 }
 
 /** Últimos N meses em ordem decrescente — fallback quando o Sheets não responde. */
 export function abasRecentes(quantidade = 5, ref: Date = new Date()): string[] {
+  const { mes, ano } = mesEAnoDoGrupo(ref);
   return Array.from({ length: quantidade }, (_, i) => {
-    const d = new Date(ref.getFullYear(), ref.getMonth() - i, 1);
-    return abaDoMesAtual(d);
+    // Só aritmética de mês: dia 1 não cruza fuso nenhum.
+    const d = new Date(ano, mes - i, 1);
+    return `${MESES[d.getMonth()]}${String(d.getFullYear()).slice(-2)}`;
   });
 }
 
@@ -75,4 +101,28 @@ export function abaCurta(nome: string): string {
 
 export function reaisParaUnidades(valor: number): number {
   return parseFloat((valor / VALOR_UNIDADE).toFixed(2));
+}
+
+/** URL pública do site — base de canonical, sitemap, robots e og:image. */
+export const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://geogetips.vercel.app";
+
+/** Aba aceita pela API: o agregado ou um mês no padrão da planilha. */
+export function abaValida(nome: string): boolean {
+  return nome === ABA_TODOS || ordemDaAba(nome) > 0;
+}
+
+/**
+ * A aba dentro de uma frase. O agregado não é uma aba: sem isto a tela dizia
+ * "atividades da aba TODOS" e "Ranking de Adms (TODOS)".
+ */
+export function trechoDaAba(nome: string): { prefixo: string; nome: string } {
+  return nome === ABA_TODOS
+    ? { prefixo: "de", nome: "todos os meses" }
+    : { prefixo: "da aba", nome };
+}
+
+/** Rótulo curto, para títulos entre parênteses: "Geral" ou "Agosto26". */
+export function rotuloDaAba(nome: string): string {
+  return nome === ABA_TODOS ? "Geral" : nome;
 }

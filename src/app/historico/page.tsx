@@ -49,7 +49,7 @@ export default function HistoricoPage() {
               Histórico Mês a Mês
             </h1>
             {!erro && !isMock && !loading && (
-              <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
+              <span className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full">
                 Consolidado
               </span>
             )}
@@ -100,8 +100,8 @@ export default function HistoricoPage() {
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                       consolidado.lucro >= 0
-                        ? "bg-[var(--green)]/10 text-[var(--green)]"
-                        : "bg-[var(--red)]/10 text-[var(--red)]"
+                        ? "bg-[var(--green-soft)] text-[var(--green)]"
+                        : "bg-[var(--red-soft)] text-[var(--red)]"
                     }`}
                   >
                     {consolidado.lucro >= 0 ? (
@@ -139,7 +139,7 @@ export default function HistoricoPage() {
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     ROI do Período
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center">
                     <Percent className="w-4 h-4" />
                   </div>
                 </div>
@@ -167,7 +167,7 @@ export default function HistoricoPage() {
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     Apostas
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-[var(--text)]/5 text-[var(--text)] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] flex items-center justify-center">
                     <Layers className="w-4 h-4" />
                   </div>
                 </div>
@@ -190,7 +190,7 @@ export default function HistoricoPage() {
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     Taxa de Acerto
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--green-soft)] text-[var(--green)] flex items-center justify-center">
                     <Activity className="w-4 h-4" />
                   </div>
                 </div>

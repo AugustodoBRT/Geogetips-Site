@@ -1,4 +1,5 @@
 import { CORES } from "@/lib/cores";
+import { SITE_URL } from "@/lib/constants";
 import type { Metadata, Viewport } from "next";
 import { DM_Serif_Display, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -26,8 +27,6 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://geogetips.vercel.app";
-
 const TITULO = "GeogeTips — Matemática para ganhar";
 const DESCRICAO =
   "Histórico aberto de apostas esportivas: cada uma planilhada, com ROI, " +
@@ -41,6 +40,7 @@ export const metadata: Metadata = {
   },
   description: DESCRICAO,
   applicationName: "GeogeTips",
+  alternates: { canonical: "/" },
   // "tipster" fica só aqui: o site chama de adm, mas é o termo que as pessoas
   // digitam no Google. Palavra-chave de busca, não rótulo de interface.
   keywords: [
@@ -62,6 +62,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@GeogeTips",
     title: TITULO,
     description: DESCRICAO,
   },

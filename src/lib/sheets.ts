@@ -1,4 +1,3 @@
-import { google } from "googleapis";
 import path from "path";
 import fs from "fs";
 import { BetItem, BetResult } from "./types";
@@ -31,10 +30,22 @@ export const USANDO_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "1";
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"];
 
 /**
+ * O pacote googleapis é pesado e só serve ao caminho com service account.
+ * Importado no topo, era carregado em todo cold start da API, da home e da
+ * imagem de preview — inclusive no modo padrão, que lê a planilha pública e
+ * nunca o usa.
+ */
+async function carregarGoogle() {
+  const { google } = await import("googleapis");
+  return google;
+}
+
+/**
  * Credenciais: variável de ambiente em produção (serverless não tem disco),
  * arquivo local como conveniência de desenvolvimento.
  */
-function buildAuth() {
+async function buildAuth() {
+  const google = await carregarGoogle();
   const inline = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (inline) {
     let credentials;
@@ -64,7 +75,8 @@ function buildAuth() {
 }
 
 export async function getSheetsClient() {
-  return google.sheets({ version: "v4", auth: buildAuth() });
+  const google = await carregarGoogle();
+  return google.sheets({ version: "v4", auth: await buildAuth() });
 }
 
 function parseCurrency(str: string): number {
@@ -156,8 +168,13 @@ function linhasParaBets(tab: string, rows: string[][]): BetItem[] {
     });
   });
 
-  bets.sort((a, b) => parseDateTimestamp(b.data) - parseDateTimestamp(a.data));
-  return bets;
+  // Mais recente primeiro — inclusive dentro do mesmo dia. Ordenar só pela
+  // data preservava a ordem da planilha, que é crescente: "Últimas Apostas
+  // Registradas" mostrava as PRIMEIRAS do dia. A posição na planilha desempata.
+  return bets
+    .map((bet, posicao) => ({ bet, posicao, ts: parseDateTimestamp(bet.data) }))
+    .sort((a, b) => b.ts - a.ts || b.posicao - a.posicao)
+    .map((x) => x.bet);
 }
 
 /**

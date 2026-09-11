@@ -1,7 +1,9 @@
 /**
  * VOID = aposta anulada pela casa (jogo cancelado, mercado invalidado).
- * Stake devolvida, lucro zero. Não conta como acerto nem como erro —
- * fica fora do denominador da taxa de acerto e do ROI.
+ * Stake devolvida, lucro zero. Não conta como acerto nem como erro, então
+ * fica fora do denominador da taxa de acerto. No ROI ela ENTRA no investido,
+ * junto com as pendentes: é como a planilha do grupo calcula, e o site
+ * precisa bater com ela (ver calcularRoi).
  */
 export type BetResult = "GREEN" | "RED" | "PENDENTE" | "VOID";
 
@@ -56,5 +58,10 @@ export interface SportBreakdown {
 export interface BookieBreakdown {
   casa: string;
   apostas: number;
+  /** Volume relativo à casa mais usada, 0-100 — só para a largura da barra. */
   percentual: number;
+  lucro: number;
+  apostado: number;
+  /** Na mesma definição do resto do site: lucro ÷ tudo que foi apostado. */
+  roi: number;
 }

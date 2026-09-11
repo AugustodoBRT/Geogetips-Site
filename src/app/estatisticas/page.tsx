@@ -14,6 +14,7 @@ import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
+import { rotuloDaAba, trechoDaAba } from "@/lib/constants";
 
 const RAIO = 48;
 const CIRCUNFERENCIA = 2 * Math.PI * RAIO;
@@ -44,6 +45,18 @@ export default function EstatisticasPage() {
 
   const sports = stats?.sports ?? [];
   const bookies = stats?.bookies ?? [];
+  const trecho = trechoDaAba(activeTab);
+
+  /**
+   * Tinta e borda a partir de uma cor de token.
+   *
+   * Antes eram `${cor}0F` e `${cor}26` — sufixo de alfa em hexadecimal, que só
+   * funciona com cor literal. Com "var(--green)" saía "var(--green)0F", CSS
+   * inválido que o navegador descarta: as linhas perdiam o fundo e a borda
+   * caía para a cor do texto, um contorno quase preto.
+   */
+  const tinta = (cor: string) => `color-mix(in srgb, ${cor} 6%, transparent)`;
+  const contorno = (cor: string) => `color-mix(in srgb, ${cor} 15%, transparent)`;
 
   // Escala pelo maior |lucro| do conjunto, em vez de um teto fixo de 600
   const maiorLucroAbs = Math.max(...sports.map((s) => Math.abs(s.lucro)), 1);
@@ -69,14 +82,15 @@ export default function EstatisticasPage() {
               Estatísticas &amp; Padrões
             </h1>
             {!erro && !isMock && !loading && (
-              <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
+              <span className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full">
                 Análises
               </span>
             )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Distribuição de resultados, médias de odd e concentração por casa na aba{" "}
-            <span className="font-semibold text-[var(--text)]">{activeTab}</span>.
+            Distribuição de resultados, médias de odd e lucro por esporte e por casa{" "}
+            {trecho.prefixo}{" "}
+            <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>.
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
@@ -106,13 +120,15 @@ export default function EstatisticasPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                    Distribuição de Resultados ({activeTab})
+                    Distribuição de Resultados ({rotuloDaAba(activeTab)})
                   </h2>
                   <p className="text-xs text-[var(--text-3)]">
-                    Proporção entre Green, Red e Pendentes
+                    {voids > 0
+                      ? "Proporção entre Green, Red, Pendentes e Anuladas"
+                      : "Proporção entre Green, Red e Pendentes"}
                   </p>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[var(--green-soft)] text-[var(--green)] flex items-center justify-center">
                   <PieChart className="w-4 h-4" />
                 </div>
               </div>
@@ -178,8 +194,8 @@ export default function EstatisticasPage() {
                       key={linha.rotulo}
                       className="p-3 rounded-xl border flex items-center justify-between gap-6"
                       style={{
-                        backgroundColor: `${linha.cor}0F`,
-                        borderColor: `${linha.cor}26`,
+                        backgroundColor: tinta(linha.cor),
+                        borderColor: contorno(linha.cor),
                       }}
                     >
                       <div className="flex items-center gap-2 text-xs font-bold text-[var(--text)]">
@@ -206,13 +222,13 @@ export default function EstatisticasPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                    Médias de Odd ({activeTab})
+                    Médias de Odd ({rotuloDaAba(activeTab)})
                   </h2>
                   <p className="text-xs text-[var(--text-3)]">
                     Comparativo entre apostas ganhas e perdidas
                   </p>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-[var(--text)]/5 text-[var(--text)] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] flex items-center justify-center">
                   <Hash className="w-4 h-4" />
                 </div>
               </div>
@@ -242,8 +258,8 @@ export default function EstatisticasPage() {
                     key={bloco.titulo}
                     className="p-4 rounded-xl border flex items-center justify-between"
                     style={{
-                      backgroundColor: `${bloco.cor}0F`,
-                      borderColor: `${bloco.cor}26`,
+                      backgroundColor: tinta(bloco.cor),
+                      borderColor: contorno(bloco.cor),
                     }}
                   >
                     <div>
@@ -289,10 +305,10 @@ export default function EstatisticasPage() {
                     Lucro por Modalidade Esportiva
                   </h2>
                   <p className="text-xs text-[var(--text-3)]">
-                    Rentabilidade por esporte na aba {activeTab}
+                    Rentabilidade por esporte {trecho.prefixo} {trecho.nome}
                   </p>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center">
                   <BarChart2 className="w-4 h-4" />
                 </div>
               </div>
@@ -346,10 +362,10 @@ export default function EstatisticasPage() {
                     Top Casas de Apostas
                   </h2>
                   <p className="text-xs text-[var(--text-3)]">
-                    Volume de apostas por plataforma cadastrada
+                    Lucro e ROI por casa — a barra mostra o volume
                   </p>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-[var(--text)]/5 text-[var(--text)] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] flex items-center justify-center">
                   <Layers className="w-4 h-4" />
                 </div>
               </div>
@@ -362,8 +378,20 @@ export default function EstatisticasPage() {
                     <div key={b.casa} className="space-y-1.5">
                       <div className="flex justify-between items-center text-xs font-semibold gap-3">
                         <BookieBadge bookie={b.casa} />
-                        <span className="font-mono text-[var(--text-2)] text-xs">
-                          {formatarInteiro(b.apostas)} {b.apostas === 1 ? "aposta" : "apostas"}
+                        <span className="font-mono flex flex-wrap items-baseline justify-end gap-x-2 text-right">
+                          <span
+                            className={
+                              b.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                            }
+                          >
+                            {formatarReaisComSinal(converter(b.lucro))}
+                          </span>
+                          <span className="text-[10.5px] text-[var(--text-3)] font-medium">
+                            {formatarInteiro(b.apostas)}{" "}
+                            {b.apostas === 1 ? "aposta" : "apostas"} · ROI{" "}
+                            {b.roi >= 0 ? "+" : ""}
+                            {b.roi.toFixed(2).replace(".", ",")}%
+                          </span>
                         </span>
                       </div>
                       <div className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden">

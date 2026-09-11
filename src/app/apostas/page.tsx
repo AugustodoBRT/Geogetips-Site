@@ -28,6 +28,7 @@ import { parseDateTimestamp, paraISO, timestampDoISO, doISO } from "@/lib/date";
 import { SeletorMultiplo } from "@/components/SeletorMultiplo";
 import { FiltroPeriodo } from "@/components/FiltroPeriodo";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
+import { rotuloDaAba, trechoDaAba } from "@/lib/constants";
 import {
   formatarInteiro,
   formatarOdd,
@@ -293,6 +294,8 @@ export default function ApostasPage() {
     return "";
   }, [de, ate]);
 
+  const trecho = trechoDaAba(activeTab);
+
   const groupedByDate = useMemo(() => {
     const map = new Map<string, BetItem[]>();
     betsVisiveis.forEach((bet) => {
@@ -326,8 +329,8 @@ export default function ApostasPage() {
             Feed de Apostas
           </h1>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Feed cronológico lido da aba{" "}
-            <span className="font-semibold text-[var(--text)]">{activeTab}</span>
+            Feed cronológico lido {trecho.prefixo}{" "}
+            <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>
             {rotuloDoPeriodo && (
               <span> ({rotuloDoPeriodo})</span>
             )}.
@@ -428,7 +431,7 @@ export default function ApostasPage() {
 
         <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
-            Taxa Parcial
+            Taxa de Acerto
           </div>
           <div className="font-mono text-xl sm:text-2xl font-bold text-[var(--text)] mt-1 tracking-tight">
             {resumo.greens + resumo.reds > 0 ? (
@@ -594,7 +597,7 @@ export default function ApostasPage() {
             <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center">
               <p className="text-sm font-medium text-[var(--text-3)]">
                 {bets.length === 0
-                  ? `Nenhuma aposta registrada na aba ${activeTab}.`
+                  ? `Nenhuma aposta registrada ${trecho.prefixo} ${trecho.nome}.`
                   : "Nenhuma aposta corresponde aos filtros."}
               </p>
             </div>
@@ -621,8 +624,8 @@ export default function ApostasPage() {
                       <span
                         className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full ${
                           lucroDia >= 0
-                            ? "bg-[var(--green)]/10 text-[var(--green)]"
-                            : "bg-[var(--red)]/10 text-[var(--red)]"
+                            ? "bg-[var(--green-soft)] text-[var(--green)]"
+                            : "bg-[var(--red-soft)] text-[var(--red)]"
                         }`}
                       >
                         {formatarReaisComSinal(converter(lucroDia))}
@@ -649,7 +652,7 @@ export default function ApostasPage() {
                             type="button"
                             onClick={() => setSelectedBet(bet)}
                             aria-label={`Ver detalhes: ${bet.partida}, ${bet.tip}`}
-                            className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm hover:border-[var(--accent)]/60 hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors cursor-pointer grid grid-cols-[5px_1fr] group mb-2"
+                            className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)] hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors cursor-pointer grid grid-cols-[5px_1fr] group mb-2"
                           >
                             <div
                               className={
@@ -698,12 +701,12 @@ export default function ApostasPage() {
                                 <span
                                   className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider shrink-0 ${
                                     isGreen
-                                      ? "bg-[var(--green)]/10 text-[var(--green)]"
+                                      ? "bg-[var(--green-soft)] text-[var(--green)]"
                                       : isRed
-                                      ? "bg-[var(--red)]/10 text-[var(--red)]"
+                                      ? "bg-[var(--red-soft)] text-[var(--red)]"
                                       : isVoid
-                                      ? "bg-[var(--text-2)]/10 text-[var(--text-2)]"
-                                      : "bg-[var(--amber)]/10 text-[var(--amber)]"
+                                      ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
+                                      : "bg-[var(--amber-soft)] text-[var(--amber)]"
                                   }`}
                                 >
                                   {bet.resultado}
@@ -736,7 +739,7 @@ export default function ApostasPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <caption className="sr-only">
-                    Apostas registradas na aba {activeTab}
+                    Apostas registradas {trecho.prefixo} {trecho.nome}
                   </caption>
                   <thead className="bg-[var(--bg-soft)] border-b border-black/[0.06] text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                     <tr>
@@ -784,9 +787,19 @@ export default function ApostasPage() {
                             <SportBadge sport={bet.esporte} />
                           </td>
                           <td className="py-2.5 px-4 max-w-xs">
-                            <div className="font-bold text-[var(--text)] truncate">
+                            {/* A linha inteira abre o detalhe no clique, mas <tr>
+                                não recebe foco: pelo teclado a tabela não abria
+                                nada. O botão no nome da partida é esse caminho. */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedBet(bet);
+                              }}
+                              className="block max-w-full text-left font-bold text-[var(--text)] truncate hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded"
+                            >
                               {bet.partida}
-                            </div>
+                            </button>
                             <div className="text-[11px] text-[var(--text-2)] truncate">
                               {bet.tip}
                             </div>
@@ -804,12 +817,12 @@ export default function ApostasPage() {
                             <span
                               className={`px-2 py-0.5 rounded-full text-[9.5px] font-bold ${
                                 isGreen
-                                  ? "bg-[var(--green)]/10 text-[var(--green)]"
+                                  ? "bg-[var(--green-soft)] text-[var(--green)]"
                                   : isRed
-                                  ? "bg-[var(--red)]/10 text-[var(--red)]"
+                                  ? "bg-[var(--red-soft)] text-[var(--red)]"
                                   : isVoid
-                                  ? "bg-[var(--text-2)]/10 text-[var(--text-2)]"
-                                  : "bg-[var(--amber)]/10 text-[var(--amber)]"
+                                  ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
+                                  : "bg-[var(--amber-soft)] text-[var(--amber)]"
                               }`}
                             >
                               {bet.resultado}
@@ -859,7 +872,7 @@ export default function ApostasPage() {
           <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">
-                Top Adms ({activeTab})
+                Top Adms ({rotuloDaAba(activeTab)})
               </h2>
               <Award className="w-4 h-4 text-[var(--green)]" aria-hidden="true" />
             </div>
@@ -1052,10 +1065,12 @@ function DetalheAposta({
             <span
               className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${
                 bet.resultado === "GREEN"
-                  ? "bg-[var(--green)]/10 text-[var(--green)]"
+                  ? "bg-[var(--green-soft)] text-[var(--green)]"
                   : bet.resultado === "RED"
-                  ? "bg-[var(--red)]/10 text-[var(--red)]"
-                  : "bg-[var(--amber)]/10 text-[var(--amber)]"
+                  ? "bg-[var(--red-soft)] text-[var(--red)]"
+                  : bet.resultado === "VOID"
+                  ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
+                  : "bg-[var(--amber-soft)] text-[var(--amber)]"
               }`}
             >
               {bet.resultado}
@@ -1112,7 +1127,7 @@ function DetalheAposta({
                 Valor
               </div>
               <div className="font-mono text-base font-bold text-[var(--text)] mt-0.5">
-                {formatarReais(bet.valor)}
+                {formatarReais(converter(bet.valor))}
               </div>
               <div className="text-[10px] text-[var(--text-3)] mt-0.5">
                 {bet.unidades.toFixed(2).replace(".", ",")}u
@@ -1125,12 +1140,19 @@ function DetalheAposta({
               </div>
               <div
                 className={`font-mono text-base font-bold mt-0.5 ${
-                  bet.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                  bet.resultado === "PENDENTE" || bet.resultado === "VOID"
+                    ? "text-[var(--text-3)]"
+                    : bet.lucro >= 0
+                    ? "text-[var(--green)]"
+                    : "text-[var(--red)]"
                 }`}
               >
-                {bet.resultado === "PENDENTE"
+                {/* Mesma regra do card que abriu este modal: converter para a
+                    unidade do visitante, e anulada sem lucro a mostrar. Antes o
+                    card dizia R$ 62,50 e o modal R$ 125,00 para a mesma aposta. */}
+                {bet.resultado === "PENDENTE" || bet.resultado === "VOID"
                   ? "—"
-                  : formatarReaisComSinal(bet.lucro)}
+                  : formatarReaisComSinal(converter(bet.lucro))}
               </div>
             </div>
           </div>

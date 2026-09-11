@@ -1,31 +1,27 @@
 # GeogeTips - Plataforma Web de Análise e Monitoramento de Apostas
 
-Dashboard moderno e analítico desenvolvido em **Next.js 15**, **React 19**, **Tailwind CSS** e **Lucide Icons** para acompanhamento em tempo real de palpites esportivos, métricas de assertividade, evolução da banca e rankings de tipsters integrados diretamente com o **Google Sheets**.
+Dashboard moderno e analítico desenvolvido em **Next.js 15**, **React 19**, **Tailwind CSS** e **Lucide Icons** para acompanhar as apostas do grupo, métricas de assertividade, evolução da banca e o ranking dos adms, lidos diretamente da planilha do **Google Sheets**.
 
 ---
 
 ## Principais Funcionalidades
 
-- **Painel de Performance em Tempo Real**:
-  - 4 KPIs principais: Lucro Acumulado, Total de Apostas, Assertividade (%) e Pendentes.
-  - Gráfico dinâmico e interativo de **Evolução da Banca** com tooltip de inspeção dia a dia.
-  - Filtros de período inteligentes (`7D`, `30D`, `90D`, `120D`, `Tudo`) que se adaptam à visão mensal ou histórica.
-  - Seletor de dia do mês para filtrar o painel e recalcular métricas instantaneamente.
+- **Painel de Performance**:
+  - 5 KPIs: Lucro, ROI, Total de Apostas, Taxa de Acerto e Pendentes.
+  - Gráfico de **Evolução da Banca** com a curva verde acima do zero e vermelha abaixo, inspeção dia a dia e maior queda do período.
+  - Janelas de calendário (`7D`, `30D`, `90D`, `Tudo`; `120D` na visão de todos os meses).
+  - Seletor de dia para recalcular os indicadores.
 - **Feed de Apostas**:
-  - Visualização em **Cards** ou **Tabela Detalhada**.
-  - Drawer modal com detalhes completos da tip (fecha com Esc ou clique fora).
-  - Filtros avançados por esporte, casa de aposta, resultado (*GREEN*, *RED*, *PENDENTE*), busca por texto e seletor de dia.
-  - Ordenação cronológica automática (apostas mais recentes sempre no topo).
-- **Visão Geral Consolidada ("Todos os Meses")**:
-  - Agregação em paralelo de todas as abas históricas do Google Sheets com cache em memória de alta performance.
-- **Estatísticas Completas**:
-  - Distribuição gráfica por modalidades e casas de aposta.
-  - Comparativo de odds médias e assertividade por esporte.
-- **Ranking de Tipsters**:
-  - Leaderboard com assertividade, total de palpites, esportes atuados e lucro líquido em unidades.
-- **Badges Oficiais & Identidade Visual**:
-  - Badges com monogramas para 16 casas de apostas (Betano, Bet365, BetPix365, Novibet, Sportingbet, Superbet, KTO, Betfair, Stake, Betnacional, etc.). Casas não mapeadas aparecem com o nome real.
-  - Pílulas com cor dedicada por esporte (Futebol, Basquete, Tênis, F1, eSports, MMA, Vôlei, MLB, NHL, NFL, Turfe).
+  - Visualização em **Cards** ou **Tabela**, com detalhe da aposta em modal (Esc ou clique fora fecha).
+  - Filtros por resultado, busca por texto, **intervalo de datas (de/até)**, **vários esportes e várias casas ao mesmo tempo** e faixa de odd.
+  - Mais recente primeiro, inclusive dentro do mesmo dia.
+- **Visão "Todos os Meses"**: agrega todas as abas mensais da planilha.
+- **Histórico Mês a Mês**: resultado, ROI e taxa de acerto de cada mês lado a lado, com consolidado recalculado sobre a soma.
+- **Estatísticas**: distribuição de resultados, médias de odd (green, red e geral), lucro e ROI por esporte e por casa.
+- **Performance dos Adms**: acerto, volume, ROI, lucro em unidades e a composição das tips por resultado.
+- **Unidade do visitante**: todos os valores em reais podem ser vistos na unidade de quem lê (ROI e taxa não mudam).
+- **Logos das casas**: as 99 casas do registro têm logo em SVG, com o fundo de cada pílula medido para a logo ficar legível. Casa fora do registro aparece com o nome, em cinza.
+- **Selos por esporte** (Futebol, Basquete, Tênis, F1, eSports, MMA, Vôlei, MLB, NHL, NFL, Turfe).
 
 ---
 
@@ -96,12 +92,13 @@ de demonstração o ROI real do período é 7,00% enquanto a média ingênua dos
 ROIs mensais daria 13,47%.
 
 ### Métricas
-- **ROI** = lucro ÷ total apostado, contando só apostas resolvidas. É a métrica
-  que o mercado usa para comparar grupos, e não é intercambiável com taxa de
-  acerto: 32% de acerto em odds 5 rende mais que 63% em odds 1,5.
+- **ROI** = lucro ÷ total apostado, **incluindo pendentes e anuladas** no
+  investido. É assim que a planilha do grupo calcula, e o site precisa bater
+  com ela linha a linha. Não é intercambiável com taxa de acerto: 32% de
+  acerto em odds 5 rende mais que 63% em odds 1,5.
 - **Taxa de acerto** = greens ÷ (greens + reds). Pendente e void ficam de fora.
 - **VOID** (anulada) é um quarto resultado, com stake devolvida e lucro zero.
-  Fica fora do denominador da taxa e do ROI. O parser reconhece "void",
+  Fica fora do denominador da taxa, mas entra no investido do ROI. O parser reconhece "void",
   "anulada", "cancelado", "reembolsada" e "devolvido".
 
 ### 3. Rodar em Modo de Desenvolvimento
@@ -110,7 +107,33 @@ npm run dev
 ```
 Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
+### Cores
+A paleta mora no `:root` de `src/app/globals.css`, e o código usa `-[var(--token)]`.
+**Não escreva `bg-[var(--green)]/10`**: o Tailwind 3 não aplica opacidade a CSS
+variable e a classe simplesmente não é gerada. Para tons suaves use os tokens
+`--green-soft`, `--red-soft`, `--amber-soft`, `--accent-soft`, `--text-soft` e
+`--text-2-soft`; para outra transparência, `color-mix` com a dica de tipo:
+`border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)]`.
+
+`src/lib/cores.ts` repete os hexadecimais para o Satori, que não lê CSS variable.
+Depois de mexer em qualquer um dos dois, rode `npm run checar:cores`.
+
 ### 4. Build de Produção
+O build escreve na mesma pasta `.next` que o `npm run dev` usa, e derruba o
+servidor de desenvolvimento que estiver no ar. Para só conferir se o build passa
+sem parar o dev, mande-o para outra pasta e apague-a depois:
+
+```bash
+NEXT_DIST_DIR=.next-verifica npm run build
+```
+
+O Next reescreve `tsconfig.json` e `next-env.d.ts` para apontar para a pasta
+nova. Descarte essas duas mudanças em seguida:
+
+```bash
+git checkout -- tsconfig.json next-env.d.ts && rm -rf .next-verifica
+```
+
 ```bash
 npm run build
 npm run start

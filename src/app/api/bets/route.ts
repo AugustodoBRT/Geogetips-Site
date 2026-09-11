@@ -5,7 +5,7 @@ import {
   computeStatsFromBets,
   USANDO_MOCK,
 } from "@/lib/sheets";
-import { abaDoMesAtual, abasRecentes } from "@/lib/constants";
+import { ABA_TODOS, abaDoMesAtual, abaValida, abasRecentes } from "@/lib/constants";
 import { MOCK_BETS } from "@/lib/data";
 
 /**
@@ -26,6 +26,18 @@ export async function GET(request: NextRequest) {
   // Tipsters e Estatísticas só precisam de stats — evita mandar o array inteiro
   const onlyStats = searchParams.get("only") === "stats";
 
+  // Só o agregado ou um mês no padrão da planilha. Sem esta checagem qualquer
+  // nome chegava ao gviz, que não erra em aba inexistente — devolve a primeira
+  // aba. `?tab=Xyz` respondia 200 com os dados de Setembro26 rotulados como
+  // "Xyz", e cada nome inventado abria uma entrada de cache e uma chamada ao
+  // Google.
+  if (!abaValida(tab)) {
+    return NextResponse.json(
+      { success: false, isMock: false, activeTab: tab, error: `Aba inválida: "${tab}".` },
+      { status: 400 }
+    );
+  }
+
   if (USANDO_MOCK) {
     const stats = computeStatsFromBets(MOCK_BETS);
     return NextResponse.json({
@@ -41,15 +53,34 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [tabs, bets] = await Promise.all([
-      getAvailableTabs(),
-      getBetsFromTab(tab),
-    ]);
+    const tabs = await getAvailableTabs();
+    let abaServida = tab;
+
+    if (tab !== ABA_TODOS && !tabs.includes(tab)) {
+      // A aba do mês só nasce quando o bot registra a primeira aposta. Nos
+      // primeiros dias de cada mês o site inteiro abria em erro; agora mostra
+      // o último mês com dados, e o activeTab da resposta diz qual é.
+      if (tab === abaDoMesAtual() && tabs.length > 0) {
+        abaServida = tabs[0];
+      } else {
+        return NextResponse.json(
+          {
+            success: false,
+            isMock: false,
+            activeTab: tab,
+            error: `A aba "${tab}" não existe na planilha.`,
+          },
+          { status: 404 }
+        );
+      }
+    }
+
+    const bets = await getBetsFromTab(abaServida);
 
     return NextResponse.json({
       success: true,
       isMock: false,
-      activeTab: tab,
+      activeTab: abaServida,
       tabs,
       count: bets.length,
       stats: computeStatsFromBets(bets),

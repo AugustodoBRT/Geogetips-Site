@@ -93,7 +93,7 @@ export function SecaoTelegram() {
           <br />O grupo também.
         </h2>
 
-        <p className="text-sm text-[var(--bg)]/70 leading-relaxed mb-7 max-w-xl">
+        <p className="text-sm text-[color:color-mix(in_srgb,var(--bg)_70%,transparent)] leading-relaxed mb-7 max-w-xl">
           Tudo que você vê neste site sai das mesmas entradas que são enviadas no
           canal. Entre, acompanhe por alguns dias e confira os resultados na
           planilha antes de decidir qualquer coisa.
@@ -101,7 +101,7 @@ export function SecaoTelegram() {
 
         <ul className="space-y-2.5 mb-8 list-none p-0">
           {BENEFICIOS.map((b) => (
-            <li key={b} className="flex items-start gap-2.5 text-sm text-[var(--bg)]/85">
+            <li key={b} className="flex items-start gap-2.5 text-sm text-[color:color-mix(in_srgb,var(--bg)_85%,transparent)]">
               <span
                 className="w-1.5 h-1.5 rounded-full bg-[var(--green)] mt-2 shrink-0"
                 aria-hidden="true"
@@ -135,7 +135,7 @@ export function SecaoTelegram() {
           </a>
         </div>
 
-        <p className="text-[11px] text-[var(--bg)]/45 mt-4">
+        <p className="text-[11px] text-[color:color-mix(in_srgb,var(--bg)_60%,transparent)] mt-4">
           @vemproGeogeTips · planilha aberta em modo somente leitura · 18+
         </p>
       </div>

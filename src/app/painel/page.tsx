@@ -14,7 +14,7 @@ import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { parseDateTimestamp } from "@/lib/date";
-import { ABA_TODOS } from "@/lib/constants";
+import { ABA_TODOS, rotuloDaAba, trechoDaAba } from "@/lib/constants";
 import {
   formatarInteiro,
   formatarOdd,
@@ -341,6 +341,7 @@ export default function PainelPage() {
   const sports = stats?.sports ?? [];
   const tipsters = stats?.tipsters ?? [];
   const recentBets = scopedBets.slice(0, 6);
+  const trecho = trechoDaAba(activeTab);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -358,20 +359,21 @@ export default function PainelPage() {
                 informação não auditável de uma página que vive de auditoria. */}
             {!erro && !isMock && !loading && (
               <span
-                className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full"
+                className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full"
                 title={
                   lidoEm
                     ? `Leitura da planilha em ${new Date(lidoEm).toLocaleString("pt-BR")}`
                     : undefined
                 }
               >
-                Ao vivo{lidoEm ? ` · ${tempoRelativo(lidoEm, agora)}` : ""}
+                Atualizado{lidoEm ? ` · ${tempoRelativo(lidoEm, agora)}` : ""}
               </span>
             )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Métricas consolidadas, evolução real da banca e atividades da aba{" "}
-            <span className="font-semibold text-[var(--text)]">{activeTab}</span>
+            Métricas consolidadas, evolução real da banca e atividades{" "}
+            {trecho.prefixo}{" "}
+            <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>
             {selectedDay !== "TODOS" && (
               <span> (Filtrado para o dia <strong>{selectedDay}</strong>)</span>
             )}.
@@ -389,9 +391,12 @@ export default function PainelPage() {
             id="seletor-dia"
             value={selectedDay}
             onChange={(e) => setSelectedDay(e.target.value)}
-            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-[var(--accent)]/60 transition-all"
+            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)] transition-all"
           >
-            <option value="TODOS">Mês Completo ({formatarInteiro(allBets.length)} tips)</option>
+            <option value="TODOS">
+              {activeTab === ABA_TODOS ? "Todos os dias" : "Mês completo"} (
+              {formatarInteiro(allBets.length)} tips)
+            </option>
             {availableDays.map((day) => {
               const count = contagemPorDia.get(day) ?? 0;
               return (
@@ -438,8 +443,8 @@ export default function PainelPage() {
             <div
               className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                 totalLucro >= 0
-                  ? "bg-[var(--green)]/10 text-[var(--green)]"
-                  : "bg-[var(--red)]/10 text-[var(--red)]"
+                  ? "bg-[var(--green-soft)] text-[var(--green)]"
+                  : "bg-[var(--red-soft)] text-[var(--red)]"
               }`}
             >
               {totalLucro >= 0 ? (
@@ -467,16 +472,18 @@ export default function PainelPage() {
             />
           </div>
           <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
-            {selectedDay === "TODOS"
-              ? `Resultado total em ${activeTab}`
-              : `Resultado obtido no dia ${selectedDay}`}
+            {selectedDay !== "TODOS"
+              ? `Resultado obtido no dia ${selectedDay}`
+              : activeTab === ABA_TODOS
+              ? "Resultado de todos os meses"
+              : `Resultado total em ${activeTab}`}
           </div>
         </div>
 
         <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">ROI</span>
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center">
               <Percent className="w-4 h-4" />
             </div>
           </div>
@@ -504,7 +511,7 @@ export default function PainelPage() {
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Total de Apostas
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[var(--text)]/5 text-[var(--text)] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] flex items-center justify-center">
               <Layers className="w-4 h-4" />
             </div>
           </div>
@@ -526,7 +533,7 @@ export default function PainelPage() {
             <span className="text-[11px] font-bold uppercase tracking-wider">
               Taxa de Acerto
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[var(--green)]/10 text-[var(--green)] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--green-soft)] text-[var(--green)] flex items-center justify-center">
               <Activity className="w-4 h-4" />
             </div>
           </div>
@@ -546,8 +553,8 @@ export default function PainelPage() {
             <div
               className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                 pendentes > 0
-                  ? "bg-[var(--amber)]/10 text-[var(--amber)]"
-                  : "bg-[var(--text)]/5 text-[var(--text-3)]"
+                  ? "bg-[var(--amber-soft)] text-[var(--amber)]"
+                  : "bg-[var(--text-soft)] text-[var(--text-3)]"
               }`}
             >
               <Clock className="w-4 h-4" />
@@ -587,14 +594,14 @@ export default function PainelPage() {
                   id="titulo-evolucao"
                   className="text-base font-bold text-[var(--text)] tracking-tight"
                 >
-                  Evolução da Banca ({activeTab === ABA_TODOS ? "Geral" : activeTab})
+                  Evolução da Banca ({rotuloDaAba(activeTab)})
                 </h2>
                 {chartData && (
                   <span
                     className={`font-mono text-xs font-bold px-2 py-0.5 rounded-full ${
                       chartData.periodGain >= 0
-                        ? "bg-[var(--green)]/10 text-[var(--green)]"
-                        : "bg-[var(--red)]/10 text-[var(--red)]"
+                        ? "bg-[var(--green-soft)] text-[var(--green)]"
+                        : "bg-[var(--red-soft)] text-[var(--red)]"
                     }`}
                   >
                     <NumberFlow
@@ -606,14 +613,14 @@ export default function PainelPage() {
                         signDisplay: "always",
                       }}
                     />{" "}
-                    ({period})
+                    ({selectedDay === "TODOS" ? period : `até ${selectedDay}`})
                   </span>
                 )}
                 {/* Maior queda de pico a vale. Lucro e ROI dizem onde a banca
                     chegou; isto diz quanto ela chegou a devolver no caminho. */}
                 {chartData && chartData.drawdown > 0 && (
                   <span
-                    className="font-mono text-xs font-bold px-2 py-0.5 rounded-full bg-[var(--text)]/[0.05] text-[var(--text-2)]"
+                    className="font-mono text-xs font-bold px-2 py-0.5 rounded-full bg-[var(--text-soft)] text-[var(--text-2)]"
                     title="Maior queda de um pico até o vale seguinte dentro da janela exibida"
                   >
                     maior queda {formatarReais(chartData.drawdown)}
@@ -675,7 +682,7 @@ export default function PainelPage() {
                 viewBox={`0 0 ${chartData.width} ${chartData.height}`}
                 className="w-full h-full cursor-crosshair overflow-visible select-none touch-pan-y"
                 role="img"
-                aria-label={`Evolução da banca em ${activeTab}, de ${
+                aria-label={`Evolução da banca ${trecho.prefixo} ${trecho.nome}, de ${
                   chartPoints[0]?.date ?? ""
                 } a ${chartPoints[chartPoints.length - 1]?.date ?? ""}. Resultado do período: ${formatarReaisComSinal(
                   chartData.periodGain
@@ -917,7 +924,7 @@ export default function PainelPage() {
             <p className="text-xs text-[var(--text-3)] mb-3">
               {selectedDay === "TODOS"
                 ? "Distribuição por modalidades cadastradas"
-                : `Mês inteiro de ${activeTab}, não o dia ${selectedDay}`}
+                : `${activeTab === ABA_TODOS ? "Todos os meses" : `Mês inteiro de ${activeTab}`}, não o dia ${selectedDay}`}
             </p>
 
             <div className="divide-y divide-black/[0.05] max-h-[220px] overflow-y-auto pr-1">
@@ -1049,12 +1056,12 @@ export default function PainelPage() {
                     <span
                       className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         isGreen
-                          ? "bg-[var(--green)]/10 text-[var(--green)]"
+                          ? "bg-[var(--green-soft)] text-[var(--green)]"
                           : isRed
-                          ? "bg-[var(--red)]/10 text-[var(--red)]"
+                          ? "bg-[var(--red-soft)] text-[var(--red)]"
                           : isVoid
-                          ? "bg-[var(--text-2)]/10 text-[var(--text-2)]"
-                          : "bg-[var(--amber)]/10 text-[var(--amber)]"
+                          ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
+                          : "bg-[var(--amber-soft)] text-[var(--amber)]"
                       }`}
                     >
                       {bet.resultado}
@@ -1092,14 +1099,14 @@ export default function PainelPage() {
                 id="titulo-ranking"
                 className="text-base font-bold text-[var(--text)] tracking-tight"
               >
-                Ranking de Adms ({activeTab})
+                Ranking de Adms ({rotuloDaAba(activeTab)})
               </h2>
               {/* Mesmo caso do bloco de esportes: ranking de um dia isolado
                   costuma ter um adm só, então permanece no mês. */}
               <p className="text-xs text-[var(--text-3)]">
                 {selectedDay === "TODOS"
                   ? "Quem mais gerou retorno na aba ativa"
-                  : `Mês inteiro de ${activeTab}, não o dia ${selectedDay}`}
+                  : `${activeTab === ABA_TODOS ? "Todos os meses" : `Mês inteiro de ${activeTab}`}, não o dia ${selectedDay}`}
               </p>
             </div>
 

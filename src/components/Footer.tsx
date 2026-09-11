@@ -105,7 +105,7 @@ export function Footer() {
         </div>
 
         <p className="text-[11px] text-[var(--text-3)]">
-          GeogeTips — matemática para ganhar. feito com dados, não achismo.
+          GeogeTips — matemática para ganhar. Feito com dados, não achismo.
         </p>
       </div>
     </footer>

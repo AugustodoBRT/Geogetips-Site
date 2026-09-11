@@ -4,6 +4,7 @@ import { getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
 import { computeStatsFromBets } from "@/lib/stats";
 import { MOCK_BETS } from "@/lib/data";
 import { ABA_TODOS } from "@/lib/constants";
+import { formatarInteiro, formatarUnidades } from "@/lib/format";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -28,7 +29,7 @@ export default async function OpenGraphImage() {
     ? [
         {
           rotulo: "APOSTAS",
-          valor: String(stats.totalBets),
+          valor: formatarInteiro(stats.totalBets),
           cor: CORES.text,
         },
         {
@@ -38,9 +39,7 @@ export default async function OpenGraphImage() {
         },
         {
           rotulo: "RESULTADO",
-          valor: `${stats.totalUnidades >= 0 ? "+" : ""}${stats.totalUnidades
-            .toFixed(2)
-            .replace(".", ",")}u`,
+          valor: formatarUnidades(stats.totalUnidades),
           cor: stats.totalUnidades >= 0 ? CORES.green : CORES.red,
         },
       ]

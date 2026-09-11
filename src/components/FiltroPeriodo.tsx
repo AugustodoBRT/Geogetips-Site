@@ -14,7 +14,7 @@ interface FiltroPeriodoProps {
 }
 
 const CAMPO =
-  "bg-[var(--bg)] border border-black/[0.06] rounded-full px-2.5 py-1 text-xs font-semibold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-[var(--accent)]/60 transition-colors";
+  "bg-[var(--bg)] border border-black/[0.06] rounded-full px-2.5 py-1 text-xs font-semibold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)] transition-colors";
 
 /**
  * Intervalo de datas, aberto dos dois lados.
@@ -70,7 +70,7 @@ export function FiltroPeriodo({
           onClick={() => onChange("", "")}
           aria-label="Limpar intervalo de datas"
           title="Limpar intervalo de datas"
-          className="w-5 h-5 rounded-full border border-black/[0.1] text-[var(--text-2)] hover:text-[var(--red)] hover:border-[var(--red)]/40 flex items-center justify-center transition-colors"
+          className="w-5 h-5 rounded-full border border-black/[0.1] text-[var(--text-2)] hover:text-[var(--red)] hover:border-[color:color-mix(in_srgb,var(--red)_40%,transparent)] flex items-center justify-center transition-colors"
         >
           <X className="w-3 h-3" aria-hidden="true" />
         </button>

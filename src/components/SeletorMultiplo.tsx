@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { Check, ChevronDown, X } from "lucide-react";
 
 interface SeletorMultiploProps {
@@ -39,6 +39,20 @@ export function SeletorMultiplo({
   const [aberto, setAberto] = useState(false);
   const caixa = useRef<HTMLDivElement>(null);
   const idLista = useId();
+
+  // A lista abre alinhada à esquerda da pílula. No celular, com a pílula na
+  // metade direita da tela, ela saía para fora da borda — de 180 a 405px numa
+  // tela de 375. Medida antes de pintar, vira para a direita quando não cabe.
+  const lista = useRef<HTMLDivElement>(null);
+  const [paraDireita, setParaDireita] = useState(false);
+  useLayoutEffect(() => {
+    if (!aberto) {
+      setParaDireita(false);
+      return;
+    }
+    const r = lista.current?.getBoundingClientRect();
+    if (r && r.right > window.innerWidth - 8) setParaDireita(true);
+  }, [aberto]);
 
   useEffect(() => {
     if (!aberto) return;
@@ -80,7 +94,7 @@ export function SeletorMultiplo({
         className={`flex items-center gap-1.5 border rounded-full px-3 py-1 text-xs font-semibold outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer transition-colors ${
           n > 0
             ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-            : "bg-[var(--bg)] text-[var(--text-2)] border-black/[0.06] hover:border-[var(--accent)]/60"
+            : "bg-[var(--bg)] text-[var(--text-2)] border-black/[0.06] hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)]"
         }`}
       >
         <span className="max-w-[13rem] truncate">{rotulo}</span>
@@ -104,10 +118,13 @@ export function SeletorMultiplo({
 
       {aberto && (
         <div
+          ref={lista}
           id={idLista}
           role="group"
           aria-label={rotuloVazio}
-          className="absolute z-30 mt-2 w-60 max-h-72 overflow-y-auto bg-white border border-black/[0.1] rounded-xl shadow-lg p-1"
+          className={`absolute z-30 mt-2 w-60 max-w-[calc(100vw-1rem)] max-h-72 overflow-y-auto bg-white border border-black/[0.1] rounded-xl shadow-lg p-1 ${
+            paraDireita ? "right-0" : "left-0"
+          }`}
         >
           {opcoes.length === 0 ? (
             <p className="text-xs text-[var(--text-3)] px-3 py-2">

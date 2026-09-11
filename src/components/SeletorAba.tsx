@@ -30,7 +30,7 @@ export function SeletorAba({
         id={id}
         value={activeTab}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-[var(--accent)]/60 transition-all"
+        className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)] transition-all"
       >
         <option value={ABA_TODOS}>Todos os Meses (Geral)</option>
         {[...tabs]

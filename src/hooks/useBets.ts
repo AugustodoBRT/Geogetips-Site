@@ -27,7 +27,7 @@ export interface UseBetsResult {
 }
 
 /**
- * Fonte única de dados das quatro páginas.
+ * Fonte única de dados das páginas que leem uma aba.
  *
  * Cada troca de aba aborta a requisição anterior — sem isso, uma resposta lenta
  * de um mês pode chegar depois e sobrescrever a do mês que já está selecionado.
@@ -44,10 +44,17 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
 
   const abortRef = useRef<AbortController | null>(null);
   const [nonce, setNonce] = useState(0);
+  // Aba que o servidor escolheu no lugar da pedida. Guardada para que alinhar
+  // o seletor a ela não dispare uma segunda leitura do mesmo dado.
+  const abaJaCarregada = useRef<string | null>(null);
 
   const recarregar = useCallback(() => setNonce((n) => n + 1), []);
 
   useEffect(() => {
+    if (abaJaCarregada.current === activeTab) {
+      abaJaCarregada.current = null;
+      return;
+    }
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -83,6 +90,12 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
         setStats(json.stats ?? null);
         setBets(Array.isArray(json.data) ? json.data : []);
         if (Array.isArray(json.tabs) && json.tabs.length > 0) setTabs(json.tabs);
+        // No começo do mês a aba nova ainda não existe e o servidor responde com
+        // a mais recente. O seletor passa a mostrar a aba que está de fato na tela.
+        if (typeof json.activeTab === "string" && json.activeTab !== activeTab) {
+          abaJaCarregada.current = json.activeTab;
+          setActiveTab(json.activeTab);
+        }
       } catch (err) {
         if ((err as Error)?.name === "AbortError") return;
         setErro("Não foi possível falar com o servidor. Verifique sua conexão.");

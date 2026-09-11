@@ -10,6 +10,7 @@ import { useBets } from "@/hooks/useBets";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { formatarInteiro, formatarUnidades } from "@/lib/format";
+import { trechoDaAba } from "@/lib/constants";
 
 export default function AdmsPage() {
   const {
@@ -24,6 +25,7 @@ export default function AdmsPage() {
   } = useBets({ onlyStats: true });
 
   const adms = stats?.tipsters ?? [];
+  const trecho = trechoDaAba(activeTab);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -34,14 +36,14 @@ export default function AdmsPage() {
               Performance dos Adms
             </h1>
             {!erro && !isMock && !loading && (
-              <span className="px-2.5 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-xs font-bold rounded-full">
+              <span className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full">
                 Ranking
               </span>
             )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Assertividade e lucro por unidade calculados da aba{" "}
-            <span className="font-semibold text-[var(--text)]">{activeTab}</span>. A taxa
+            Assertividade e lucro por unidade calculados {trecho.prefixo}{" "}
+            <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>. A taxa
             considera apenas apostas finalizadas.
           </p>
           <LinkPlanilha className="mt-2" />
@@ -65,7 +67,7 @@ export default function AdmsPage() {
       ) : erro ? null : adms.length === 0 ? (
         <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center text-[var(--text-3)]">
           <p className="text-sm font-medium">
-            Nenhum adm com dados na aba {activeTab}.
+            Nenhum adm com dados {trecho.prefixo} {trecho.nome}.
           </p>
         </div>
       ) : (
@@ -95,7 +97,7 @@ export default function AdmsPage() {
                         {adm.nome}
                       </span>
                       {index === 0 && adm.totalApostas >= 3 && (
-                        <span className="px-2 py-0.5 bg-[var(--green)]/10 text-[var(--green)] text-[10.5px] font-bold rounded-full flex items-center gap-1">
+                        <span className="px-2 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-[10.5px] font-bold rounded-full flex items-center gap-1">
                           <Award className="w-3 h-3" /> Top #1
                         </span>
                       )}

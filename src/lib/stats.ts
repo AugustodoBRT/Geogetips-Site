@@ -169,18 +169,31 @@ export function computeStatsFromBets(bets: BetItem[]) {
     })
     .sort((a, b) => b.apostas - a.apostas);
 
-  // Casas
-  const bookieMap = new Map<string, number>();
+  // Casas. Antes só contava volume, e a home prometia "lucro por casa" sem que
+  // nenhuma tela mostrasse isso.
+  const bookieMap = new Map<string, { apostas: number; lucro: number; apostado: number }>();
   bets.forEach((b) => {
-    if (b.casa) bookieMap.set(b.casa, (bookieMap.get(b.casa) || 0) + 1);
+    if (!b.casa) return;
+    const c = bookieMap.get(b.casa) || { apostas: 0, lucro: 0, apostado: 0 };
+    c.apostas += 1;
+    c.lucro += b.lucro;
+    c.apostado += b.valor;
+    bookieMap.set(b.casa, c);
   });
 
-  const maxBookie = Math.max(...Array.from(bookieMap.values()), 1);
+  const maxBookie = Math.max(
+    ...Array.from(bookieMap.values()).map((c) => c.apostas),
+    1
+  );
   const bookies: BookieBreakdown[] = Array.from(bookieMap.entries())
-    .map(([casa, apostas]) => ({
+    .map(([casa, c]) => ({
       casa,
-      apostas,
-      percentual: Math.round((apostas / maxBookie) * 100),
+      apostas: c.apostas,
+      percentual: Math.round((c.apostas / maxBookie) * 100),
+      lucro: parseFloat(c.lucro.toFixed(2)),
+      apostado: parseFloat(c.apostado.toFixed(2)),
+      roi:
+        c.apostado > 0 ? parseFloat(((c.lucro / c.apostado) * 100).toFixed(2)) : 0,
     }))
     .sort((a, b) => b.apostas - a.apostas)
     .slice(0, 8);

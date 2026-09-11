@@ -9,6 +9,8 @@
 
 # next.js
 /.next/
+# builds de conferência (NEXT_DIST_DIR), ver next.config.ts
+/.next-*/
 /out/
 
 # production

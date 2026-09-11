@@ -41,34 +41,34 @@ const FUNCIONALIDADES = [
     texto:
       "Cada entrada enviada no canal vira uma linha na planilha automaticamente, com partida, mercado, odd e valor. Sem digitação manual e sem esquecer nenhuma.",
     icone: <Bot className="w-6 h-6" strokeWidth={1.75} />,
-    corIcone: "bg-[var(--accent)]/10 text-[var(--accent)]",
+    corIcone: "bg-[var(--accent-soft)] text-[var(--accent)]",
   },
   {
     titulo: "Planilha Sincronizada",
     texto:
       "A planilha no Google Sheets continua viva e é a fonte de tudo que aparece aqui — aberta para conferência linha a linha.",
     icone: <FileSpreadsheet className="w-6 h-6" strokeWidth={1.75} />,
-    corIcone: "bg-[var(--green)]/10 text-[var(--green)]",
+    corIcone: "bg-[var(--green-soft)] text-[var(--green)]",
   },
   {
     titulo: "Análise por Adm",
     texto:
       "Descubra quem realmente coloca dinheiro no seu bolso e quem dá prejuízo, com acerto, volume e ROI de cada um.",
     icone: <Target className="w-6 h-6" strokeWidth={1.75} />,
-    corIcone: "bg-[var(--amber)]/10 text-[var(--amber)]",
+    corIcone: "bg-[var(--amber-soft)] text-[var(--amber)]",
   },
   {
     titulo: "Gestão de Banca",
     texto: `Controle por unidades (1u = R$ ${VALOR_UNIDADE.toFixed(2).replace(".", ",")}), com travas de segurança e limites máximos. Ajuste a unidade para a sua banca e veja o histórico na sua escala.`,
     icone: <Landmark className="w-6 h-6" strokeWidth={1.75} />,
-    corIcone: "bg-[var(--accent)]/10 text-[var(--accent)]",
+    corIcone: "bg-[var(--accent-soft)] text-[var(--accent)]",
   },
   {
     titulo: "Estatísticas Completas",
     texto:
       "Lucro por esporte, casa, odds médias e ROI real — mês a mês, incluindo os meses negativos.",
     icone: <BarChart3 className="w-6 h-6" strokeWidth={1.75} />,
-    corIcone: "bg-[var(--green)]/10 text-[var(--green)]",
+    corIcone: "bg-[var(--green-soft)] text-[var(--green)]",
   },
 ];
 
@@ -99,7 +99,7 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="pt-24 pb-16 px-6 md:px-12 text-center max-w-4xl mx-auto">
         <EntradaSequencial indice={0}>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[var(--accent)]/[0.08] border border-[var(--accent)]/[0.12] rounded-full text-xs font-semibold text-[var(--accent)] mb-7">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[var(--accent-soft)] border border-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] rounded-full text-xs font-semibold text-[var(--accent)] mb-7">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Análise · Dados · Apostas · Resultados</span>
           </div>
@@ -302,7 +302,12 @@ export default async function HomePage() {
             <ol className="grid grid-cols-1 md:grid-cols-3 gap-10 list-none p-0 m-0">
               {PASSOS.map((passo, i) => (
                 <li key={passo.titulo}>
-                  <div className="font-serif text-5xl text-[var(--bg-tinted)] leading-none mb-4 tracking-tighter">
+                  {/* Numeral decorativo: o <ol> já anuncia a ordem, e num cinza
+                      tão claro ele não é texto para ser lido. */}
+                  <div
+                    aria-hidden="true"
+                    className="font-serif text-5xl text-[var(--bg-tinted)] leading-none mb-4 tracking-tighter"
+                  >
                     {String(i + 1).padStart(2, "0")}
                   </div>
                   <h3 className="text-base font-bold text-[var(--text)] mb-2 tracking-tight">

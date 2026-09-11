@@ -244,11 +244,11 @@ export const MOCK_SPORTS: SportBreakdown[] = [
 ];
 
 export const MOCK_BOOKIES: BookieBreakdown[] = [
-  { casa: "Bet365", apostas: 87, percentual: 90 },
-  { casa: "BetPix365", apostas: 64, percentual: 68 },
-  { casa: "Betano", apostas: 52, percentual: 55 },
-  { casa: "Novibet", apostas: 41, percentual: 43 },
-  { casa: "Sportingbet", apostas: 38, percentual: 40 },
+  { casa: "Bet365", apostas: 87, percentual: 90, lucro: 412.5, apostado: 8700, roi: 4.74 },
+  { casa: "BetPix365", apostas: 64, percentual: 68, lucro: -180, apostado: 6400, roi: -2.81 },
+  { casa: "Betano", apostas: 52, percentual: 55, lucro: 265, apostado: 5200, roi: 5.1 },
+  { casa: "Novibet", apostas: 41, percentual: 43, lucro: 96.4, apostado: 4100, roi: 2.35 },
+  { casa: "Sportingbet", apostas: 38, percentual: 40, lucro: -57, apostado: 3800, roi: -1.5 },
 ];
 
 /**

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
@@ -20,6 +20,8 @@ const navItems = [
 export default function Navigation() {
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
+  const botaoMenu = useRef<HTMLButtonElement>(null);
+  const primeiroLink = useRef<HTMLAnchorElement>(null);
 
   // Fecha ao navegar
   useEffect(() => {
@@ -31,8 +33,16 @@ export default function Navigation() {
     if (!aberto) return;
 
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setAberto(false);
+      if (e.key === "Escape") {
+        setAberto(false);
+        botaoMenu.current?.focus();
+      }
     }
+    // Leva o foco para dentro do menu: sem isto, quem navega por teclado abria
+    // o painel e continuava no botão, atrás dele. Foco direto, sem
+    // requestAnimationFrame: o efeito já roda com o painel montado, e o rAF fica
+    // parado em aba em segundo plano — o foco simplesmente não chegava.
+    primeiroLink.current?.focus();
     const overflowAnterior = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
@@ -47,7 +57,7 @@ export default function Navigation() {
     <>
       <nav
         aria-label="Navegação principal"
-        className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between bg-[var(--bg)]/90 backdrop-blur-md border-b border-black/[0.07]"
+        className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between bg-[color:color-mix(in_srgb,var(--bg)_90%,transparent)] backdrop-blur-md border-b border-black/[0.07]"
       >
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -94,6 +104,7 @@ export default function Navigation() {
 
             {/* Botão do menu mobile */}
             <button
+              ref={botaoMenu}
               type="button"
               onClick={() => setAberto((v) => !v)}
               aria-expanded={aberto}
@@ -127,26 +138,31 @@ export default function Navigation() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 36 }}
           >
-            <ul className="flex flex-col gap-0.5 list-none p-0 m-0">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      aria-current={isActive ? "page" : undefined}
-                      className={`block px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
-                        isActive
-                          ? "bg-white text-[var(--text)] shadow-sm"
-                          : "text-[var(--text-2)] hover:bg-white/60 hover:text-[var(--accent)]"
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+            {/* O painel fica fora do <nav> do topo; sem este marco a lista
+                do celular não aparecia como navegação para leitor de tela. */}
+            <nav aria-label="Menu">
+              <ul className="flex flex-col gap-0.5 list-none p-0 m-0">
+                {navItems.map((item, i) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        ref={i === 0 ? primeiroLink : undefined}
+                        href={item.href}
+                        aria-current={isActive ? "page" : undefined}
+                        className={`block px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+                          isActive
+                            ? "bg-white text-[var(--text)] shadow-sm"
+                            : "text-[var(--text-2)] hover:bg-white/60 hover:text-[var(--accent)]"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
 
             <a
               href={TELEGRAM_URL}

@@ -14,6 +14,10 @@ interface RegraEsporte {
 }
 
 /**
+ * O texto de cada selo é um tom abaixo da cor do ponto. Seis deles, na cor
+ * cheia, ficavam abaixo de 4,5:1 sobre a própria tinta a 11px — o de basquete
+ * dava 2,90. Os tons atuais passam de 4,6.
+ *
  * Ordem importa: padrão específico antes de genérico.
  * "corrida de cavalos" precisa vir antes de "corrida", que identificava F1.
  */
@@ -33,19 +37,19 @@ const REGRAS: RegraEsporte[] = [
   {
     padroes: ["futebol", "soccer", "football"],
     rotulo: "Futebol",
-    estilo: "bg-[#2D8659]/10 text-[#2D8659] border-[#2D8659]/25",
+    estilo: "bg-[#2D8659]/10 text-[#27734C] border-[#2D8659]/25",
     ponto: "bg-[#2D8659]",
   },
   {
     padroes: ["nba", "basquete", "basket", "ncaa"],
     rotulo: "Basquete",
-    estilo: "bg-[#EA580C]/10 text-[#EA580C] border-[#EA580C]/25",
+    estilo: "bg-[#EA580C]/10 text-[#B24309] border-[#EA580C]/25",
     ponto: "bg-[#EA580C]",
   },
   {
     padroes: ["tenis", "tennis", "atp", "wta"],
     rotulo: "Tênis",
-    estilo: "bg-[#65A30D]/10 text-[#4D7C0F] border-[#65A30D]/25",
+    estilo: "bg-[#65A30D]/10 text-[#46710E] border-[#65A30D]/25",
     ponto: "bg-[#65A30D]",
   },
   {
@@ -57,19 +61,19 @@ const REGRAS: RegraEsporte[] = [
   {
     padroes: ["mma", "ufc", "boxe", "boxing", "luta"],
     rotulo: "MMA / Luta",
-    estilo: "bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/25",
+    estilo: "bg-[#DC2626]/10 text-[#C42020] border-[#DC2626]/25",
     ponto: "bg-[#DC2626]",
   },
   {
     padroes: ["volei", "volleyball"],
     rotulo: "Vôlei",
-    estilo: "bg-[#0284C7]/10 text-[#0284C7] border-[#0284C7]/25",
+    estilo: "bg-[#0284C7]/10 text-[#026BA1] border-[#0284C7]/25",
     ponto: "bg-[#0284C7]",
   },
   {
     padroes: ["hoquei", "hockey", "nhl"],
     rotulo: "NHL",
-    estilo: "bg-[#0F766E]/10 text-[#0F766E] border-[#0F766E]/25",
+    estilo: "bg-[#0F766E]/10 text-[#0E716A] border-[#0F766E]/25",
     ponto: "bg-[#0F766E]",
   },
   {
@@ -96,7 +100,7 @@ export function SportBadge({ sport = "Futebol", className = "" }: SportBadgeProp
   const rotulo = regra?.rotulo ?? nome;
   const estilo =
     regra?.estilo ??
-    "bg-[var(--text-2)]/10 text-[var(--text)] border-black/10";
+    "bg-[var(--text-2-soft)] text-[var(--text)] border-black/10";
   const ponto = regra?.ponto ?? "bg-[var(--text-2)]";
 
   return (

@@ -19,19 +19,34 @@
 
   --text: #16131F;
   --text-2: #5D5670;
-  --text-3: #736C82;
+  /* #736C82 dava 4,26:1 sobre --bg-alt (o rodapé) e 4,17 sobre --bg-tinted.
+     Este passa nas duas (4,70 e 4,60) e continua distinto de --text-2. */
+  --text-3: #6C667A;
 
   --accent: #6B3FE4;
   --accent-hover: #5A2FD0;
-  --accent-soft: rgba(107, 63, 228, 0.08);
 
   --green: #0E7A50;
-  --green-soft: rgba(14, 122, 80, 0.08);
   --red: #C41E3A;
-  --red-soft: rgba(196, 30, 58, 0.08);
   --amber: #8A6408;
-  --amber-soft: rgba(138, 100, 8, 0.08);
 
+  /*
+   * Tons suaves, derivados das cores acima em vez de repetir os canais.
+   *
+   * O Tailwind 3 não aplica opacidade a CSS variable: `bg-[var(--green)]/10`
+   * nunca foi gerada, e foi assim que todos os fundos tingidos do site
+   * sumiram — selos de resultado, quadrados dos ícones, avisos, a própria
+   * barra de navegação. Estes tokens substituem aquela sintaxe.
+   *
+   * 6% e não 10%: é o máximo em que o texto verde e o âmbar dos selos ainda
+   * passam de 4,5:1 sobre a própria tinta (4,53 e 4,55). A 10% caíam para 4,29.
+   */
+  --accent-soft: color-mix(in srgb, var(--accent) 6%, transparent);
+  --green-soft: color-mix(in srgb, var(--green) 6%, transparent);
+  --red-soft: color-mix(in srgb, var(--red) 6%, transparent);
+  --amber-soft: color-mix(in srgb, var(--amber) 6%, transparent);
+  --text-soft: color-mix(in srgb, var(--text) 5%, transparent);
+  --text-2-soft: color-mix(in srgb, var(--text-2) 10%, transparent);
 }
 
 html {
@@ -56,6 +71,12 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* A rolagem suave também é movimento: sem isto, quem pediu menos animação
+     ainda deslizava a página inteira ao seguir uma âncora. */
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {

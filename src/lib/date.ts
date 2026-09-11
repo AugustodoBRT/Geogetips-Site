@@ -17,16 +17,6 @@ export function parseDateTimestamp(dateStr: string): number {
   return new Date(year, month, day).getTime();
 }
 
-/** Ordena datas "DD/MM/YYYY" da mais recente para a mais antiga. */
-export function ordenarPorDataDesc(a: string, b: string): number {
-  return parseDateTimestamp(b) - parseDateTimestamp(a);
-}
-
-/** "27/08/2026" -> "27/08" */
-export function diaEMes(dateStr: string): string {
-  const parts = dateStr.split("/");
-  return parts.length === 3 ? `${parts[0]}/${parts[1]}` : dateStr;
-}
 
 /**
  * "DD/MM/YYYY" -> "YYYY-MM-DD", que é o formato que input[type=date] usa.

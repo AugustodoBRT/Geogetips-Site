@@ -161,7 +161,9 @@ export function CarrosselProfundidade({
   if (semMovimento) {
     return (
       <div className="max-w-5xl mx-auto px-6">
-        {cabecalho}
+        {/* Na versão animada o gap da área fixa separa os dois; aqui não havia
+            nada, e o título encostava no primeiro card. */}
+        <div className="mb-8">{cabecalho}</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {itens.map((item) => (
             <article

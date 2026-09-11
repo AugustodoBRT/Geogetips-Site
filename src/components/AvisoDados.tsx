@@ -14,10 +14,11 @@ export function AvisoErro({
   return (
     <div
       role="alert"
-      className="bg-[var(--red)]/[0.06] border border-[var(--red)]/25 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4"
+      className="bg-[var(--red-soft)] border border-[color:color-mix(in_srgb,var(--red)_25%,transparent)] rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4"
     >
-      <div className="w-9 h-9 rounded-lg bg-[var(--red)]/12 text-[var(--red)] flex items-center justify-center shrink-0">
-        <AlertTriangle className="w-4.5 h-4.5" />
+      <div className="w-9 h-9 rounded-lg bg-[var(--red-soft)] text-[var(--red)] flex items-center justify-center shrink-0">
+        {/* w-4.5 não existe na escala do Tailwind 3: o ícone saía no tamanho padrão, 24px. */}
+        <AlertTriangle className="w-[18px] h-[18px]" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-[var(--red)]">
@@ -27,8 +28,9 @@ export function AvisoErro({
       </div>
       {onTentarNovamente && (
         <button
+          type="button"
           onClick={onTentarNovamente}
-          className="px-4 py-2 bg-[var(--red)] text-white text-xs font-bold rounded-full hover:opacity-90 active:scale-[0.98] transition-all shrink-0"
+          className="px-4 py-2 bg-[var(--red)] text-white text-xs font-bold rounded-full hover:opacity-90 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--red)] focus-visible:ring-offset-2 transition-all shrink-0"
         >
           Tentar novamente
         </button>
@@ -40,8 +42,8 @@ export function AvisoErro({
 /** Modo demonstração explícito (NEXT_PUBLIC_USE_MOCK=1). */
 export function AvisoMock() {
   return (
-    <div className="bg-[var(--amber)]/[0.08] border border-[var(--amber)]/30 rounded-2xl px-5 py-3 flex items-center gap-3">
-      <FlaskConical className="w-4 h-4 text-[var(--amber)] shrink-0" />
+    <div className="bg-[var(--amber-soft)] border border-[color:color-mix(in_srgb,var(--amber)_30%,transparent)] rounded-2xl px-5 py-3 flex items-center gap-3">
+      <FlaskConical className="w-4 h-4 text-[var(--amber)] shrink-0" aria-hidden="true" />
       <p className="text-[13px] text-[var(--text)]">
         <strong className="font-bold text-[var(--amber)]">Dados de demonstração.</strong>{" "}
         Os números abaixo são fictícios e não refletem resultados reais do grupo.
