@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { DURACAO, MOLA_CURTA, VEU } from "@/lib/movimento";
 import { Menu, X } from "lucide-react";
 import { BotaoTelegram, IconeTelegram } from "@/components/Telegram";
 import { TELEGRAM_URL } from "@/lib/constants";
@@ -119,24 +120,37 @@ export default function Navigation() {
       </nav>
 
       {/* Painel mobile.
-          Sem AnimatePresence de propósito: com ela, o backdrop de tela cheia
-          permanecia no DOM com opacity 0 depois de fechar e interceptava todos
-          os cliques da página no mobile. Desmontar direto é determinístico. */}
-      {aberto && (
-        <>
+
+          Duas peças soltas dentro do AnimatePresence, **cada uma com a sua
+          key**. Antes elas vinham embrulhadas num fragmento sem key, e era
+          isso que deixava o véu de tela cheia preso no DOM com opacidade 0
+          depois de fechar, interceptando todo clique da página no celular.
+
+          `pointerEvents: none` na saída é o cinto de segurança: mesmo que a
+          animação trave no meio, o véu para de receber clique no instante em
+          que começa a sair. */}
+      <AnimatePresence>
+        {aberto && (
           <motion.div
+            key="veu-menu"
             className="fixed inset-0 z-40 bg-black/25 backdrop-blur-sm md:hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.18 }}
+            initial={VEU.initial}
+            animate={VEU.animate}
+            exit={{ ...VEU.exit, pointerEvents: "none" }}
+            transition={{ duration: DURACAO.toque }}
             onClick={() => setAberto(false)}
           />
+        )}
+        {aberto && (
           <motion.div
+            key="painel-menu"
             id="menu-mobile"
             className="fixed top-16 left-0 right-0 z-40 md:hidden bg-[var(--bg)] border-b border-black/[0.08] shadow-subtle px-4 py-3"
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 420, damping: 36 }}
+            // Sai mais curto do que entrou: quem fechou já foi embora.
+            exit={{ opacity: 0, y: -8, pointerEvents: "none" }}
+            transition={MOLA_CURTA}
           >
             {/* O painel fica fora do <nav> do topo; sem este marco a lista
                 do celular não aparecia como navegação para leitor de tela. */}
@@ -174,8 +188,8 @@ export default function Navigation() {
               <span>Entrar no grupo grátis</span>
             </a>
           </motion.div>
-        </>
-      )}
+        )}
+      </AnimatePresence>
 
       <div className="h-16" />
     </>

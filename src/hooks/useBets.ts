@@ -16,7 +16,24 @@ export interface UseBetsResult {
   tabs: string[];
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  /** Há requisição em curso — serve à barra de progresso. */
   loading: boolean;
+  /**
+   * true quando a tela deve mostrar esqueleto em vez do conteúdo.
+   *
+   * Há dois tipos de espera, e tratá-los igual é o que faz o painel piscar à
+   * toa:
+   *
+   * - **Não há o que mostrar** — primeira carga, ou troca de aba. Aqui o
+   *   esqueleto é obrigatório. Segurar os números de julho embaixo de um
+   *   cabeçalho que já diz agosto seria mostrar dado errado num site cuja
+   *   promessa inteira é bater com a planilha linha a linha.
+   * - **Já há o que mostrar** — botão de atualizar, mesma aba. Os números
+   *   continuam certos até chegar a resposta, então ficam onde estão e só a
+   *   barra de progresso avisa que há leitura em curso. Apagar a tela para
+   *   redesenhar quase o mesmo número é perda pura para quem está lendo.
+   */
+  mostrarEsqueleto: boolean;
   /** Mensagem de erro da API, ou null. */
   erro: string | null;
   /** true quando a API está servindo dados de demonstração. */
@@ -38,6 +55,15 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
   const [bets, setBets] = useState<BetItem[]>([]);
   const [stats, setStats] = useState<BetStats | null>(null);
   const [loading, setLoading] = useState(true);
+  // Aba a que os dados em memória pertencem. null enquanto nada chegou.
+  // Vive em estado (a tela precisa reagir) e em ref (o efeito precisa ler sem
+  // se declarar dependente dela, senão cada leitura dispararia a seguinte).
+  const [abaCarregada, setAbaCarregada] = useState<string | null>(null);
+  const abaCarregadaRef = useRef<string | null>(null);
+  const registrarAba = useCallback((aba: string | null) => {
+    abaCarregadaRef.current = aba;
+    setAbaCarregada(aba);
+  }, []);
   const [erro, setErro] = useState<string | null>(null);
   const [isMock, setIsMock] = useState(false);
   const [lidoEm, setLidoEm] = useState<string | null>(null);
@@ -55,6 +81,14 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
       abaJaCarregada.current = null;
       return;
     }
+    // Trocou de aba: o que está na tela é de outro mês e sai agora. Numa
+    // releitura da mesma aba os dados ficam onde estão — ver `mostrarEsqueleto`.
+    if (abaCarregadaRef.current !== null && abaCarregadaRef.current !== activeTab) {
+      setBets([]);
+      setStats(null);
+      setLidoEm(null);
+    }
+
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -82,11 +116,15 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
           setBets([]);
           setStats(null);
           setLidoEm(null);
+          registrarAba(null);
           return;
         }
 
         setIsMock(Boolean(json.isMock));
         setLidoEm(typeof json.lidoEm === "string" ? json.lidoEm : null);
+        // A aba servida pode não ser a pedida: no começo do mês o servidor
+        // devolve a mais recente no lugar da que ainda não existe.
+        registrarAba(typeof json.activeTab === "string" ? json.activeTab : activeTab);
         setStats(json.stats ?? null);
         setBets(Array.isArray(json.data) ? json.data : []);
         if (Array.isArray(json.tabs) && json.tabs.length > 0) setTabs(json.tabs);
@@ -102,6 +140,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
         setBets([]);
         setStats(null);
         setLidoEm(null);
+        registrarAba(null);
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
@@ -109,7 +148,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
 
     carregar();
     return () => controller.abort();
-  }, [activeTab, onlyStats, nonce]);
+  }, [activeTab, onlyStats, nonce, registrarAba]);
 
   return {
     bets,
@@ -118,6 +157,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
     activeTab,
     setActiveTab,
     loading,
+    mostrarEsqueleto: loading && abaCarregada !== activeTab,
     erro,
     isMock,
     lidoEm,

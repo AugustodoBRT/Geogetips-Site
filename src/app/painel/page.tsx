@@ -8,6 +8,7 @@ import { BookieBadge } from "@/components/BookieBadge";
 import { SeletorAba } from "@/components/SeletorAba";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonKpis, SkeletonLinhas } from "@/components/Skeleton";
+import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
@@ -63,6 +64,7 @@ export default function PainelPage() {
     activeTab,
     setActiveTab,
     loading,
+    mostrarEsqueleto,
     erro,
     isMock,
     lidoEm,
@@ -345,6 +347,7 @@ export default function PainelPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <BarraDeProgresso ativo={loading} />
       {/* Header with Month & Day Selectors */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         {/* min-w-0: sem isso o parágrafo cresce ao filtrar um dia e espreme os
@@ -427,13 +430,13 @@ export default function PainelPage() {
           role="region" com nome acessível vira marco de navegação, igual a
           <section aria-labelledby>. Antes os cinco blocos eram div solta e não
           havia como pular entre eles com leitor de tela. */}
-      {loading ? (
-        <SkeletonKpis quantidade={5} />
+      {mostrarEsqueleto ? (
+        <SkeletonKpis quantidade={5} grade="cinco" />
       ) : (
       <div
         role="region"
         aria-label="Indicadores do período"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 animate-entrada"
       >
         <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
           <div className="flex items-center justify-between text-[var(--text-3)]">

@@ -5,7 +5,8 @@ import { Award } from "lucide-react";
 import { SportBadge } from "@/components/SportBadge";
 import { SeletorAba } from "@/components/SeletorAba";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
-import { SkeletonLinhas } from "@/components/Skeleton";
+import { SkeletonCorpoAdms } from "@/components/Skeleton";
+import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
@@ -19,6 +20,7 @@ export default function AdmsPage() {
     activeTab,
     setActiveTab,
     loading,
+    mostrarEsqueleto,
     erro,
     isMock,
     recarregar,
@@ -29,6 +31,7 @@ export default function AdmsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <BarraDeProgresso ativo={loading} />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -62,8 +65,8 @@ export default function AdmsPage() {
       {isMock && <AvisoMock />}
       {erro && <AvisoErro mensagem={erro} onTentarNovamente={recarregar} />}
 
-      {loading ? (
-        <SkeletonLinhas quantidade={4} altura="h-52" />
+      {mostrarEsqueleto ? (
+        <SkeletonCorpoAdms />
       ) : erro ? null : adms.length === 0 ? (
         <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center text-[var(--text-3)]">
           <p className="text-sm font-medium">
@@ -71,7 +74,7 @@ export default function AdmsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-entrada">
           {adms.map((adm, index) => {
             const isProfitable = adm.lucroUnidades >= 0;
             const total = adm.totalApostas || 1;
@@ -182,7 +185,7 @@ export default function AdmsPage() {
                   </div>
 
                   <div
-                    className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden flex"
+                    className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden flex origin-left animate-surgir-x"
                     role="img"
                     aria-label={`${adm.nome}: ${formatarInteiro(adm.greens)} green, ${formatarInteiro(
                       adm.reds
@@ -193,7 +196,7 @@ export default function AdmsPage() {
                     {fatias.map((f) => (
                       <div
                         key={f.rotulo}
-                        className="h-full transition-[width] duration-500 ease-out"
+                        className="h-full"
                         style={{ width: `${(f.n / total) * 100}%`, background: f.cor }}
                       />
                     ))}

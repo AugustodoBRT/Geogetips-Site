@@ -70,6 +70,23 @@ body {
   font-feature-settings: "tnum" 1;
 }
 
+/* Retorno de toque.
+   O controle afunda de leve enquanto está pressionado — é o que faz um botão
+   de tela parecer um botão de verdade. Vale para todos de uma vez porque a
+   regra é universal: se dá para clicar, tem de responder ao clique.
+
+   Especificidade baixa de propósito (0,1,1), para perder de qualquer
+   `active:scale-*` escrito à mão na classe do elemento; quem já tinha um valor
+   próprio continua com o dele. Sem `transition` aqui: retorno de toque é
+   feedback, não animação, e qualquer atraso o transforma em atraso. */
+button:active {
+  transform: scale(0.97);
+}
+
+button[disabled]:active {
+  transform: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* A rolagem suave também é movimento: sem isto, quem pediu menos animação
      ainda deslizava a página inteira ao seguir uma âncora. */

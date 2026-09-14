@@ -2,9 +2,7 @@
 
 import { useMemo, useRef } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
-
-/** Curva de desaceleração usada em todo o site. Sai rápido, assenta devagar. */
-const SAIDA_SUAVE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+import { SAIDA_SUAVE } from "@/lib/movimento";
 
 interface TextoQueCaiProps {
   texto: string;
