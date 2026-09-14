@@ -1,0 +1,46 @@
+# Portão de entrada da main: nenhum pull request é mesclado com isto vermelho.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# PR atualizado cancela a verificação anterior — vale a última.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Tipos, paleta e build
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Tipos
+        run: npx tsc --noEmit
+
+      # A paleta vive em dois lugares: o :root do globals.css e src/lib/cores.ts,
+      # que repete os hexadecimais para o Satori (ele não lê CSS variable).
+      # Este script cobra que os dois digam a mesma coisa.
+      - name: Paleta
+        run: npm run checar:cores
+
+      - name: Build de produção
+        run: npm run build
+
+      # O lint entra aqui quando a issue #8 estiver resolvida. Hoje
+      # `npm run lint` chama o `next lint`, que abre um menu interativo e
+      # travaria o job até o tempo-limite.

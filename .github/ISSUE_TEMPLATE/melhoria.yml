@@ -1,0 +1,23 @@
+name: Melhoria
+description: Deixar melhor algo que já existe
+labels: ["melhoria"]
+body:
+  - type: textarea
+    id: hoje
+    attributes:
+      label: Como está hoje
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: O que melhora, e para quem
+      description: Quem ganha o quê com isso. Se ninguém ganha nada, não é melhoria.
+    validations:
+      required: true
+  - type: textarea
+    id: conferir
+    attributes:
+      label: Como conferir
+    validations:
+      required: true
