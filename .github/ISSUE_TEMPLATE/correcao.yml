@@ -1,0 +1,31 @@
+name: Correção
+description: Algo está errado, quebrado ou fora do combinado
+labels: ["correção"]
+body:
+  - type: textarea
+    id: sintoma
+    attributes:
+      label: Sintoma
+      description: O que acontece hoje e como chegar até lá.
+      placeholder: |
+        Em /apostas, a primeira linha da lista é uma aposta de dezembro...
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que era esperado
+    validations:
+      required: true
+  - type: input
+    id: onde
+    attributes:
+      label: Onde
+      description: Arquivo, rota ou tela, se já souber.
+      placeholder: src/lib/sheets.ts — linhasParaBets
+  - type: textarea
+    id: conferir
+    attributes:
+      label: Como conferir que ficou resolvido
+    validations:
+      required: true

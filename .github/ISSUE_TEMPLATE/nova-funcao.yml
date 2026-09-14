@@ -1,0 +1,29 @@
+name: Nova função
+description: Algo que o site ainda não faz
+labels: ["nova função"]
+body:
+  - type: textarea
+    id: paraque
+    attributes:
+      label: Para que serve
+      description: O que o visitante do site consegue fazer depois disto que não conseguia antes.
+    validations:
+      required: true
+  - type: textarea
+    id: esboco
+    attributes:
+      label: Esboço
+      description: Rota, telas, dados envolvidos. O suficiente para alguém começar.
+    validations:
+      required: true
+  - type: textarea
+    id: decisoes
+    attributes:
+      label: O que precisa ser decidido antes
+      description: Preço, texto, regra de negócio — o que trava o início.
+  - type: textarea
+    id: conferir
+    attributes:
+      label: Como conferir
+    validations:
+      required: true

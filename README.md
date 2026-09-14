@@ -4,6 +4,19 @@ Dashboard moderno e analítico desenvolvido em **Next.js 15**, **React 19**, **T
 
 ---
 
+## Fluxo de trabalho
+
+Toda tarefa vira issue, todo código entra por pull request, e a descrição do PR
+cita a issue que ela fecha. O padrão completo — nome de branch, formato da
+mensagem de commit, o que conferir antes de abrir o PR e o que o CI cobra —
+está em **[AGENTS.md](AGENTS.md)**, e vale igual para gente e para assistente de
+qualquer modelo.
+
+[Issues abertas](https://github.com/AugustodoBRT/Geogetips-Site/issues) ·
+[Pull requests](https://github.com/AugustodoBRT/Geogetips-Site/pulls)
+
+---
+
 ## Principais Funcionalidades
 
 - **Painel de Performance**:
