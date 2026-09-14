@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { linhasParaBets, parseCurrency, parseOdd, parseResultado } from "./sheets";
+import {
+  linhasParaBets,
+  ordenarApostas,
+  parseCurrency,
+  parseOdd,
+  parseResultado,
+} from "./sheets";
+import type { BetItem } from "./types";
 
 /**
  * A fronteira entre a planilha e o site.
@@ -210,5 +217,87 @@ describe("linhasParaBets", () => {
       }),
     ]);
     expect(bet.unidades).toBe(2.5);
+  });
+});
+
+describe("ordenarApostas", () => {
+  const HOJE = new Date("2026-09-14T12:00:00Z");
+
+  function aposta(data: string, resultado: BetItem["resultado"], id: string): BetItem {
+    return {
+      id,
+      data,
+      esporte: "Futebol",
+      tipster: "Manel",
+      partida: "A x B",
+      tip: "Campeão",
+      casa: "Bet365",
+      odd: 5,
+      valor: 100,
+      unidades: 1,
+      resultado,
+      lucro: 0,
+    };
+  }
+
+  it("manda a pendente de data futura para o fim", () => {
+    // Era o defeito: "Longo Prazo - Libertadores + Brasileirão", lançada com a
+    // data da final, ficava acima das apostas do dia. Quem abria o feed lia a
+    // primeira linha como a mais recente, e não era.
+    const ordenadas = ordenarApostas(
+      [
+        aposta("20/12/2026", "PENDENTE", "longo-prazo"),
+        aposta("14/09/2026", "GREEN", "hoje"),
+        aposta("13/09/2026", "RED", "ontem"),
+      ],
+      HOJE
+    );
+    expect(ordenadas.map((b) => b.id)).toEqual(["hoje", "ontem", "longo-prazo"]);
+  });
+
+  it("entre as de longo prazo, a que resolve antes vem primeiro", () => {
+    const ordenadas = ordenarApostas(
+      [
+        aposta("20/12/2026", "PENDENTE", "dezembro"),
+        aposta("01/11/2026", "PENDENTE", "novembro"),
+      ],
+      HOJE
+    );
+    expect(ordenadas.map((b) => b.id)).toEqual(["novembro", "dezembro"]);
+  });
+
+  it("devolve a aposta ao lugar cronológico quando o resultado sai", () => {
+    // Deixa de ser pendente: volta a ser notícia, e notícia vai para o topo.
+    const ordenadas = ordenarApostas(
+      [aposta("20/12/2026", "GREEN", "resolvida"), aposta("14/09/2026", "GREEN", "hoje")],
+      HOJE
+    );
+    expect(ordenadas.map((b) => b.id)).toEqual(["resolvida", "hoje"]);
+  });
+
+  it("não trata a aposta de hoje como futura", () => {
+    const ordenadas = ordenarApostas(
+      [
+        aposta("13/09/2026", "GREEN", "ontem"),
+        aposta("14/09/2026", "PENDENTE", "hoje-pendente"),
+      ],
+      HOJE
+    );
+    expect(ordenadas.map((b) => b.id)).toEqual(["hoje-pendente", "ontem"]);
+  });
+
+  it("mantém o desempate dentro do mesmo dia", () => {
+    const ordenadas = ordenarApostas(
+      [
+        aposta("14/09/2026", "GREEN", "primeira"),
+        aposta("14/09/2026", "GREEN", "segunda"),
+      ],
+      HOJE
+    );
+    expect(ordenadas.map((b) => b.id)).toEqual(["segunda", "primeira"]);
+  });
+
+  it("aguenta lista vazia", () => {
+    expect(ordenarApostas([], HOJE)).toEqual([]);
   });
 });

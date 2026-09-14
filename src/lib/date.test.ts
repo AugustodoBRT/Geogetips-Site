@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { doISO, paraISO, parseDateTimestamp, timestampDoISO } from "./date";
+import { doISO, inicioDeHoje, paraISO, parseDateTimestamp, timestampDoISO } from "./date";
 
 /**
  * Datas vêm da planilha como texto em "DD/MM/YYYY", digitadas por gente. O
@@ -79,5 +79,29 @@ describe("ida e volta", () => {
     const original = "14/09/2026";
     expect(doISO(paraISO(original))).toBe(original);
     expect(timestampDoISO(paraISO(original))).toBe(parseDateTimestamp(original));
+  });
+});
+
+describe("inicioDeHoje", () => {
+  it("ainda é o dia 30 às 23h de São Paulo", () => {
+    // 01/10 02:00 UTC = 30/09 23:00 em São Paulo. Sem o fuso, o servidor já
+    // teria virado o dia e trataria uma aposta de 01/10 como se fosse de hoje.
+    expect(inicioDeHoje(new Date("2026-10-01T02:00:00Z"))).toBe(
+      new Date(2026, 8, 30).getTime()
+    );
+  });
+
+  it("vira o dia à meia-noite de São Paulo", () => {
+    expect(inicioDeHoje(new Date("2026-10-01T03:00:00Z"))).toBe(
+      new Date(2026, 9, 1).getTime()
+    );
+  });
+
+  it("é comparável com o que parseDateTimestamp devolve", () => {
+    // Os dois representam meia-noite local de uma data. Se divergissem, a
+    // comparação de "futuro" erraria por um dia inteiro.
+    expect(inicioDeHoje(new Date("2026-09-14T12:00:00Z"))).toBe(
+      parseDateTimestamp("14/09/2026")
+    );
   });
 });
