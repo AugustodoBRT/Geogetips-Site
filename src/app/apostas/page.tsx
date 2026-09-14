@@ -167,8 +167,7 @@ export default function ApostasPage() {
         bet.casa.toLowerCase().includes(termo) ||
         bet.tipster.toLowerCase().includes(termo);
 
-      const matchesStatus =
-        statusFilter === "TODAS" || bet.resultado === statusFilter;
+      const matchesStatus = statusFilter === "TODAS" || bet.resultado === statusFilter;
       const matchesSport =
         sportsFilter.length === 0 || sportsFilter.includes(bet.esporte);
       const matchesBookie =
@@ -185,8 +184,7 @@ export default function ApostasPage() {
 
       let matchesOdd = true;
       if (oddRangeFilter === "BAIXA") matchesOdd = bet.odd < 1.8;
-      else if (oddRangeFilter === "MEDIA")
-        matchesOdd = bet.odd >= 1.8 && bet.odd <= 3.0;
+      else if (oddRangeFilter === "MEDIA") matchesOdd = bet.odd >= 1.8 && bet.odd <= 3.0;
       else if (oddRangeFilter === "ALTA") matchesOdd = bet.odd > 3.0;
 
       return (
@@ -301,7 +299,8 @@ export default function ApostasPage() {
 
   /** Frase curta do recorte de data, para o subtítulo dizer o que está na tela. */
   const rotuloDoPeriodo = useMemo(() => {
-    if (de && ate) return de === ate ? `dia ${doISO(de)}` : `${doISO(de)} a ${doISO(ate)}`;
+    if (de && ate)
+      return de === ate ? `dia ${doISO(de)}` : `${doISO(de)} a ${doISO(ate)}`;
     if (de) return `a partir de ${doISO(de)}`;
     if (ate) return `até ${doISO(ate)}`;
     return "";
@@ -345,9 +344,7 @@ export default function ApostasPage() {
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
             Feed cronológico lido {trecho.prefixo}{" "}
             <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>
-            {rotuloDoPeriodo && (
-              <span> ({rotuloDoPeriodo})</span>
-            )}.
+            {rotuloDoPeriodo && <span> ({rotuloDoPeriodo})</span>}.
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
@@ -438,7 +435,8 @@ export default function ApostasPage() {
             <span className="text-[var(--red)]">{formatarInteiro(resumo.reds)}</span>
             {resumo.voids > 0 && (
               <span className="text-[var(--text-2)] text-sm font-normal">
-                {" "}· {formatarInteiro(resumo.voids)} void
+                {" "}
+                · {formatarInteiro(resumo.voids)} void
               </span>
             )}
           </div>
@@ -506,7 +504,7 @@ export default function ApostasPage() {
                 />
               </div>
 
-                    {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no
+              {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no
                   lugar é <fieldset>, que chega com borda, margem e padding do
                   navegador e existe para agrupar campo de formulário. Aqui é uma
                   barra de pílulas: trocar custaria regressão visual sem ganho de
@@ -516,31 +514,33 @@ export default function ApostasPage() {
                 role="group"
                 aria-label="Filtrar por resultado"
               >
-                {(["TODAS", "GREEN", "RED", "VOID", "PENDENTE"] as const).map((status) => {
-                  const isActive = statusFilter === status;
-                  const rotulos = {
-                    TODAS: "Todas",
-                    GREEN: "Green",
-                    RED: "Red",
-                    VOID: "Void",
-                    PENDENTE: "Pendente",
-                  } as const;
-                  return (
-                    <button
-                      key={status}
-                      type="button"
-                      onClick={() => setStatusFilter(status)}
-                      aria-pressed={isActive}
-                      className={`px-3 py-1.5 text-[11px] font-semibold rounded-full border transition-all ${
-                        isActive
-                          ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                          : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
-                      }`}
-                    >
-                      {rotulos[status]}
-                    </button>
-                  );
-                })}
+                {(["TODAS", "GREEN", "RED", "VOID", "PENDENTE"] as const).map(
+                  (status) => {
+                    const isActive = statusFilter === status;
+                    const rotulos = {
+                      TODAS: "Todas",
+                      GREEN: "Green",
+                      RED: "Red",
+                      VOID: "Void",
+                      PENDENTE: "Pendente",
+                    } as const;
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => setStatusFilter(status)}
+                        aria-pressed={isActive}
+                        className={`px-3 py-1.5 text-[11px] font-semibold rounded-full border transition-all ${
+                          isActive
+                            ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                            : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                        }`}
+                      >
+                        {rotulos[status]}
+                      </button>
+                    );
+                  }
+                )}
               </div>
             </div>
 
@@ -576,7 +576,7 @@ export default function ApostasPage() {
                 />
               </div>
 
-                    {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no
+              {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no
                   lugar é <fieldset>, que chega com borda, margem e padding do
                   navegador e existe para agrupar campo de formulário. Aqui é uma
                   barra de pílulas: trocar custaria regressão visual sem ganho de
@@ -642,8 +642,7 @@ export default function ApostasPage() {
                         {date}
                       </h2>
                       <span className="text-[11px] text-[var(--text-3)]">
-                        ({dayBets.length}{" "}
-                        {dayBets.length === 1 ? "aposta" : "apostas"})
+                        ({dayBets.length} {dayBets.length === 1 ? "aposta" : "apostas"})
                       </span>
                       <div className="flex-1 h-px bg-black/[0.06]" />
                       <span
@@ -664,96 +663,96 @@ export default function ApostasPage() {
                         301 linhas na tela. Sair sem animação é determinístico; a
                         animação de entrada continua funcionando. */}
                     {dayBets.map((bet) => {
-                        const isGreen = bet.resultado === "GREEN";
-                        const isRed = bet.resultado === "RED";
-                        const isVoid = bet.resultado === "VOID";
+                      const isGreen = bet.resultado === "GREEN";
+                      const isRed = bet.resultado === "RED";
+                      const isVoid = bet.resultado === "VOID";
 
-                        return (
-                          <motion.button
-                            key={bet.id}
-                            initial={{ opacity: 0, scale: 0.97 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.2 }}
-                            type="button"
-                            onClick={() => setSelectedBet(bet)}
-                            aria-label={`Ver detalhes: ${bet.partida}, ${bet.tip}`}
-                            className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)] hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors cursor-pointer grid grid-cols-[5px_1fr] group mb-2"
-                          >
-                            <div
-                              className={
-                                isGreen
-                                  ? "bg-[var(--green)]"
-                                  : isRed
+                      return (
+                        <motion.button
+                          key={bet.id}
+                          initial={{ opacity: 0, scale: 0.97 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.2 }}
+                          type="button"
+                          onClick={() => setSelectedBet(bet)}
+                          aria-label={`Ver detalhes: ${bet.partida}, ${bet.tip}`}
+                          className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)] hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors cursor-pointer grid grid-cols-[5px_1fr] group mb-2"
+                        >
+                          <div
+                            className={
+                              isGreen
+                                ? "bg-[var(--green)]"
+                                : isRed
                                   ? "bg-[var(--red)]"
                                   : isVoid
-                                  ? "bg-[var(--text-3)]"
-                                  : "bg-[var(--amber)]"
-                              }
-                            />
+                                    ? "bg-[var(--text-3)]"
+                                    : "bg-[var(--amber)]"
+                            }
+                          />
 
-                            <div className="p-3.5 sm:p-4 space-y-2 min-w-0">
-                              {/* Linha 1 — quebra no mobile em vez de ser cortada */}
-                              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-                                <SportBadge sport={bet.esporte} />
-                                <span className="text-[13.5px] font-bold text-[var(--text)] tracking-tight group-hover:text-[var(--accent)] transition-colors min-w-0 flex-1 truncate">
-                                  {bet.partida}
-                                </span>
-                                <BookieBadge bookie={bet.casa} />
-                              </div>
+                          <div className="p-3.5 sm:p-4 space-y-2 min-w-0">
+                            {/* Linha 1 — quebra no mobile em vez de ser cortada */}
+                            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                              <SportBadge sport={bet.esporte} />
+                              <span className="text-[13.5px] font-bold text-[var(--text)] tracking-tight group-hover:text-[var(--accent)] transition-colors min-w-0 flex-1 truncate">
+                                {bet.partida}
+                              </span>
+                              <BookieBadge bookie={bet.casa} />
+                            </div>
 
-                              {/* Linha 2 — odd, valor, status e lucro sempre visíveis */}
-                              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1.5 border-t border-black/[0.04]">
-                                {/* No mobile a tip ocupa a linha inteira; a
+                            {/* Linha 2 — odd, valor, status e lucro sempre visíveis */}
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1.5 border-t border-black/[0.04]">
+                              {/* No mobile a tip ocupa a linha inteira; a
                                     partir de sm divide espaço com o resto. */}
-                                <span className="text-xs text-[var(--text-2)] font-medium w-full sm:w-auto sm:min-w-0 sm:flex-1 truncate">
-                                  {bet.tip}
+                              <span className="text-xs text-[var(--text-2)] font-medium w-full sm:w-auto sm:min-w-0 sm:flex-1 truncate">
+                                {bet.tip}
+                              </span>
+
+                              {bet.tipster && bet.tipster !== "Geral" && (
+                                <span className="text-[10px] text-[var(--text-3)] px-1.5 py-0.5 bg-[var(--bg)] rounded shrink-0">
+                                  {bet.tipster}
                                 </span>
+                              )}
 
-                                {bet.tipster && bet.tipster !== "Geral" && (
-                                  <span className="text-[10px] text-[var(--text-3)] px-1.5 py-0.5 bg-[var(--bg)] rounded shrink-0">
-                                    {bet.tipster}
-                                  </span>
-                                )}
+                              <span className="text-xs font-mono font-bold text-[var(--text)] bg-[var(--bg)] px-2 py-0.5 rounded border border-black/[0.04] shrink-0">
+                                @{formatarOdd(bet.odd)}
+                              </span>
 
-                                <span className="text-xs font-mono font-bold text-[var(--text)] bg-[var(--bg)] px-2 py-0.5 rounded border border-black/[0.04] shrink-0">
-                                  @{formatarOdd(bet.odd)}
-                                </span>
+                              <span className="text-xs font-mono text-[var(--text-2)] shrink-0">
+                                {formatarReais(converter(bet.valor))}
+                              </span>
 
-                                <span className="text-xs font-mono text-[var(--text-2)] shrink-0">
-                                  {formatarReais(converter(bet.valor))}
-                                </span>
-
-                                <span
-                                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider shrink-0 ${
-                                    isGreen
-                                      ? "bg-[var(--green-soft)] text-[var(--green)]"
-                                      : isRed
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider shrink-0 ${
+                                  isGreen
+                                    ? "bg-[var(--green-soft)] text-[var(--green)]"
+                                    : isRed
                                       ? "bg-[var(--red-soft)] text-[var(--red)]"
                                       : isVoid
-                                      ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
-                                      : "bg-[var(--amber-soft)] text-[var(--amber)]"
-                                  }`}
-                                >
-                                  {bet.resultado}
-                                </span>
+                                        ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
+                                        : "bg-[var(--amber-soft)] text-[var(--amber)]"
+                                }`}
+                              >
+                                {bet.resultado}
+                              </span>
 
-                                <span
-                                  className={`font-mono text-xs font-bold shrink-0 ${
-                                    isGreen
-                                      ? "text-[var(--green)]"
-                                      : isRed
+                              <span
+                                className={`font-mono text-xs font-bold shrink-0 ${
+                                  isGreen
+                                    ? "text-[var(--green)]"
+                                    : isRed
                                       ? "text-[var(--red)]"
                                       : "text-[var(--text-3)]"
-                                  }`}
-                                >
-                                  {bet.resultado === "PENDENTE" || isVoid
-                                    ? "—"
-                                    : formatarReaisComSinal(converter(bet.lucro))}
-                                </span>
-                              </div>
+                                }`}
+                              >
+                                {bet.resultado === "PENDENTE" || isVoid
+                                  ? "—"
+                                  : formatarReaisComSinal(converter(bet.lucro))}
+                              </span>
                             </div>
-                          </motion.button>
-                        );
+                          </div>
+                        </motion.button>
+                      );
                     })}
                   </section>
                 );
@@ -844,10 +843,10 @@ export default function ApostasPage() {
                                 isGreen
                                   ? "bg-[var(--green-soft)] text-[var(--green)]"
                                   : isRed
-                                  ? "bg-[var(--red-soft)] text-[var(--red)]"
-                                  : isVoid
-                                  ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
-                                  : "bg-[var(--amber-soft)] text-[var(--amber)]"
+                                    ? "bg-[var(--red-soft)] text-[var(--red)]"
+                                    : isVoid
+                                      ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
+                                      : "bg-[var(--amber-soft)] text-[var(--amber)]"
                               }`}
                             >
                               {bet.resultado}
@@ -858,8 +857,8 @@ export default function ApostasPage() {
                               isGreen
                                 ? "text-[var(--green)]"
                                 : isRed
-                                ? "text-[var(--red)]"
-                                : "text-[var(--text-3)]"
+                                  ? "text-[var(--red)]"
+                                  : "text-[var(--text-3)]"
                             }`}
                           >
                             {bet.resultado === "PENDENTE" || isVoid
@@ -904,9 +903,7 @@ export default function ApostasPage() {
 
             <div className="divide-y divide-black/[0.05]">
               {topAdms.length === 0 ? (
-                <p className="text-xs text-[var(--text-3)] py-2">
-                  Sem adms nesta aba.
-                </p>
+                <p className="text-xs text-[var(--text-3)] py-2">Sem adms nesta aba.</p>
               ) : (
                 topAdms.map((adm, i) => (
                   <div

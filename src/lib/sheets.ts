@@ -1,7 +1,13 @@
 import path from "node:path";
 import fs from "node:fs";
 import type { BetItem, BetResult } from "./types";
-import { abaDoMesAtual, abasRecentes, ABA_TODOS, ordemDaAba, reaisParaUnidades } from "./constants";
+import {
+  abaDoMesAtual,
+  abasRecentes,
+  ABA_TODOS,
+  ordemDaAba,
+  reaisParaUnidades,
+} from "./constants";
 import { parseDateTimestamp } from "./date";
 import { computeStatsFromBets } from "./stats";
 import { lerAbaPublica } from "./planilhaPublica";
@@ -12,8 +18,7 @@ export { parseDateTimestamp };
 // A planilha do grupo é pública; o ID não é segredo e vai como padrão para
 // que o site funcione sem nenhuma configuração.
 const SPREADSHEET_ID =
-  process.env.GOOGLE_SPREADSHEET_ID ||
-  "1wIUWUDb4EjV2BfXZgIpYqOwxtjUEpkS46glw0nwdFEc";
+  process.env.GOOGLE_SPREADSHEET_ID || "1wIUWUDb4EjV2BfXZgIpYqOwxtjUEpkS46glw0nwdFEc";
 
 /** Existe credencial configurada? Se não, caímos na leitura pública. */
 function temCredencial(): boolean {
@@ -52,9 +57,7 @@ async function buildAuth() {
     try {
       credentials = JSON.parse(inline);
     } catch {
-      throw new Error(
-        "GOOGLE_SERVICE_ACCOUNT_JSON existe mas não é um JSON válido."
-      );
+      throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON existe mas não é um JSON válido.");
     }
     return new google.auth.GoogleAuth({ credentials, scopes: SCOPES });
   }
@@ -266,9 +269,7 @@ export async function getBetsFromTab(tabName?: string): Promise<BetItem[]> {
     const publica = await lerAbaPublica(
       SPREADSHEET_ID,
       tab,
-      ordem > 0
-        ? { mes: ordem % 100, ano2: Math.floor(ordem / 100) % 100 }
-        : undefined
+      ordem > 0 ? { mes: ordem % 100, ano2: Math.floor(ordem / 100) % 100 } : undefined
     );
     if (!publica) {
       throw new Error(`Aba "${tab}" não encontrada na planilha pública.`);

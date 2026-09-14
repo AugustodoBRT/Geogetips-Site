@@ -118,10 +118,7 @@ export function computeStatsFromBets(bets: BetItem[]) {
       reds: d.reds,
       voids: d.voids,
       pendentes: d.pendentes,
-      roi:
-        d.apostado > 0
-          ? parseFloat(((d.lucro / d.apostado) * 100).toFixed(2))
-          : 0,
+      roi: d.apostado > 0 ? parseFloat(((d.lucro / d.apostado) * 100).toFixed(2)) : 0,
     }))
     .sort((a, b) => b.lucroUnidades - a.lucroUnidades);
 
@@ -161,17 +158,17 @@ export function computeStatsFromBets(bets: BetItem[]) {
         apostas: d.total,
         taxaAcerto: taxaDeAcerto(d.greens, d.reds),
         lucro: parseFloat(d.lucro.toFixed(2)),
-        roi:
-          d.apostado > 0
-            ? parseFloat(((d.lucro / d.apostado) * 100).toFixed(2))
-            : 0,
+        roi: d.apostado > 0 ? parseFloat(((d.lucro / d.apostado) * 100).toFixed(2)) : 0,
       };
     })
     .sort((a, b) => b.apostas - a.apostas);
 
   // Casas. Antes só contava volume, e a home prometia "lucro por casa" sem que
   // nenhuma tela mostrasse isso.
-  const bookieMap = new Map<string, { apostas: number; lucro: number; apostado: number }>();
+  const bookieMap = new Map<
+    string,
+    { apostas: number; lucro: number; apostado: number }
+  >();
   bets.forEach((b) => {
     if (!b.casa) return;
     const c = bookieMap.get(b.casa) || { apostas: 0, lucro: 0, apostado: 0 };
@@ -181,10 +178,7 @@ export function computeStatsFromBets(bets: BetItem[]) {
     bookieMap.set(b.casa, c);
   });
 
-  const maxBookie = Math.max(
-    ...Array.from(bookieMap.values()).map((c) => c.apostas),
-    1
-  );
+  const maxBookie = Math.max(...Array.from(bookieMap.values()).map((c) => c.apostas), 1);
   const bookies: BookieBreakdown[] = Array.from(bookieMap.entries())
     .map(([casa, c]) => ({
       casa,
@@ -192,8 +186,7 @@ export function computeStatsFromBets(bets: BetItem[]) {
       percentual: Math.round((c.apostas / maxBookie) * 100),
       lucro: parseFloat(c.lucro.toFixed(2)),
       apostado: parseFloat(c.apostado.toFixed(2)),
-      roi:
-        c.apostado > 0 ? parseFloat(((c.lucro / c.apostado) * 100).toFixed(2)) : 0,
+      roi: c.apostado > 0 ? parseFloat(((c.lucro / c.apostado) * 100).toFixed(2)) : 0,
     }))
     .sort((a, b) => b.apostas - a.apostas)
     .slice(0, 8);

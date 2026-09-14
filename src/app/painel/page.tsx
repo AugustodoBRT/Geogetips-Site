@@ -75,9 +75,9 @@ export default function PainelPage() {
 
   const [period, setPeriod] = useState<"7D" | "30D" | "90D" | "120D" | "Tudo">("30D");
   const [selectedDay, setSelectedDay] = useState<string>("TODOS");
-  const [hoveredPoint, setHoveredPoint] = useState<(DayPoint & { x: number; y: number }) | null>(
-    null
-  );
+  const [hoveredPoint, setHoveredPoint] = useState<
+    (DayPoint & { x: number; y: number }) | null
+  >(null);
 
   // Sem isto o selo diria "agora" indefinidamente numa aba deixada aberta.
   const [agora, setAgora] = useState(() => new Date());
@@ -133,7 +133,13 @@ export default function PainelPage() {
 
     const map = new Map<
       string,
-      { timestamp: number; dayProfit: number; greens: number; reds: number; total: number }
+      {
+        timestamp: number;
+        dayProfit: number;
+        greens: number;
+        reds: number;
+        total: number;
+      }
     >();
 
     allBets.forEach((b) => {
@@ -256,7 +262,8 @@ export default function PainelPage() {
     // Period Gain
     const firstPoint = points[0];
     const lastPoint = points[points.length - 1];
-    const periodGain = lastPoint.cumProfit - (firstPoint.cumProfit - firstPoint.dayProfit);
+    const periodGain =
+      lastPoint.cumProfit - (firstPoint.cumProfit - firstPoint.dayProfit);
 
     // Maior queda de um pico até o vale seguinte. É a métrica de risco que
     // falta quando só se olha lucro e ROI: diz quanto a banca chegou a
@@ -374,12 +381,15 @@ export default function PainelPage() {
             )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Métricas consolidadas, evolução real da banca e atividades{" "}
-            {trecho.prefixo}{" "}
+            Métricas consolidadas, evolução real da banca e atividades {trecho.prefixo}{" "}
             <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>
             {selectedDay !== "TODOS" && (
-              <span> (Filtrado para o dia <strong>{selectedDay}</strong>)</span>
-            )}.
+              <span>
+                {" "}
+                (Filtrado para o dia <strong>{selectedDay}</strong>)
+              </span>
+            )}
+            .
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
@@ -433,152 +443,154 @@ export default function PainelPage() {
       {mostrarEsqueleto ? (
         <SkeletonKpis quantidade={5} grade="cinco" />
       ) : (
-      <section
-        aria-label="Indicadores do período"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 animate-entrada"
-      >
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
-          <div className="flex items-center justify-between text-[var(--text-3)]">
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              {selectedDay === "TODOS" ? "Lucro Acumulado" : `Lucro em ${selectedDay}`}
-            </span>
+        <section
+          aria-label="Indicadores do período"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 animate-entrada"
+        >
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+            <div className="flex items-center justify-between text-[var(--text-3)]">
+              <span className="text-[11px] font-bold uppercase tracking-wider">
+                {selectedDay === "TODOS" ? "Lucro Acumulado" : `Lucro em ${selectedDay}`}
+              </span>
+              <div
+                className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  totalLucro >= 0
+                    ? "bg-[var(--green-soft)] text-[var(--green)]"
+                    : "bg-[var(--red-soft)] text-[var(--red)]"
+                }`}
+              >
+                {totalLucro >= 0 ? (
+                  <TrendingUp className="w-4 h-4" />
+                ) : (
+                  <TrendingDown className="w-4 h-4" />
+                )}
+              </div>
+            </div>
             <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                totalLucro >= 0
-                  ? "bg-[var(--green-soft)] text-[var(--green)]"
-                  : "bg-[var(--red-soft)] text-[var(--red)]"
+              className={`font-serif ${tamanhoDoValor(
+                formatarReaisComSinal(totalLucro)
+              )} tracking-tight leading-none ${
+                totalLucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
               }`}
             >
-              {totalLucro >= 0 ? (
-                <TrendingUp className="w-4 h-4" />
-              ) : (
-                <TrendingDown className="w-4 h-4" />
-              )}
+              <NumberFlow
+                value={totalLucro}
+                locales="pt-BR"
+                format={{
+                  style: "currency",
+                  currency: "BRL",
+                  signDisplay: "always",
+                }}
+              />
+            </div>
+            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+              {selectedDay !== "TODOS"
+                ? `Resultado obtido no dia ${selectedDay}`
+                : activeTab === ABA_TODOS
+                  ? "Resultado de todos os meses"
+                  : `Resultado total em ${activeTab}`}
             </div>
           </div>
-          <div
-            className={`font-serif ${tamanhoDoValor(
-              formatarReaisComSinal(totalLucro)
-            )} tracking-tight leading-none ${
-              totalLucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-            }`}
-          >
-            <NumberFlow
-              value={totalLucro}
-              locales="pt-BR"
-              format={{
-                style: "currency",
-                currency: "BRL",
-                signDisplay: "always",
-              }}
-            />
-          </div>
-          <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
-            {selectedDay !== "TODOS"
-              ? `Resultado obtido no dia ${selectedDay}`
-              : activeTab === ABA_TODOS
-              ? "Resultado de todos os meses"
-              : `Resultado total em ${activeTab}`}
-          </div>
-        </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
-          <div className="flex items-center justify-between text-[var(--text-3)]">
-            <span className="text-[11px] font-bold uppercase tracking-wider">ROI</span>
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center">
-              <Percent className="w-4 h-4" />
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+            <div className="flex items-center justify-between text-[var(--text-3)]">
+              <span className="text-[11px] font-bold uppercase tracking-wider">ROI</span>
+              <div className="w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center">
+                <Percent className="w-4 h-4" />
+              </div>
             </div>
-          </div>
-          <div
-            className={`font-serif ${tamanhoDoValor(
-              `${roi.toFixed(2)}%`
-            )} tracking-tight leading-none ${
-              roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-            }`}
-          >
-            <NumberFlow
-              value={roi}
-              locales="pt-BR"
-              format={{ signDisplay: "always", maximumFractionDigits: 2 }}
-              suffix="%"
-            />
-          </div>
-          <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
-            Lucro sobre o total apostado
-          </div>
-        </div>
-
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
-          <div className="flex items-center justify-between text-[var(--text-3)]">
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              Total de Apostas
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] flex items-center justify-center">
-              <Layers className="w-4 h-4" />
-            </div>
-          </div>
-          <div
-            className={`font-serif ${tamanhoDoValor(
-              String(totalBets)
-            )} text-[var(--text)] tracking-tight leading-none`}
-          >
-            <NumberFlow value={totalBets} locales="pt-BR" />
-          </div>
-          <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
-            {formatarInteiro(greens)} Green · {formatarInteiro(reds)} Red
-            {voids > 0 && ` · ${formatarInteiro(voids)} Void`}
-          </div>
-        </div>
-
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
-          <div className="flex items-center justify-between text-[var(--text-3)]">
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              Taxa de Acerto
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-[var(--green-soft)] text-[var(--green)] flex items-center justify-center">
-              <Activity className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
-            <NumberFlow value={taxaAcerto} locales="pt-BR" suffix="%" />
-          </div>
-          <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
-            Das apostas finalizadas
-          </div>
-        </div>
-
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
-          <div className="flex items-center justify-between text-[var(--text-3)]">
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              Apostas Pendentes
-            </span>
             <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                pendentes > 0
-                  ? "bg-[var(--amber-soft)] text-[var(--amber)]"
-                  : "bg-[var(--text-soft)] text-[var(--text-3)]"
+              className={`font-serif ${tamanhoDoValor(
+                `${roi.toFixed(2)}%`
+              )} tracking-tight leading-none ${
+                roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
               }`}
             >
-              <Clock className="w-4 h-4" />
+              <NumberFlow
+                value={roi}
+                locales="pt-BR"
+                format={{ signDisplay: "always", maximumFractionDigits: 2 }}
+                suffix="%"
+              />
+            </div>
+            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+              Lucro sobre o total apostado
             </div>
           </div>
-          <div
-            className={`font-serif text-3xl sm:text-4xl tracking-tight leading-none ${
-              pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text)]"
-            }`}
-          >
-            <NumberFlow value={pendentes} locales="pt-BR" />
+
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+            <div className="flex items-center justify-between text-[var(--text-3)]">
+              <span className="text-[11px] font-bold uppercase tracking-wider">
+                Total de Apostas
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] flex items-center justify-center">
+                <Layers className="w-4 h-4" />
+              </div>
+            </div>
+            <div
+              className={`font-serif ${tamanhoDoValor(
+                String(totalBets)
+              )} text-[var(--text)] tracking-tight leading-none`}
+            >
+              <NumberFlow value={totalBets} locales="pt-BR" />
+            </div>
+            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+              {formatarInteiro(greens)} Green · {formatarInteiro(reds)} Red
+              {voids > 0 && ` · ${formatarInteiro(voids)} Void`}
+            </div>
           </div>
-          {/* Zero pendência é a situação boa, não um alerta — âmbar só quando há. */}
-          <div
-            className={`text-xs font-medium pt-1 border-t border-black/[0.04] ${
-              pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text-2)]"
-            }`}
-          >
-            {pendentes > 0 ? "Aguardando resultado oficial" : "Tudo com resultado lançado"}
+
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+            <div className="flex items-center justify-between text-[var(--text-3)]">
+              <span className="text-[11px] font-bold uppercase tracking-wider">
+                Taxa de Acerto
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-[var(--green-soft)] text-[var(--green)] flex items-center justify-center">
+                <Activity className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
+              <NumberFlow value={taxaAcerto} locales="pt-BR" suffix="%" />
+            </div>
+            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+              Das apostas finalizadas
+            </div>
           </div>
-        </div>
-      </section>
+
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+            <div className="flex items-center justify-between text-[var(--text-3)]">
+              <span className="text-[11px] font-bold uppercase tracking-wider">
+                Apostas Pendentes
+              </span>
+              <div
+                className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  pendentes > 0
+                    ? "bg-[var(--amber-soft)] text-[var(--amber)]"
+                    : "bg-[var(--text-soft)] text-[var(--text-3)]"
+                }`}
+              >
+                <Clock className="w-4 h-4" />
+              </div>
+            </div>
+            <div
+              className={`font-serif text-3xl sm:text-4xl tracking-tight leading-none ${
+                pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text)]"
+              }`}
+            >
+              <NumberFlow value={pendentes} locales="pt-BR" />
+            </div>
+            {/* Zero pendência é a situação boa, não um alerta — âmbar só quando há. */}
+            <div
+              className={`text-xs font-medium pt-1 border-t border-black/[0.04] ${
+                pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text-2)]"
+              }`}
+            >
+              {pendentes > 0
+                ? "Aguardando resultado oficial"
+                : "Tudo com resultado lançado"}
+            </div>
+          </div>
+        </section>
       )}
 
       {/* Middle Section: Real Dynamic Chart (8 cols) + Sport Breakdown (4 cols) */}
@@ -632,10 +644,17 @@ export default function PainelPage() {
                 {hoveredPoint ? (
                   <span className="text-[var(--text)] font-medium">
                     Dia <strong>{hoveredPoint.date}</strong>: Acumulado{" "}
-                    <strong className={hoveredPoint.cumProfit >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"}>
+                    <strong
+                      className={
+                        hoveredPoint.cumProfit >= 0
+                          ? "text-[var(--green)]"
+                          : "text-[var(--red)]"
+                      }
+                    >
                       {formatarReaisComSinal(hoveredPoint.cumProfit)}
                     </strong>{" "}
-                    ({formatarReaisComSinal(hoveredPoint.dayProfit)} no dia · {hoveredPoint.total} tips)
+                    ({formatarReaisComSinal(hoveredPoint.dayProfit)} no dia ·{" "}
+                    {hoveredPoint.total} tips)
                   </span>
                 ) : (
                   "Curva real calculada a partir de cada aposta registrada"
@@ -718,8 +737,16 @@ export default function PainelPage() {
                     y2={chartData.padTop + chartData.drawH}
                   >
                     <stop offset="0" stopColor="var(--green)" stopOpacity="0.22" />
-                    <stop offset={chartData.pctZero} stopColor="var(--green)" stopOpacity="0.02" />
-                    <stop offset={chartData.pctZero} stopColor="var(--red)" stopOpacity="0.02" />
+                    <stop
+                      offset={chartData.pctZero}
+                      stopColor="var(--green)"
+                      stopOpacity="0.02"
+                    />
+                    <stop
+                      offset={chartData.pctZero}
+                      stopColor="var(--red)"
+                      stopOpacity="0.02"
+                    />
                     <stop offset="1" stopColor="var(--red)" stopOpacity="0.22" />
                   </linearGradient>
                 </defs>
@@ -810,8 +837,8 @@ export default function PainelPage() {
                       chartData.points.length === 1
                         ? 5
                         : chartData.points.length > 20
-                        ? 1.5
-                        : 3
+                          ? 1.5
+                          : 3
                     }
                     fill={p.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
                     initial={{ opacity: 0, scale: 0.4 }}
@@ -821,9 +848,7 @@ export default function PainelPage() {
                     }}
                     transition={{
                       duration: 0.25,
-                      delay:
-                        0.15 +
-                        (i / Math.max(chartData.points.length - 1, 1)) * 0.75,
+                      delay: 0.15 + (i / Math.max(chartData.points.length - 1, 1)) * 0.75,
                     }}
                   />
                 ))}
@@ -1017,71 +1042,73 @@ export default function PainelPage() {
                 </p>
               )
             ) : (
-            recentBets.map((bet) => {
-              const isGreen = bet.resultado === "GREEN";
-              const isRed = bet.resultado === "RED";
-              const isVoid = bet.resultado === "VOID";
+              recentBets.map((bet) => {
+                const isGreen = bet.resultado === "GREEN";
+                const isRed = bet.resultado === "RED";
+                const isVoid = bet.resultado === "VOID";
 
-              return (
-                <div
-                  key={bet.id}
-                  className="p-3 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3 text-xs"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <SportBadge sport={bet.esporte} />
-                    <div className="min-w-0">
-                      <div className="font-bold text-[var(--text)] truncate">
-                        {bet.partida}
-                      </div>
-                      {/* `truncate` num container flex não trunca: recorta os filhos
+                return (
+                  <div
+                    key={bet.id}
+                    className="p-3 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <SportBadge sport={bet.esporte} />
+                      <div className="min-w-0">
+                        <div className="font-bold text-[var(--text)] truncate">
+                          {bet.partida}
+                        </div>
+                        {/* `truncate` num container flex não trunca: recorta os filhos
                           sem reticências. Num viewport de 375px a odd e a casa
                           terminavam fora da tela e sumiam sem aviso. Agora só o
                           texto da tip encolhe; odd e casa não cedem espaço. */}
-                      <div className="text-[11px] text-[var(--text-2)] flex items-center gap-1.5 mt-0.5 min-w-0">
-                        <span className="truncate">{bet.tip}</span>
-                        <span className="shrink-0">·</span>
-                        <strong className="font-mono shrink-0">@{formatarOdd(bet.odd)}</strong>
-                        {bet.casa && (
-                          <BookieBadge
-                            bookie={bet.casa}
-                            className="scale-90 origin-left shrink-0"
-                          />
-                        )}
+                        <div className="text-[11px] text-[var(--text-2)] flex items-center gap-1.5 mt-0.5 min-w-0">
+                          <span className="truncate">{bet.tip}</span>
+                          <span className="shrink-0">·</span>
+                          <strong className="font-mono shrink-0">
+                            @{formatarOdd(bet.odd)}
+                          </strong>
+                          {bet.casa && (
+                            <BookieBadge
+                              bookie={bet.casa}
+                              className="scale-90 origin-left shrink-0"
+                            />
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2.5 shrink-0">
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        isGreen
-                          ? "bg-[var(--green-soft)] text-[var(--green)]"
-                          : isRed
-                          ? "bg-[var(--red-soft)] text-[var(--red)]"
-                          : isVoid
-                          ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
-                          : "bg-[var(--amber-soft)] text-[var(--amber)]"
-                      }`}
-                    >
-                      {bet.resultado}
-                    </span>
-                    <span
-                      className={`font-mono font-bold text-xs ${
-                        isGreen
-                          ? "text-[var(--green)]"
-                          : isRed
-                          ? "text-[var(--red)]"
-                          : "text-[var(--text-3)]"
-                      }`}
-                    >
-                      {bet.resultado === "PENDENTE" || isVoid
-                        ? "—"
-                        : formatarReaisComSinal(converter(bet.lucro))}
-                    </span>
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          isGreen
+                            ? "bg-[var(--green-soft)] text-[var(--green)]"
+                            : isRed
+                              ? "bg-[var(--red-soft)] text-[var(--red)]"
+                              : isVoid
+                                ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
+                                : "bg-[var(--amber-soft)] text-[var(--amber)]"
+                        }`}
+                      >
+                        {bet.resultado}
+                      </span>
+                      <span
+                        className={`font-mono font-bold text-xs ${
+                          isGreen
+                            ? "text-[var(--green)]"
+                            : isRed
+                              ? "text-[var(--red)]"
+                              : "text-[var(--text-3)]"
+                        }`}
+                      >
+                        {bet.resultado === "PENDENTE" || isVoid
+                          ? "—"
+                          : formatarReaisComSinal(converter(bet.lucro))}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              );
-            })
+                );
+              })
             )}
           </div>
         </section>
@@ -1127,40 +1154,38 @@ export default function PainelPage() {
                 </p>
               )
             ) : (
-            tipsters.slice(0, 4).map((t, idx) => (
-              <div
-                key={t.nome}
-                className="p-3.5 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs font-bold text-[var(--text-3)] w-4">
-                    #{idx + 1}
-                  </span>
-                  <div>
-                    <div className="text-xs font-bold text-[var(--text)]">
-                      {t.nome}
-                    </div>
-                    <div className="text-[10.5px] text-[var(--text-3)]">
-                      {formatarInteiro(t.totalApostas)} tips ·{" "}
-                      {t.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
+              tipsters.slice(0, 4).map((t, idx) => (
+                <div
+                  key={t.nome}
+                  className="p-3.5 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs font-bold text-[var(--text-3)] w-4">
+                      #{idx + 1}
+                    </span>
+                    <div>
+                      <div className="text-xs font-bold text-[var(--text)]">{t.nome}</div>
+                      <div className="text-[10.5px] text-[var(--text-3)]">
+                        {formatarInteiro(t.totalApostas)} tips ·{" "}
+                        {t.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="text-right">
-                  <div
-                    className={`font-mono text-xs font-bold ${
-                      t.lucroUnidades >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                    }`}
-                  >
-                    {formatarUnidades(t.lucroUnidades)}
-                  </div>
-                  <div className="text-[10px] text-[var(--text-3)] uppercase tracking-wider">
-                    Unidades
+                  <div className="text-right">
+                    <div
+                      className={`font-mono text-xs font-bold ${
+                        t.lucroUnidades >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                      }`}
+                    >
+                      {formatarUnidades(t.lucroUnidades)}
+                    </div>
+                    <div className="text-[10px] text-[var(--text-3)] uppercase tracking-wider">
+                      Unidades
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))
             )}
           </div>
         </section>

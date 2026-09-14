@@ -46,8 +46,8 @@ export default function AdmsPage() {
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
             Assertividade e lucro por unidade calculados {trecho.prefixo}{" "}
-            <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>. A taxa
-            considera apenas apostas finalizadas.
+            <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>. A
+            taxa considera apenas apostas finalizadas.
           </p>
           <LinkPlanilha className="mt-2" />
         </div>

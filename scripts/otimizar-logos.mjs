@@ -13,7 +13,7 @@
  * que o navegador recusa em silêncio. Por isso o arredondamento só toca os
  * atributos `d` dos caminhos.
  */
-import { readdirSync, readFileSync, writeFileSync, } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 

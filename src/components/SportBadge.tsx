@@ -1,4 +1,3 @@
-
 import { normalizarTexto } from "@/lib/texto";
 
 interface SportBadgeProps {
@@ -53,7 +52,17 @@ const REGRAS: RegraEsporte[] = [
     ponto: "bg-[#65A30D]",
   },
   {
-    padroes: ["esports", "e-sports", "cs2", "csgo", "counter", "lol", "league of legends", "valorant", "dota"],
+    padroes: [
+      "esports",
+      "e-sports",
+      "cs2",
+      "csgo",
+      "counter",
+      "lol",
+      "league of legends",
+      "valorant",
+      "dota",
+    ],
     rotulo: "eSports",
     estilo: "bg-[#7C3AED]/10 text-[#7C3AED] border-[#7C3AED]/25",
     ponto: "bg-[#7C3AED]",
@@ -99,8 +108,7 @@ export function SportBadge({ sport = "Futebol", className = "" }: SportBadgeProp
 
   const rotulo = regra?.rotulo ?? nome;
   const estilo =
-    regra?.estilo ??
-    "bg-[var(--text-2-soft)] text-[var(--text)] border-black/10";
+    regra?.estilo ?? "bg-[var(--text-2-soft)] text-[var(--text)] border-black/10";
   const ponto = regra?.ponto ?? "bg-[var(--text-2)]";
 
   return (

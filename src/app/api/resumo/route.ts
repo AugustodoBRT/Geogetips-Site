@@ -24,7 +24,10 @@ export interface ResumoMes {
   somaOdds: number;
 }
 
-function resumir(aba: string, bets: Parameters<typeof computeStatsFromBets>[0]): ResumoMes {
+function resumir(
+  aba: string,
+  bets: Parameters<typeof computeStatsFromBets>[0]
+): ResumoMes {
   const s = computeStatsFromBets(bets);
   return {
     aba,
@@ -65,17 +68,11 @@ function consolidar(meses: ResumoMes[]): ResumoMes {
     lucro: parseFloat(somaLucro.toFixed(2)),
     unidades: reaisParaUnidades(somaLucro),
     apostado: parseFloat(somaApostado.toFixed(2)),
-    roi:
-      somaApostado > 0
-        ? parseFloat(((somaLucro / somaApostado) * 100).toFixed(2))
-        : 0,
+    roi: somaApostado > 0 ? parseFloat(((somaLucro / somaApostado) * 100).toFixed(2)) : 0,
     taxaAcerto:
-      finalizadas > 0
-        ? parseFloat(((somaGreens / finalizadas) * 100).toFixed(1))
-        : 0,
+      finalizadas > 0 ? parseFloat(((somaGreens / finalizadas) * 100).toFixed(1)) : 0,
     // Média ponderada pelo volume de cada mês, não média das médias
-    oddMedia:
-      totalApostas > 0 ? parseFloat((totalOdds / totalApostas).toFixed(2)) : 0,
+    oddMedia: totalApostas > 0 ? parseFloat((totalOdds / totalApostas).toFixed(2)) : 0,
     somaOdds: parseFloat(totalOdds.toFixed(2)),
   };
 }
@@ -95,9 +92,7 @@ export async function GET() {
         roi: parseFloat(((m.lucro / m.apostado) * 100).toFixed(2)),
         somaOdds: parseFloat((m.oddMedia * m.apostas).toFixed(2)),
         taxaAcerto:
-          finalizadas > 0
-            ? parseFloat(((m.greens / finalizadas) * 100).toFixed(1))
-            : 0,
+          finalizadas > 0 ? parseFloat(((m.greens / finalizadas) * 100).toFixed(1)) : 0,
       };
     }).sort((a, b) => b.ordem - a.ordem);
 

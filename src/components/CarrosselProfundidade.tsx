@@ -170,17 +170,17 @@ export function CarrosselProfundidade({
               key={item.titulo}
               className="bg-white border border-black/[0.07] rounded-2xl p-7 shadow-sm"
             >
-            <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center mb-5 ${item.corIcone}`}
-            >
-              {item.icone}
-            </div>
-            <h3 className="text-base font-bold text-[var(--text)] mb-1.5 tracking-tight">
-              {item.titulo}
-            </h3>
-            <p className="text-[13.5px] text-[var(--text-2)] leading-relaxed">
-              {item.texto}
-            </p>
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center mb-5 ${item.corIcone}`}
+              >
+                {item.icone}
+              </div>
+              <h3 className="text-base font-bold text-[var(--text)] mb-1.5 tracking-tight">
+                {item.titulo}
+              </h3>
+              <p className="text-[13.5px] text-[var(--text-2)] leading-relaxed">
+                {item.texto}
+              </p>
             </article>
           ))}
         </div>

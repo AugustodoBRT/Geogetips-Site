@@ -128,10 +128,10 @@ export function DetalheAposta({
                 bet.resultado === "GREEN"
                   ? "bg-[var(--green-soft)] text-[var(--green)]"
                   : bet.resultado === "RED"
-                  ? "bg-[var(--red-soft)] text-[var(--red)]"
-                  : bet.resultado === "VOID"
-                  ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
-                  : "bg-[var(--amber-soft)] text-[var(--amber)]"
+                    ? "bg-[var(--red-soft)] text-[var(--red)]"
+                    : bet.resultado === "VOID"
+                      ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
+                      : "bg-[var(--amber-soft)] text-[var(--amber)]"
               }`}
             >
               {bet.resultado}
@@ -204,8 +204,8 @@ export function DetalheAposta({
                   bet.resultado === "PENDENTE" || bet.resultado === "VOID"
                     ? "text-[var(--text-3)]"
                     : bet.lucro >= 0
-                    ? "text-[var(--green)]"
-                    : "text-[var(--red)]"
+                      ? "text-[var(--green)]"
+                      : "text-[var(--red)]"
                 }`}
               >
                 {/* Mesma regra do card que abriu este modal: converter para a

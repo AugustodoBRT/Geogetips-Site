@@ -45,16 +45,19 @@ export function SeletorUnidade() {
               Quanto vale 1 unidade para você?
             </h2>
             <p className="text-xs text-[var(--text-2)] mt-0.5">
-              A unidade do grupo é {formatarReais(VALOR_UNIDADE)}. Coloque a sua e
-              todos os valores passam para a sua banca — o ROI e a taxa de acerto
-              não mudam.
+              A unidade do grupo é {formatarReais(VALOR_UNIDADE)}. Coloque a sua e todos
+              os valores passam para a sua banca — o ROI e a taxa de acerto não mudam.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap shrink-0">
           {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que traz borda, margem e padding do navegador e existe para agrupar campo de formulário — não uma barra de botões. */}
-          <div className="flex items-center gap-1" role="group" aria-label="Valores sugeridos">
+          <div
+            className="flex items-center gap-1"
+            role="group"
+            aria-label="Valores sugeridos"
+          >
             {SUGESTOES.map((v) => (
               <button
                 key={v}
@@ -130,15 +133,15 @@ export function SeletorUnidade() {
             <strong className="text-[var(--amber)] font-bold">
               Simulação aproximada, não resultado exato.
             </strong>{" "}
-            O histórico real foi operado a {formatarReais(VALOR_UNIDADE)} por
-            unidade, e o recálculo para {formatarReais(unidade)} apenas escala os
-            valores proporcionalmente. Ele{" "}
+            O histórico real foi operado a {formatarReais(VALOR_UNIDADE)} por unidade, e o
+            recálculo para {formatarReais(unidade)} apenas escala os valores
+            proporcionalmente. Ele{" "}
             <strong className="text-[var(--text)]">
               não considera limites de aposta nem a liquidez
             </strong>{" "}
-            de cada mercado: em stakes maiores a casa pode não aceitar o valor
-            cheio, e odds altas costumam cair conforme o volume entra. Trate como
-            ordem de grandeza.
+            de cada mercado: em stakes maiores a casa pode não aceitar o valor cheio, e
+            odds altas costumam cair conforme o volume entra. Trate como ordem de
+            grandeza.
           </p>
         </div>
       )}

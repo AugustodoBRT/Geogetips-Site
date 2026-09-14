@@ -266,10 +266,7 @@ export default function EstatisticasPage() {
                     }}
                   >
                     <div>
-                      <div
-                        className="text-xs font-bold"
-                        style={{ color: bloco.cor }}
-                      >
+                      <div className="text-xs font-bold" style={{ color: bloco.cor }}>
                         {bloco.titulo}
                       </div>
                       <div className="text-[11px] text-[var(--text-3)] mt-0.5 font-medium">
@@ -324,8 +321,7 @@ export default function EstatisticasPage() {
                 ) : (
                   sports.map((sport) => {
                     const positivo = sport.lucro >= 0;
-                    const largura =
-                      (Math.abs(sport.lucro) / maiorLucroAbs) * 100;
+                    const largura = (Math.abs(sport.lucro) / maiorLucroAbs) * 100;
                     return (
                       <div key={sport.esporte} className="space-y-1.5">
                         <div className="flex justify-between items-center text-xs font-semibold gap-3">
@@ -375,7 +371,9 @@ export default function EstatisticasPage() {
 
               <div className="space-y-3.5">
                 {bookies.length === 0 ? (
-                  <p className="text-xs text-[var(--text-3)]">Sem dados de casas na aba.</p>
+                  <p className="text-xs text-[var(--text-3)]">
+                    Sem dados de casas na aba.
+                  </p>
                 ) : (
                   bookies.map((b) => (
                     <div key={b.casa} className="space-y-1.5">

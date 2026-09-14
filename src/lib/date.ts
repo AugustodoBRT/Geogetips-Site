@@ -17,7 +17,6 @@ export function parseDateTimestamp(dateStr: string): number {
   return new Date(year, month, day).getTime();
 }
 
-
 /**
  * "DD/MM/YYYY" -> "YYYY-MM-DD", que é o formato que input[type=date] usa.
  * Devolve "" para entradas inválidas.

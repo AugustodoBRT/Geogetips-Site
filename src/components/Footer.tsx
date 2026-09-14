@@ -80,7 +80,9 @@ export function Footer() {
           </span>
           <div className="text-[11.5px] leading-relaxed text-[var(--text-2)] max-w-3xl space-y-1.5">
             <p>
-              <strong className="text-[var(--text)]">Proibido para menores de 18 anos.</strong>{" "}
+              <strong className="text-[var(--text)]">
+                Proibido para menores de 18 anos.
+              </strong>{" "}
               Apostas envolvem risco de perda financeira. Aposte apenas o que você pode
               perder e nunca para recuperar prejuízos.
             </p>
