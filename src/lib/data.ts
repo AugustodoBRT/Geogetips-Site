@@ -1,4 +1,4 @@
-import type { BetItem, TipsterStat, SportBreakdown, BookieBreakdown } from "./types";
+import type { BetItem } from "./types";
 
 // Dados de demonstração. Só são servidos quando NEXT_PUBLIC_USE_MOCK=1 —
 // nunca como fallback silencioso de erro. Stakes calibradas para 1u = R$ 100,00.

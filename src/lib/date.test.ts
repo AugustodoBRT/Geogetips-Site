@@ -9,9 +9,7 @@ import { doISO, paraISO, parseDateTimestamp, timestampDoISO } from "./date";
 
 describe("parseDateTimestamp", () => {
   it("lê o padrão do grupo", () => {
-    expect(parseDateTimestamp("14/09/2026")).toBe(
-      new Date(2026, 8, 14).getTime()
-    );
+    expect(parseDateTimestamp("14/09/2026")).toBe(new Date(2026, 8, 14).getTime());
   });
 
   it("ordena o mais recente primeiro", () => {

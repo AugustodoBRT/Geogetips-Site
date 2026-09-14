@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  linhasParaBets,
-  parseCurrency,
-  parseOdd,
-  parseResultado,
-} from "./sheets";
+import { linhasParaBets, parseCurrency, parseOdd, parseResultado } from "./sheets";
 
 /**
  * A fronteira entre a planilha e o site.
