@@ -7,7 +7,8 @@ import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
 import { SeletorAba } from "@/components/SeletorAba";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
-import { SkeletonLinhas } from "@/components/Skeleton";
+import { SkeletonCorpoEstatisticas } from "@/components/Skeleton";
+import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
@@ -26,6 +27,7 @@ export default function EstatisticasPage() {
     activeTab,
     setActiveTab,
     loading,
+    mostrarEsqueleto,
     erro,
     isMock,
     recarregar,
@@ -75,6 +77,7 @@ export default function EstatisticasPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <BarraDeProgresso ativo={loading} />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -110,11 +113,11 @@ export default function EstatisticasPage() {
 
       <SeletorUnidade />
 
-      {loading ? (
-        <SkeletonLinhas quantidade={2} altura="h-72" />
+      {mostrarEsqueleto ? (
+        <SkeletonCorpoEstatisticas />
       ) : erro ? null : (
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-entrada">
             {/* Donut de distribuição */}
             <div className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-6">
               <div className="flex items-center justify-between">
@@ -296,7 +299,7 @@ export default function EstatisticasPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-entrada">
             {/* Lucro por modalidade */}
             <div className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
@@ -341,7 +344,7 @@ export default function EstatisticasPage() {
                         </div>
                         <div className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-[width] duration-500 ease-out ${
+                            className={`h-full rounded-full origin-left animate-surgir-x ${
                               positivo ? "bg-[var(--green)]" : "bg-[var(--red)]"
                             }`}
                             style={{ width: `${Math.max(largura, 2)}%` }}
@@ -396,7 +399,7 @@ export default function EstatisticasPage() {
                       </div>
                       <div className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-[var(--text)] transition-[width] duration-500 ease-out"
+                          className="h-full rounded-full bg-[var(--text)] origin-left animate-surgir-x"
                           style={{ width: `${b.percentual}%` }}
                         />
                       </div>

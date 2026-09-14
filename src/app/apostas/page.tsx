@@ -1,24 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import NumberFlow from "@number-flow/react";
-import {
-  Search,
-  LayoutGrid,
-  List,
-  X,
-  Copy,
-  Check,
-  Award,
-  Layers,
-} from "lucide-react";
+import { Search, LayoutGrid, List, Award, Layers } from "lucide-react";
 import { BetItem, BetResult } from "@/lib/types";
 import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
 import { SeletorAba } from "@/components/SeletorAba";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonLinhas } from "@/components/Skeleton";
+import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
@@ -45,6 +38,21 @@ import {
  */
 const APOSTAS_POR_BLOCO = 100;
 
+/**
+ * O detalhe da aposta só desce quando alguém abre uma.
+ *
+ * São cerca de 230 linhas de diálogo que a maior parte das visitas nunca vê —
+ * quem entra para conferir o resultado do dia rola o feed e sai. Fora do
+ * pacote inicial, a primeira pintura da tela chega antes.
+ *
+ * `ssr: false` porque o diálogo nunca existe na primeira pintura: ele depende
+ * de um clique, e renderizá-lo no servidor seria trabalho jogado fora.
+ */
+const DetalheAposta = dynamic(
+  () => import("@/components/DetalheAposta").then((m) => m.DetalheAposta),
+  { ssr: false }
+);
+
 export default function ApostasPage() {
   const {
     bets,
@@ -52,6 +60,7 @@ export default function ApostasPage() {
     activeTab,
     setActiveTab,
     loading,
+    mostrarEsqueleto,
     erro,
     isMock,
     recarregar,
@@ -323,6 +332,7 @@ export default function ApostasPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <BarraDeProgresso ativo={loading} />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div className="min-w-0">
           <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
@@ -591,7 +601,7 @@ export default function ApostasPage() {
           </div>
 
           {/* Feed */}
-          {loading ? (
+          {mostrarEsqueleto ? (
             <SkeletonLinhas quantidade={6} altura="h-20" />
           ) : erro ? null : filteredBets.length === 0 ? (
             <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center">
@@ -602,7 +612,7 @@ export default function ApostasPage() {
               </p>
             </div>
           ) : viewMode === "cards" ? (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-entrada">
               {groupedByDate.map(([date, dayBets]) => {
                 const lucroDia = dayBets.reduce((acc, b) => acc + b.lucro, 0);
                 // Sem `layout` do framer: ela anima mudanças de tamanho por
@@ -736,7 +746,7 @@ export default function ApostasPage() {
             </div>
           ) : (
             <div className="bg-white border border-black/[0.07] rounded-2xl overflow-hidden shadow-sm">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto animate-entrada">
                 <table className="w-full text-left text-xs">
                   <caption className="sr-only">
                     Apostas registradas {trecho.prefixo} {trecho.nome}
@@ -938,7 +948,7 @@ export default function ApostasPage() {
                     </div>
                     <div className="h-1.5 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-[var(--text)] transition-[width] duration-500 ease-out"
+                        className="h-full rounded-full bg-[var(--text)] origin-left animate-surgir-x"
                         style={{ width: `${b.percent}%` }}
                       />
                     </div>
@@ -954,250 +964,21 @@ export default function ApostasPage() {
         <SecaoTelegram />
       </div>
 
-      <DetalheAposta
-        bet={selectedBet}
-        onFechar={fecharDetalhe}
-        onCopiar={handleCopyBet}
-        copiado={copied}
-        converter={converter}
-      />
+      {/* Um filho só, com key, dentro do AnimatePresence. A versão anterior
+          passava o véu e o diálogo soltos num fragmento, e era isso que fazia
+          o véu ficar preso no DOM engolindo clique depois de fechar. */}
+      <AnimatePresence>
+        {selectedBet && (
+          <DetalheAposta
+            key="detalhe-aposta"
+            bet={selectedBet}
+            onFechar={fecharDetalhe}
+            onCopiar={handleCopyBet}
+            copiado={copied}
+            converter={converter}
+          />
+        )}
+      </AnimatePresence>
     </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-
-interface DetalheApostaProps {
-  bet: BetItem | null;
-  onFechar: () => void;
-  onCopiar: (bet: BetItem) => void;
-  copiado: boolean;
-  converter: (v: number) => number;
-}
-
-function DetalheAposta({
-  bet,
-  onFechar,
-  onCopiar,
-  copiado,
-  converter,
-}: DetalheApostaProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const focoAnterior = useRef<HTMLElement | null>(null);
-
-  // onFechar muda de identidade a cada render do pai. Guardar numa ref evita
-  // que o efeito abaixo reexecute e desfaça a própria trava de scroll.
-  const fecharRef = useRef(onFechar);
-  useEffect(() => {
-    fecharRef.current = onFechar;
-  }, [onFechar]);
-
-  const aberto = Boolean(bet);
-
-  useEffect(() => {
-    if (!aberto) return;
-
-    focoAnterior.current = document.activeElement as HTMLElement;
-    const overflowAnterior = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        fecharRef.current();
-        return;
-      }
-      // Mantém o foco preso dentro do diálogo
-      if (e.key === "Tab" && dialogRef.current) {
-        const focaveis = dialogRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        if (focaveis.length === 0) return;
-        const primeiro = focaveis[0];
-        const ultimo = focaveis[focaveis.length - 1];
-
-        if (e.shiftKey && document.activeElement === primeiro) {
-          e.preventDefault();
-          ultimo.focus();
-        } else if (!e.shiftKey && document.activeElement === ultimo) {
-          e.preventDefault();
-          primeiro.focus();
-        }
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    requestAnimationFrame(() => dialogRef.current?.focus());
-
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = overflowAnterior;
-      focoAnterior.current?.focus?.();
-    };
-  }, [aberto]);
-
-  // Sem AnimatePresence aqui de propósito: com ela, o overlay de tela cheia
-  // ficava no DOM com opacity 0 após fechar e engolia todos os cliques da
-  // página. Desmontar direto é determinístico; a animação de entrada continua.
-  if (!bet) return null;
-
-  return (
-    <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.16 }}
-      onClick={onFechar}
-    >
-      <motion.div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="titulo-detalhe-aposta"
-        tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.95, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 420, damping: 32 }}
-        className="bg-white border border-black/[0.1] rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 outline-none max-h-[90vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between pb-3 border-b border-black/[0.06]">
-          <div className="flex items-center gap-2 min-w-0">
-            <span
-              className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${
-                bet.resultado === "GREEN"
-                  ? "bg-[var(--green-soft)] text-[var(--green)]"
-                  : bet.resultado === "RED"
-                  ? "bg-[var(--red-soft)] text-[var(--red)]"
-                  : bet.resultado === "VOID"
-                  ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
-                  : "bg-[var(--amber-soft)] text-[var(--amber)]"
-              }`}
-            >
-              {bet.resultado}
-            </span>
-            <span className="text-xs text-[var(--text-3)] font-mono truncate">
-              ID: {bet.id}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={onFechar}
-            aria-label="Fechar detalhes"
-            className="p-1 rounded-full text-[var(--text-2)] hover:bg-[var(--bg-tinted)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors shrink-0"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
-              Partida / Confronto
-            </div>
-            <h2
-              id="titulo-detalhe-aposta"
-              className="text-base font-bold text-[var(--text)] mt-0.5"
-            >
-              {bet.partida}
-            </h2>
-          </div>
-
-          <div>
-            <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
-              Mercado / Tip
-            </div>
-            <p className="text-sm font-medium text-[var(--text-2)] mt-0.5 bg-[var(--bg-soft)] p-3 rounded-xl border border-black/[0.04]">
-              {bet.tip}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="p-3 bg-[var(--bg)] rounded-xl text-center">
-              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)] font-bold">
-                Odd
-              </div>
-              <div className="font-mono text-base font-bold text-[var(--text)] mt-0.5">
-                {formatarOdd(bet.odd)}
-              </div>
-            </div>
-
-            <div className="p-3 bg-[var(--bg)] rounded-xl text-center">
-              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)] font-bold">
-                Valor
-              </div>
-              <div className="font-mono text-base font-bold text-[var(--text)] mt-0.5">
-                {formatarReais(converter(bet.valor))}
-              </div>
-              <div className="text-[10px] text-[var(--text-3)] mt-0.5">
-                {bet.unidades.toFixed(2).replace(".", ",")}u
-              </div>
-            </div>
-
-            <div className="p-3 bg-[var(--bg)] rounded-xl text-center">
-              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)] font-bold">
-                Lucro / Perda
-              </div>
-              <div
-                className={`font-mono text-base font-bold mt-0.5 ${
-                  bet.resultado === "PENDENTE" || bet.resultado === "VOID"
-                    ? "text-[var(--text-3)]"
-                    : bet.lucro >= 0
-                    ? "text-[var(--green)]"
-                    : "text-[var(--red)]"
-                }`}
-              >
-                {/* Mesma regra do card que abriu este modal: converter para a
-                    unidade do visitante, e anulada sem lucro a mostrar. Antes o
-                    card dizia R$ 62,50 e o modal R$ 125,00 para a mesma aposta. */}
-                {bet.resultado === "PENDENTE" || bet.resultado === "VOID"
-                  ? "—"
-                  : formatarReaisComSinal(converter(bet.lucro))}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between text-xs text-[var(--text-2)] pt-2 gap-2">
-            <div className="flex items-center gap-2">
-              <span>Esporte:</span>
-              <SportBadge sport={bet.esporte} />
-            </div>
-            <div className="flex items-center gap-2">
-              <span>Casa:</span>
-              <BookieBadge bookie={bet.casa} />
-            </div>
-            <span>
-              Adm: <strong className="text-[var(--text)]">{bet.tipster}</strong>
-            </span>
-            <span>
-              Data: <strong className="text-[var(--text)]">{bet.data}</strong>
-            </span>
-          </div>
-        </div>
-
-        <div className="pt-3 border-t border-black/[0.06] flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => onCopiar(bet)}
-            className="px-4 py-2 bg-[var(--bg)] text-[var(--text)] text-xs font-semibold rounded-full hover:bg-[var(--bg-tinted)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all flex items-center gap-1.5"
-          >
-            {copiado ? (
-              <Check className="w-3.5 h-3.5 text-[var(--green)]" />
-            ) : (
-              <Copy className="w-3.5 h-3.5" />
-            )}
-            <span>{copiado ? "Copiado!" : "Copiar tip"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onFechar}
-            className="px-5 py-2 bg-[var(--text)] text-white text-xs font-semibold rounded-full hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all"
-          >
-            Fechar
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
   );
 }

@@ -31,9 +31,38 @@ const config: Config = {
           "0%": { backgroundPosition: "200% 0" },
           "100%": { backgroundPosition: "-200% 0" },
         },
+        // Barra de progresso indeterminada: a peça tem um terço da largura da
+        // pista e a atravessa. Só `transform` — animar `left` ou `width`
+        // forçaria o navegador a recalcular layout a cada quadro.
+        progresso: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(300%)" },
+        },
+        // Barras de dado crescendo até o valor. A largura fica parada e quem
+        // se move é a escala: `width` animada refaz o layout a cada quadro, e
+        // há dezenas dessas barras numa tela de estatísticas.
+        "surgir-x": {
+          "0%": { transform: "scaleX(0)" },
+          "100%": { transform: "scaleX(1)" },
+        },
+        "surgir-y": {
+          "0%": { transform: "scaleY(0)" },
+          "100%": { transform: "scaleY(1)" },
+        },
+        // Chegada de conteúdo quando o esqueleto sai. Curta: quem está ali já
+        // esperou pelo dado, e movimento longo depois da espera é castigo em
+        // cima de castigo.
+        entrada: {
+          "0%": { opacity: "0", transform: "translateY(6px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         shimmer: "shimmer 1.6s ease-in-out infinite",
+        progresso: "progresso 1.1s cubic-bezier(0.65, 0, 0.35, 1) infinite",
+        "surgir-x": "surgir-x 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "surgir-y": "surgir-y 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
+        entrada: "entrada 0.26s cubic-bezier(0.16, 1, 0.3, 1) both",
       },
       boxShadow: {
         subtle: "0 1px 2px rgba(0,0,0,0.03), 0 8px 32px rgba(0,0,0,0.05)",

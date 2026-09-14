@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Serif_Display, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/Navigation";
+import { ProvedorDeMovimento } from "@/components/ProvedorDeMovimento";
 import { Footer } from "@/components/Footer";
 import { UnidadeProvider } from "@/hooks/useUnidade";
 
@@ -107,13 +108,15 @@ export default function RootLayout({
         >
           Pular para o conteúdo
         </a>
-        <UnidadeProvider>
-          <Navigation />
-          <main id="conteudo" className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </UnidadeProvider>
+        <ProvedorDeMovimento>
+          <UnidadeProvider>
+            <Navigation />
+            <main id="conteudo" className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </UnidadeProvider>
+        </ProvedorDeMovimento>
       </body>
     </html>
   );

@@ -6,7 +6,10 @@ import type { ResumoMes } from "@/app/api/resumo/route";
 export interface UseResumoMensal {
   meses: ResumoMes[];
   consolidado: ResumoMes | null;
+  /** Há requisição em curso — serve à barra de progresso. */
   loading: boolean;
+  /** true quando a tela deve mostrar esqueleto. Ver a nota em `useBets`. */
+  mostrarEsqueleto: boolean;
   erro: string | null;
   isMock: boolean;
   recarregar: () => void;
@@ -16,6 +19,7 @@ export function useResumoMensal(): UseResumoMensal {
   const [meses, setMeses] = useState<ResumoMes[]>([]);
   const [consolidado, setConsolidado] = useState<ResumoMes | null>(null);
   const [loading, setLoading] = useState(true);
+  const [primeiraCarga, setPrimeiraCarga] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [isMock, setIsMock] = useState(false);
   const [nonce, setNonce] = useState(0);
@@ -57,7 +61,10 @@ export function useResumoMensal(): UseResumoMensal {
         setMeses([]);
         setConsolidado(null);
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+          setPrimeiraCarga(false);
+        }
       }
     }
 
@@ -65,5 +72,13 @@ export function useResumoMensal(): UseResumoMensal {
     return () => controller.abort();
   }, [nonce]);
 
-  return { meses, consolidado, loading, erro, isMock, recarregar };
+  return {
+    meses,
+    consolidado,
+    loading,
+    mostrarEsqueleto: loading && primeiraCarga,
+    erro,
+    isMock,
+    recarregar,
+  };
 }

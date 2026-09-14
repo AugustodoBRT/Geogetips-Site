@@ -11,7 +11,8 @@ import {
   Activity,
 } from "lucide-react";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
-import { SkeletonKpis, SkeletonLinhas } from "@/components/Skeleton";
+import { SkeletonCorpoHistorico } from "@/components/Skeleton";
+import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
@@ -27,7 +28,8 @@ import {
 } from "@/lib/format";
 
 export default function HistoricoPage() {
-  const { meses, consolidado, loading, erro, isMock, recarregar } = useResumoMensal();
+  const { meses, consolidado, loading, mostrarEsqueleto, erro, isMock, recarregar } =
+    useResumoMensal();
   const { converter } = useUnidade();
 
   // Do mais antigo para o mais recente, que é como se lê um gráfico de evolução
@@ -42,6 +44,7 @@ export default function HistoricoPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <BarraDeProgresso ativo={loading} />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -78,11 +81,8 @@ export default function HistoricoPage() {
 
       <SeletorUnidade />
 
-      {loading ? (
-        <>
-          <SkeletonKpis quantidade={4} />
-          <SkeletonLinhas quantidade={2} altura="h-64" />
-        </>
+      {mostrarEsqueleto ? (
+        <SkeletonCorpoHistorico />
       ) : erro ? null : meses.length === 0 ? (
         <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center text-[var(--text-3)]">
           <p className="text-sm font-medium">Nenhum mês encontrado na planilha.</p>
@@ -91,7 +91,7 @@ export default function HistoricoPage() {
         <>
           {/* Consolidado */}
           {consolidado && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-entrada">
               <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
@@ -254,10 +254,10 @@ export default function HistoricoPage() {
                       <div className="h-[90px] w-full flex flex-col justify-end">
                         {positivo && (
                           <div
-                            className="w-full rounded-t-md bg-[var(--green)] transition-[height] duration-500 ease-out"
+                            className="w-full rounded-t-md bg-[var(--green)] origin-bottom animate-surgir-y"
                             style={{
                               height: `${Math.max(altura, 2)}%`,
-                              transitionDelay: `${i * 50}ms`,
+                              animationDelay: `${i * 50}ms`,
                             }}
                           />
                         )}
@@ -269,10 +269,10 @@ export default function HistoricoPage() {
                       <div className="h-[90px] w-full">
                         {!positivo && (
                           <div
-                            className="w-full rounded-b-md bg-[var(--red)] transition-[height] duration-500 ease-out"
+                            className="w-full rounded-b-md bg-[var(--red)] origin-top animate-surgir-y"
                             style={{
                               height: `${Math.max(altura, 2)}%`,
-                              transitionDelay: `${i * 50}ms`,
+                              animationDelay: `${i * 50}ms`,
                             }}
                           />
                         )}
