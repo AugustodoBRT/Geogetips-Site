@@ -82,7 +82,7 @@ export async function getSheetsClient() {
   return google.sheets({ version: "v4", auth: await buildAuth() });
 }
 
-function parseCurrency(str: string): number {
+export function parseCurrency(str: string): number {
   if (!str) return 0;
   // "-R$ 50,00", "R$ 150,00", "-R$160,00", "R$11.771,29"
   const cleaned = str
@@ -94,13 +94,13 @@ function parseCurrency(str: string): number {
   return Number.isNaN(num) ? 0 : num;
 }
 
-function parseOdd(str: string): number {
+export function parseOdd(str: string): number {
   if (!str) return 1.0;
   const num = parseFloat(str.replace(",", ".").trim());
   return Number.isNaN(num) ? 1.0 : num;
 }
 
-function parseResultado(raw: string): BetResult {
+export function parseResultado(raw: string): BetResult {
   const r = raw.toUpperCase();
   // VOID antes de tudo: "ANULADA" e "REEMBOLSADA" não podem cair em GREEN/RED
   if (
@@ -130,8 +130,14 @@ const cacheBetsPerTab = new Map<string, { data: BetItem[]; timestamp: number }>(
 const TTL_MES_ATUAL = 15 * 1000;
 const TTL_MES_PASSADO = 5 * 60 * 1000;
 
-/** Transforma as linhas B..L em apostas. Igual para API e leitura pública. */
-function linhasParaBets(tab: string, rows: string[][]): BetItem[] {
+/**
+ * Transforma as linhas B..L em apostas. Igual para API e leitura pública.
+ *
+ * Exportada — junto dos quatro parsers acima — para o teste alcançar. São as
+ * funções onde um engano vira número errado no ar sem quebrar nada, que é
+ * exatamente o tipo de defeito que só teste pega.
+ */
+export function linhasParaBets(tab: string, rows: string[][]): BetItem[] {
   const bets: BetItem[] = [];
 
   rows.forEach((row, index) => {
