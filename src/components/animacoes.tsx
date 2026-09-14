@@ -54,6 +54,7 @@ export function TextoQueCai({
       aria-label={texto}
     >
       {palavras.map((p, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: a mesma palavra pode aparecer duas vezes no título e a lista nunca é reordenada — o índice é justamente o que garante chave única aqui.
         <span key={`${p}-${i}`} aria-hidden="true">
           <span
             // overflow-hidden recorta a palavra enquanto ela vem de cima,

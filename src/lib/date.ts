@@ -12,7 +12,7 @@ export function parseDateTimestamp(dateStr: string): number {
   const day = parseInt(parts[0], 10);
   const month = parseInt(parts[1], 10) - 1;
   const year = parseInt(parts[2], 10);
-  if (isNaN(day) || isNaN(month) || isNaN(year)) return 0;
+  if (Number.isNaN(day) || Number.isNaN(month) || Number.isNaN(year)) return 0;
 
   return new Date(year, month, day).getTime();
 }

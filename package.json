@@ -6,7 +6,8 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start --port 3000",
-    "lint": "next lint",
+    "lint": "biome check src scripts",
+    "lint:corrigir": "biome check --write src scripts",
     "checar:cores": "node scripts/checar-cores.mjs",
     "otimizar:logos": "node scripts/otimizar-logos.mjs"
   },
@@ -20,6 +21,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.13",
     "@types/node": "^22.13.5",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { X, Copy, Check } from "lucide-react";
-import { BetItem } from "@/lib/types";
+import type { BetItem } from "@/lib/types";
 import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
 import { formatarOdd, formatarReais, formatarReaisComSinal } from "@/lib/format";

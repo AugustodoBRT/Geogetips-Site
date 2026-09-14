@@ -1,4 +1,4 @@
-import React from "react";
+
 import { normalizarTexto } from "@/lib/texto";
 
 interface SportBadgeProps {

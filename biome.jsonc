@@ -1,0 +1,80 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.13/schema.json",
+
+  // Lint e formatação num binário só. Substituiu o `next lint`, que estava
+  // descontinuado e, sem ESLint instalado, abria um menu interativo — ou seja,
+  // não havia verificação nenhuma. Ver a issue #8.
+  //
+  // O arquivo é .jsonc porque cada regra desligada aqui precisa dizer por quê.
+  // Regra desligada sem justificativa vira dívida silenciosa.
+
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+
+  "files": {
+    "ignoreUnknown": false,
+    // As 99 logos são SVG gerado por otimizador; formatar não muda nada e só
+    // encheria o diff.
+    "includes": ["**", "!public/casas/", "!.next/", "!.next-*/"]
+  },
+
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    // 90 é a largura que o código já tinha à mão. Testei de 80 a 100: é a que
+    // reescreve menos arquivo, e o objetivo aqui é seguir o estilo existente,
+    // não impor um novo.
+    "lineWidth": 90
+  },
+
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "trailingCommas": "es5",
+      "arrowParentheses": "always"
+    }
+  },
+
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+
+      "correctness": {
+        "useExhaustiveDependencies": {
+          "level": "error",
+          "options": {
+            // Dependência **faltando** num efeito é bug de verdade e continua
+            // sendo cobrada. Dependência "a mais", não: o projeto usa o idioma
+            // de dependência como gatilho — `nonce` em useBets e
+            // useResumoMensal não é lido dentro do efeito, existe só para o
+            // botão de atualizar disparar a releitura; `pathname` na navegação
+            // fecha o menu ao trocar de rota. Obedecer a regra aqui apagaria
+            // essas dependências e quebraria as duas funções.
+            "reportUnnecessaryDependencies": false
+          }
+        }
+      },
+
+      "suspicious": {
+        // `@tailwind` e `@apply` não são inventados: o Biome é que não conhece
+        // as at-rules do Tailwind.
+        "noUnknownAtRules": "off"
+      },
+
+      "complexity": {
+        // O bloco `prefers-reduced-motion` do globals.css precisa de
+        // `!important` para vencer as animações que o Tailwind e o framer
+        // escrevem inline. É o único uso, e é proposital.
+        "noImportantStyles": "off"
+      }
+    }
+  },
+
+  "assist": {
+    "enabled": true,
+    // Reordenar importação em 40 arquivos de uma vez é ruído puro no histórico
+    // e nenhum ganho de leitura. Fica desligado.
+    "actions": { "source": { "organizeImports": "off" } }
+  }
+}

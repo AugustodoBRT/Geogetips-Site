@@ -13,7 +13,7 @@
  * que o navegador recusa em silêncio. Por isso o arredondamento só toca os
  * atributos `d` dos caminhos.
  */
-import { readdirSync, readFileSync, writeFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 
@@ -46,7 +46,7 @@ function otimizar(svg) {
     .trim();
 }
 
-const kb = (n) => (n / 1024).toFixed(1).padStart(6) + " KB";
+const kb = (n) => `${(n / 1024).toFixed(1).padStart(6)} KB`;
 
 let arquivos;
 try {
@@ -57,7 +57,7 @@ try {
 }
 
 if (arquivos.length === 0) {
-  console.log("Nenhum SVG em " + PASTA + ".");
+  console.log(`Nenhum SVG em ${PASTA}.`);
   process.exit(0);
 }
 

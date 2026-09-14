@@ -53,6 +53,7 @@ export function SeletorUnidade() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap shrink-0">
+          {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que traz borda, margem e padding do navegador e existe para agrupar campo de formulário — não uma barra de botões. */}
           <div className="flex items-center gap-1" role="group" aria-label="Valores sugeridos">
             {SUGESTOES.map((v) => (
               <button

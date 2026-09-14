@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BetItem } from "@/lib/types";
+import type { BetItem } from "@/lib/types";
 import type { BetStats } from "@/lib/stats";
 import { abaDoMesAtual, abasRecentes } from "@/lib/constants";
 

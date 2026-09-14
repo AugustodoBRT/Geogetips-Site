@@ -2,7 +2,7 @@
  * Cálculos puros sobre apostas. Sem dependência de servidor, para que
  * client components possam importar as mesmas contas que a API usa.
  */
-import { BetItem, TipsterStat, SportBreakdown, BookieBreakdown } from "./types";
+import type { BetItem, TipsterStat, SportBreakdown, BookieBreakdown } from "./types";
 import { reaisParaUnidades } from "./constants";
 
 /**

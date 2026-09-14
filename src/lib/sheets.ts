@@ -1,6 +1,6 @@
-import path from "path";
-import fs from "fs";
-import { BetItem, BetResult } from "./types";
+import path from "node:path";
+import fs from "node:fs";
+import type { BetItem, BetResult } from "./types";
 import { abaDoMesAtual, abasRecentes, ABA_TODOS, ordemDaAba, reaisParaUnidades } from "./constants";
 import { parseDateTimestamp } from "./date";
 import { computeStatsFromBets } from "./stats";
@@ -48,7 +48,7 @@ async function buildAuth() {
   const google = await carregarGoogle();
   const inline = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (inline) {
-    let credentials;
+    let credentials: Record<string, unknown>;
     try {
       credentials = JSON.parse(inline);
     } catch {
@@ -88,13 +88,13 @@ function parseCurrency(str: string): number {
     .replace(/\./g, "")
     .replace(",", ".");
   const num = parseFloat(cleaned);
-  return isNaN(num) ? 0 : num;
+  return Number.isNaN(num) ? 0 : num;
 }
 
 function parseOdd(str: string): number {
   if (!str) return 1.0;
   const num = parseFloat(str.replace(",", ".").trim());
-  return isNaN(num) ? 1.0 : num;
+  return Number.isNaN(num) ? 1.0 : num;
 }
 
 function parseResultado(raw: string): BetResult {

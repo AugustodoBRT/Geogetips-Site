@@ -427,14 +427,13 @@ export default function PainelPage() {
       <SeletorUnidade />
 
       {/* 5 KPIs.
-          role="region" com nome acessível vira marco de navegação, igual a
-          <section aria-labelledby>. Antes os cinco blocos eram div solta e não
-          havia como pular entre eles com leitor de tela. */}
+          <section> com nome acessível vira marco de navegação. Antes os cinco
+          blocos eram div solta e não havia como pular entre eles com leitor de
+          tela. */}
       {mostrarEsqueleto ? (
         <SkeletonKpis quantidade={5} grade="cinco" />
       ) : (
-      <div
-        role="region"
+      <section
         aria-label="Indicadores do período"
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 animate-entrada"
       >
@@ -579,14 +578,13 @@ export default function PainelPage() {
             {pendentes > 0 ? "Aguardando resultado oficial" : "Tudo com resultado lançado"}
           </div>
         </div>
-      </div>
+      </section>
       )}
 
       {/* Middle Section: Real Dynamic Chart (8 cols) + Sport Breakdown (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Real Chart Box */}
-        <div
-          role="region"
+        <section
           aria-labelledby="titulo-evolucao"
           className="lg:col-span-8 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden"
         >
@@ -906,11 +904,10 @@ export default function PainelPage() {
               </svg>
             )}
           </div>
-        </div>
+        </section>
 
         {/* Breakdown by Sport */}
-        <div
-          role="region"
+        <section
           aria-labelledby="titulo-esportes"
           className="lg:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4"
         >
@@ -974,14 +971,13 @@ export default function PainelPage() {
             <span>Ver Estatísticas Completas</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
-        </div>
+        </section>
       </div>
 
       {/* Bottom Section: Recent Activity Stream (6 cols) + Top Adms Leaderboard (6 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Bets Stream */}
-        <div
-          role="region"
+        <section
           aria-labelledby="titulo-ultimas"
           className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
         >
@@ -1088,11 +1084,10 @@ export default function PainelPage() {
             })
             )}
           </div>
-        </div>
+        </section>
 
         {/* Top Adms Box */}
-        <div
-          role="region"
+        <section
           aria-labelledby="titulo-ranking"
           className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
         >
@@ -1168,7 +1163,7 @@ export default function PainelPage() {
             ))
             )}
           </div>
-        </div>
+        </section>
       </div>
       <SecaoTelegram />
     </div>

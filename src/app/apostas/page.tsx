@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import NumberFlow from "@number-flow/react";
 import { Search, LayoutGrid, List, Award, Layers } from "lucide-react";
-import { BetItem, BetResult } from "@/lib/types";
+import type { BetItem, BetResult } from "@/lib/types";
 import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
 import { SeletorAba } from "@/components/SeletorAba";
@@ -141,13 +141,17 @@ export default function ApostasPage() {
   // varria a lista inteira uma vez por linha do menu.
   const contagemPorEsporte = useMemo(() => {
     const m = new Map<string, number>();
-    bets.forEach((b) => b.esporte && m.set(b.esporte, (m.get(b.esporte) ?? 0) + 1));
+    bets.forEach((b) => {
+      if (b.esporte) m.set(b.esporte, (m.get(b.esporte) ?? 0) + 1);
+    });
     return m;
   }, [bets]);
 
   const contagemPorCasa = useMemo(() => {
     const m = new Map<string, number>();
-    bets.forEach((b) => b.casa && m.set(b.casa, (m.get(b.casa) ?? 0) + 1));
+    bets.forEach((b) => {
+      if (b.casa) m.set(b.casa, (m.get(b.casa) ?? 0) + 1);
+    });
     return m;
   }, [bets]);
 
@@ -349,6 +353,7 @@ export default function ApostasPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que traz borda, margem e padding do navegador e existe para agrupar campo de formulário — não uma barra de botões. */}
           <div
             className="flex items-center bg-white border border-black/[0.12] rounded-full p-0.5 shadow-sm"
             role="group"
@@ -501,6 +506,11 @@ export default function ApostasPage() {
                 />
               </div>
 
+                    {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no
+                  lugar é <fieldset>, que chega com borda, margem e padding do
+                  navegador e existe para agrupar campo de formulário. Aqui é uma
+                  barra de pílulas: trocar custaria regressão visual sem ganho de
+                  leitura. */}
               <div
                 className="flex items-center gap-1 flex-wrap"
                 role="group"
@@ -566,6 +576,11 @@ export default function ApostasPage() {
                 />
               </div>
 
+                    {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no
+                  lugar é <fieldset>, que chega com borda, margem e padding do
+                  navegador e existe para agrupar campo de formulário. Aqui é uma
+                  barra de pílulas: trocar custaria regressão visual sem ganho de
+                  leitura. */}
               <div
                 className="flex items-center gap-1"
                 role="group"
