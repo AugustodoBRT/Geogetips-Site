@@ -913,7 +913,7 @@ function monograma(nome: string): string {
   return nome.slice(0, 1).toUpperCase();
 }
 
-export function encontrarCasa(bookie: string): Casa | undefined {
+function encontrarCasa(bookie: string): Casa | undefined {
   const chave = normalizarTexto(bookie).replace(/\s+/g, "");
   return INDICE.get(chave);
 }

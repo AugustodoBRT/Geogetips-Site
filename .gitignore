@@ -39,3 +39,12 @@ credenciais*.json
 
 # ferramentas locais de quem desenvolve
 .claude
+
+# Testes de tela
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Cobertura
+/coverage/

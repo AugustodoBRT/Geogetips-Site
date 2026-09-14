@@ -105,8 +105,24 @@ git log -1 --format='%B' | grep -Eic 'claude|anthropic|gpt|copilot|co-authored|g
 ### 4. Antes de abrir o pull request
 
 ```bash
-npx tsc --noEmit
-npm run checar:cores
+npm run lint          # Biome: lint e formatação
+npx tsc --noEmit      # tipos
+npm run teste         # regras de número
+npm run checar:cores  # paleta em sincronia
+npm run e2e           # telas, no build de produção
+npm run morto         # arquivo, exportação e dependência sem uso
+```
+
+`npm run lint:corrigir` aplica o que o Biome sabe consertar sozinho. Regra
+desligada ou silenciada **precisa dizer por quê**, no ponto de uso — nunca só
+no `biome.jsonc`.
+
+O `npm run e2e` faz o próprio build, numa pasta separada e em modo
+demonstração, e sobe o servidor na 3100. Não encosta na `.next` nem na 3000, e
+devolve `tsconfig.json` e `next-env.d.ts` ao estado anterior (o Next reescreve
+os dois ao mudar a pasta de saída). Para conferir só o build:
+
+```bash
 NEXT_DIST_DIR=.next-verifica npm run build
 git checkout -- tsconfig.json next-env.d.ts && rm -rf .next-verifica
 ```
@@ -172,19 +188,30 @@ Toda issue leva um de tipo, um de área e um de prioridade.
 ## O que o CI verifica
 
 [.github/workflows/ci.yml](.github/workflows/ci.yml) roda em todo pull request
-para a `main`:
+para a `main`, em dois trabalhos paralelos.
 
-1. `npm ci`
-2. `npx tsc --noEmit` — tipos
-3. `npm run checar:cores` — a paleta do CSS e a de `src/lib/cores.ts` dizendo a
-   mesma coisa
-4. `npm run build` — o build de produção passa
+**Lint, tipos, testes e build** — `npm ci`, lint e formatação, `tsc --noEmit`,
+paleta, testes com cobertura, build de produção e varredura de código morto.
 
-O lint entra aqui quando a issue #8 estiver resolvida: hoje `npm run lint` abre
-um menu interativo e travaria o CI.
+**Testes de tela** — instala o Chromium e roda o Playwright contra o build de
+produção. Quando falha, o relatório fica anexado à execução por sete dias.
 
 CI vermelho não se contorna com `--force` nem com `--no-verify`. Conserta-se a
 causa.
+
+---
+
+## As ferramentas, e o que cada uma protege
+
+| Ferramenta | Arquivo | Protege de |
+|---|---|---|
+| **Biome** | `biome.jsonc` | lint e formatação. Substituiu o `next lint`, que estava descontinuado e sem ESLint no projeto — ou seja, não verificava nada |
+| **Vitest** | `vitest.config.mts` | as regras de número. Cobertura medida no próprio CI, com limite mínimo; sem serviço externo |
+| **Playwright** | `playwright.config.mts` | o que só quebra no navegador. Roda no build de produção, nunca no `next dev` |
+| **Knip** | `knip.json` | arquivo, exportação e dependência que ninguém usa |
+
+Teste de unidade mora ao lado do código (`src/lib/stats.test.ts`); teste de
+tela mora em `e2e/`.
 
 ---
 

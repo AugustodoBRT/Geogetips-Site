@@ -13,7 +13,6 @@ import { computeStatsFromBets } from "./stats";
 import { lerAbaPublica } from "./planilhaPublica";
 
 export { computeStatsFromBets };
-export { parseDateTimestamp };
 
 // A planilha do grupo é pública; o ID não é segredo e vai como padrão para
 // que o site funcione sem nenhuma configuração.
@@ -77,7 +76,7 @@ async function buildAuth() {
   );
 }
 
-export async function getSheetsClient() {
+async function getSheetsClient() {
   const google = await carregarGoogle();
   return google.sheets({ version: "v4", auth: await buildAuth() });
 }
@@ -289,7 +288,7 @@ export async function getBetsFromTab(tabName?: string): Promise<BetItem[]> {
   return bets;
 }
 
-export async function getAllBetsFromAllTabs(): Promise<BetItem[]> {
+async function getAllBetsFromAllTabs(): Promise<BetItem[]> {
   const tabs = await getAvailableTabs();
   const monthlyTabs = tabs.filter(
     (t) => !t.toLowerCase().includes("resumo") && !t.toLowerCase().includes("config")

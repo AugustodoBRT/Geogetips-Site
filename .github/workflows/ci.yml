@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   verificar:
-    name: Tipos, paleta e build
+    name: Lint, tipos, testes e build
     runs-on: ubuntu-latest
     env:
       NEXT_TELEMETRY_DISABLED: "1"
@@ -29,6 +29,9 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Lint e formatação
+        run: npm run lint
+
       - name: Tipos
         run: npx tsc --noEmit
 
@@ -38,9 +41,50 @@ jobs:
       - name: Paleta
         run: npm run checar:cores
 
+      # As regras de número: ROI com pendentes e anuladas dentro, taxa de
+      # acerto com elas fora, VOID, fuso de São Paulo, ordem do feed. A
+      # cobertura tem limite mínimo configurado no vitest.config.mts e falha
+      # sozinha se cair.
+      - name: Testes e cobertura
+        run: npm run teste:cobertura
+
       - name: Build de produção
         run: npm run build
 
-      # O lint entra aqui quando a issue #8 estiver resolvida. Hoje
-      # `npm run lint` chama o `next lint`, que abre um menu interativo e
-      # travaria o job até o tempo-limite.
+      # Arquivo sem importador, exportação sem consumidor, dependência sem uso.
+      - name: Código morto
+        run: npm run morto
+
+  telas:
+    name: Testes de tela
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Instalar o navegador
+        run: npm run e2e:navegador
+
+      # O próprio Playwright faz o build e sobe o servidor na 3100, em modo
+      # demonstração — ver playwright.config.mts. Roda contra o build de
+      # produção de propósito: o Suspense e a divisão de pedaços do JavaScript
+      # se comportam diferente em desenvolvimento.
+      - name: Testes de tela
+        run: npm run e2e
+
+      - name: Guardar o relatório quando falhar
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-playwright
+          path: playwright-report/
+          retention-days: 7

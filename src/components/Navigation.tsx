@@ -18,7 +18,7 @@ const navItems = [
   { label: "Estatísticas", href: "/estatisticas" },
 ];
 
-export default function Navigation() {
+function Navigation() {
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
   const botaoMenu = useRef<HTMLButtonElement>(null);

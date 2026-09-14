@@ -40,13 +40,6 @@ export const DURACAO = {
   vitrine: 0.95,
 } as const;
 
-/**
- * Mola de produção: desacelera até parar sem passar do ponto.
- * Repique acima de zero lê como brincadeira — reservado para contexto lúdico,
- * que não é o caso de um painel de resultados.
- */
-export const MOLA = { type: "spring", duration: 0.45, bounce: 0 } as const;
-
 /** Mola curta, para sobreposições que precisam chegar rápido. */
 export const MOLA_CURTA = { type: "spring", stiffness: 420, damping: 34 } as const;
 

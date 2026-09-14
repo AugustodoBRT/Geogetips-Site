@@ -27,7 +27,7 @@
  * produção, nas cinco rotas.
  */
 
-export function Skeleton({ className = "" }: { className?: string }) {
+function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
@@ -104,7 +104,7 @@ export function SkeletonLinhas({
 }
 
 /** Lista de ranking: rótulo à esquerda, barra e número à direita. */
-export function SkeletonRanking({
+function SkeletonRanking({
   linhas = 4,
   titulo = true,
   className = "",

@@ -11,6 +11,9 @@
     "teste": "vitest run",
     "teste:ver": "vitest",
     "teste:cobertura": "vitest run --coverage",
+    "e2e": "playwright test",
+    "e2e:navegador": "playwright install --with-deps chromium",
+    "morto": "knip",
     "checar:cores": "node scripts/checar-cores.mjs",
     "otimizar:logos": "node scripts/otimizar-logos.mjs"
   },
@@ -25,6 +28,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.13.5",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
