@@ -333,7 +333,7 @@ export default function PainelPage() {
   /**
    * O recorte que vale para a tela inteira.
    *
-   * Antes isto era um dia só, e dois blocos — Resultado por Esporte e Ranking de
+   * Antes isto era um dia só, e dois blocos — Top Esportes e Ranking de
    * Adms — ficavam de fora com uma nota explicando a contradição: num dia com
    * três apostas, a distribuição vira um esporte só. Com intervalo a objeção
    * cai, quinze dias têm volume de sobra, e a tela inteira passa a dizer a
@@ -973,7 +973,7 @@ export default function PainelPage() {
               id="titulo-esportes"
               className="text-base font-bold text-[var(--text)] tracking-tight mb-1"
             >
-              Resultado por Esporte
+              Top Esportes
             </h2>
             {/* Este bloco já ficou fora do filtro, quando o filtro era um dia
                 só: num dia com três apostas a distribuição virava um esporte
@@ -1031,6 +1031,79 @@ export default function PainelPage() {
           </Link>
         </section>
       </div>
+
+      {/* Top Casas.
+          Pergunta gêmea da de esporte, e por um motivo que esporte não tem:
+          casa limita conta boa. Quando isso acontece, o resultado do grupo muda
+          sem nada mudar na estratégia — e o Painel é onde se olha primeiro.
+
+          Fica logo abaixo do gráfico, ao lado da irmã: as duas respondem "de
+          onde veio o resultado", e separá-las obrigava a rolar a tela inteira
+          para comparar.
+
+          Largura inteira com a lista em duas colunas: são oito casas, e numa
+          coluna só a linha ficaria com meio metro de espaço vazio entre o nome
+          e o valor. */}
+      <section
+        aria-labelledby="titulo-casas"
+        className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
+      >
+        <div>
+          <h2
+            id="titulo-casas"
+            className="text-base font-bold text-[var(--text)] tracking-tight mb-1"
+          >
+            Top Casas
+          </h2>
+          <p className="text-xs text-[var(--text-3)]">
+            {periodoAtivo ? `As mais usadas ${periodo}` : "As mais usadas na aba ativa"}
+          </p>
+        </div>
+
+        {casas.length === 0 ? (
+          loading ? (
+            <SkeletonLinhas quantidade={4} altura="h-9" />
+          ) : (
+            <p className="text-center text-xs text-[var(--text-3)] py-6">
+              Sem casas nesta aba.
+            </p>
+          )
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+            {casas.map((b) => (
+              <div
+                key={b.casa}
+                className="py-2.5 flex items-center justify-between gap-3 border-b border-black/[0.05]"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <BookieBadge bookie={b.casa} />
+                  <span className="text-[11px] text-[var(--text-3)] whitespace-nowrap">
+                    {formatarInteiro(b.apostas)} tips · ROI {b.roi >= 0 ? "+" : ""}
+                    {b.roi.toFixed(2).replace(".", ",")}%
+                  </span>
+                </div>
+                <span
+                  className={`font-mono text-xs font-bold shrink-0 ${
+                    b.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                  }`}
+                >
+                  {formatarReaisComSinal(converter(b.lucro))}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Oito é recorte, e o site precisa dizer que é — senão quem procura
+            uma casa fora da lista conclui que ela não existe. */}
+        <Link
+          href="/estatisticas"
+          className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl text-center transition-colors flex items-center justify-center gap-1"
+        >
+          <span>Ver todas as casas</span>
+          <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
+        </Link>
+      </section>
 
       {/* Bottom Section: Recent Activity Stream (6 cols) + Top Adms Leaderboard (6 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -1219,65 +1292,6 @@ export default function PainelPage() {
           </div>
         </section>
       </div>
-
-      {/* Resultado por Casa.
-          Pergunta gêmea da de esporte, e por um motivo que esporte não tem:
-          casa limita conta boa. Quando isso acontece, o resultado do grupo muda
-          sem nada mudar na estratégia — e o Painel é onde se olha primeiro.
-
-          Largura inteira com a lista em duas colunas: são oito casas, e numa
-          coluna só a linha ficaria com meio metro de espaço vazio entre o nome
-          e o valor. */}
-      <section
-        aria-labelledby="titulo-casas"
-        className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
-      >
-        <div>
-          <h2
-            id="titulo-casas"
-            className="text-base font-bold text-[var(--text)] tracking-tight mb-1"
-          >
-            Resultado por Casa
-          </h2>
-          <p className="text-xs text-[var(--text-3)]">
-            {periodoAtivo ? `As mais usadas ${periodo}` : "As mais usadas na aba ativa"}
-          </p>
-        </div>
-
-        {casas.length === 0 ? (
-          loading ? (
-            <SkeletonLinhas quantidade={4} altura="h-9" />
-          ) : (
-            <p className="text-center text-xs text-[var(--text-3)] py-6">
-              Sem casas nesta aba.
-            </p>
-          )
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-            {casas.map((b) => (
-              <div
-                key={b.casa}
-                className="py-2.5 flex items-center justify-between gap-3 border-b border-black/[0.05]"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <BookieBadge bookie={b.casa} />
-                  <span className="text-[11px] text-[var(--text-3)] whitespace-nowrap">
-                    {formatarInteiro(b.apostas)} tips · ROI {b.roi >= 0 ? "+" : ""}
-                    {b.roi.toFixed(2).replace(".", ",")}%
-                  </span>
-                </div>
-                <span
-                  className={`font-mono text-xs font-bold shrink-0 ${
-                    b.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                  }`}
-                >
-                  {formatarReaisComSinal(converter(b.lucro))}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
 
       <SecaoTelegram />
     </div>
