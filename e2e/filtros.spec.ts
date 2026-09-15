@@ -48,6 +48,14 @@ test("o intervalo recorta a tela e esconde a janela do gráfico", async ({ page 
   await expect(page.getByText("Lucro no Período")).toBeVisible();
   await expect(kpis).toBeVisible();
 
+  // Os dois blocos de recorte acompanham. Eles são o motivo de o intervalo ter
+  // substituído o seletor de dia: com um dia só, ficavam de fora e precisavam
+  // de uma nota explicando que não seguiam o resto da tela.
+  const casas = page.getByRole("region", { name: "Resultado por Casa" });
+  await expect(casas).toBeVisible();
+  await expect(casas.getByText(/As mais usadas \d{2}\/\d{2}\/\d{4}/)).toBeVisible();
+  await expect(page.getByText(/^Distribuição \d{2}\/\d{2}\/\d{4}/)).toBeVisible();
+
   // Limpar devolve os dois.
   await page.getByRole("button", { name: "Limpar intervalo de datas" }).click();
   await expect(botoesDeJanela(page).first()).toBeVisible();

@@ -302,7 +302,7 @@ export default function EstatisticasPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                    Lucro por Modalidade Esportiva
+                    Resultado por Modalidade Esportiva
                   </h2>
                   <p className="text-xs text-[var(--text-3)]">
                     Rentabilidade por esporte {trecho.prefixo} {trecho.nome}
