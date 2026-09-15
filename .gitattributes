@@ -1,0 +1,26 @@
+# Fim de linha.
+#
+# Sem isto, cada máquina grava o que o seu `core.autocrlf` mandar: aqui se
+# trabalha no Windows e o CI roda no Linux. O conteúdo fica igual, mas
+# ferramenta que lê o arquivo do disco — o Biome, por exemplo — vê arquivos
+# diferentes. Um `git rebase` já produziu arquivo com fim de linha misturado,
+# LF na maior parte das linhas e CRLF em algumas, e o lint reprovou sem que o
+# diff mostrasse motivo nenhum.
+#
+# `eol=lf` fixa LF também na cópia de trabalho, não só no repositório.
+* text=auto eol=lf
+
+# O SVG das logos é texto e normaliza junto.
+*.svg text eol=lf
+
+# Binário não se toca: converter fim de linha aqui corrompe o arquivo.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.pdf binary
