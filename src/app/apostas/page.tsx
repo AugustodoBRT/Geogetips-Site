@@ -77,6 +77,7 @@ export default function ApostasPage() {
   // Listas vazias = sem filtro. Ver SeletorMultiplo para o porquê.
   const [sportsFilter, setSportsFilter] = useState<string[]>([]);
   const [bookiesFilter, setBookiesFilter] = useState<string[]>([]);
+  const [admsFilter, setAdmsFilter] = useState<string[]>([]);
   // Intervalo em "YYYY-MM-DD"; string vazia deixa o lado em aberto.
   const [de, setDe] = useState("");
   const [ate, setAte] = useState("");
@@ -101,6 +102,7 @@ export default function ApostasPage() {
     setAte("");
     setSportsFilter([]);
     setBookiesFilter([]);
+    setAdmsFilter([]);
   }, [activeTab]);
 
   // Listas de filtro em ordem alfabética, para o usuário achar o item
@@ -115,6 +117,16 @@ export default function ApostasPage() {
   const bookies = useMemo(
     () =>
       Array.from(new Set(bets.map((b) => b.casa)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, "pt-BR")),
+    [bets]
+  );
+
+  // O campo interno se chama `tipster` porque espelha a coluna da planilha. Na
+  // tela é "adm", e é assim que o grupo fala.
+  const adms = useMemo(
+    () =>
+      Array.from(new Set(bets.map((b) => b.tipster)))
         .filter(Boolean)
         .sort((a, b) => a.localeCompare(b, "pt-BR")),
     [bets]
@@ -155,6 +167,14 @@ export default function ApostasPage() {
     return m;
   }, [bets]);
 
+  const contagemPorAdm = useMemo(() => {
+    const m = new Map<string, number>();
+    bets.forEach((b) => {
+      if (b.tipster) m.set(b.tipster, (m.get(b.tipster) ?? 0) + 1);
+    });
+    return m;
+  }, [bets]);
+
   const filteredBets = useMemo(() => {
     const termo = buscaAplicada.toLowerCase();
     const deTs = timestampDoISO(de);
@@ -172,6 +192,7 @@ export default function ApostasPage() {
         sportsFilter.length === 0 || sportsFilter.includes(bet.esporte);
       const matchesBookie =
         bookiesFilter.length === 0 || bookiesFilter.includes(bet.casa);
+      const matchesAdm = admsFilter.length === 0 || admsFilter.includes(bet.tipster);
 
       // Intervalo fechado dos dois lados quando ambos estão preenchidos.
       let matchesDay = true;
@@ -192,6 +213,7 @@ export default function ApostasPage() {
         matchesStatus &&
         matchesSport &&
         matchesBookie &&
+        matchesAdm &&
         matchesOdd &&
         matchesDay
       );
@@ -202,6 +224,7 @@ export default function ApostasPage() {
     statusFilter,
     sportsFilter,
     bookiesFilter,
+    admsFilter,
     de,
     ate,
     oddRangeFilter,
@@ -281,6 +304,7 @@ export default function ApostasPage() {
     statusFilter,
     sportsFilter,
     bookiesFilter,
+    admsFilter,
     de,
     ate,
     oddRangeFilter,
@@ -573,6 +597,15 @@ export default function ApostasPage() {
                   selecionadas={bookiesFilter}
                   onChange={setBookiesFilter}
                   contagem={contagemPorCasa}
+                />
+
+                <SeletorMultiplo
+                  rotuloVazio="Todos os Adms"
+                  substantivo="adms"
+                  opcoes={adms}
+                  selecionadas={admsFilter}
+                  onChange={setAdmsFilter}
+                  contagem={contagemPorAdm}
                 />
               </div>
 
