@@ -302,7 +302,7 @@ export default function EstatisticasPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                    Resultado por Modalidade Esportiva
+                    Top Esportes
                   </h2>
                   <p className="text-xs text-[var(--text-3)]">
                     Rentabilidade por esporte {trecho.prefixo} {trecho.nome}
@@ -358,7 +358,7 @@ export default function EstatisticasPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                    Top Casas de Apostas
+                    Top Casas
                   </h2>
                   <p className="text-xs text-[var(--text-3)]">
                     Lucro e ROI por casa — a barra mostra o volume
