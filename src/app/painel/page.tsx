@@ -14,7 +14,8 @@ import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
-import { parseDateTimestamp } from "@/lib/date";
+import { FiltroPeriodo } from "@/components/FiltroPeriodo";
+import { paraISO, parseDateTimestamp, rotuloDoPeriodo, timestampDoISO } from "@/lib/date";
 import { ABA_TODOS, rotuloDaAba, trechoDaAba } from "@/lib/constants";
 import {
   formatarInteiro,
@@ -25,7 +26,7 @@ import {
   tamanhoDoValor,
   tempoRelativo,
 } from "@/lib/format";
-import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
+import { calcularRoi, computeStatsFromBets, taxaDeAcerto } from "@/lib/stats";
 import {
   TrendingUp,
   TrendingDown,
@@ -74,7 +75,8 @@ export default function PainelPage() {
   const { converter } = useUnidade();
 
   const [period, setPeriod] = useState<"7D" | "30D" | "90D" | "120D" | "Tudo">("30D");
-  const [selectedDay, setSelectedDay] = useState<string>("TODOS");
+  const [de, setDe] = useState("");
+  const [ate, setAte] = useState("");
   const [hoveredPoint, setHoveredPoint] = useState<
     (DayPoint & { x: number; y: number }) | null
   >(null);
@@ -96,10 +98,14 @@ export default function PainelPage() {
   );
 
   useEffect(() => {
-    setSelectedDay("TODOS");
+    setDe("");
+    setAte("");
     setHoveredPoint(null);
     setPeriod(activeTab === ABA_TODOS ? "Tudo" : "30D");
   }, [activeTab]);
+
+  const periodoAtivo = de !== "" || ate !== "";
+  const periodo = rotuloDoPeriodo(de, ate);
 
   // Extract unique available days for the current tab
   const availableDays = useMemo(() => {
@@ -110,22 +116,14 @@ export default function PainelPage() {
     return dates;
   }, [allBets]);
 
-  /**
-   * Contagem de apostas por dia, numa passada só.
-   *
-   * O JSX do seletor refazia um filter sobre TODAS as apostas para cada dia da
-   * lista: 73.560 filtragens por render em Abril26, medidas em 14,6 ms. E como
-   * `hoveredPoint` é estado, cada movimento do mouse sobre o gráfico dispara um
-   * render — ou seja, pagava-se quase um quadro inteiro por pixel percorrido.
-   */
-  const contagemPorDia = useMemo(() => {
-    const mapa = new Map<string, number>();
-    for (const b of allBets) {
-      if (!b.data || b.data === "—") continue;
-      mapa.set(b.data, (mapa.get(b.data) ?? 0) + 1);
-    }
-    return mapa;
-  }, [allBets]);
+  // Extremos da aba, para o calendário não abrir em dia sem aposta nenhuma.
+  const limitesDeData = useMemo(() => {
+    if (availableDays.length === 0) return { min: undefined, max: undefined };
+    return {
+      min: paraISO(availableDays[availableDays.length - 1]) || undefined,
+      max: paraISO(availableDays[0]) || undefined,
+    };
+  }, [availableDays]);
 
   // Aggregate daily points in ascending chronological order (oldest to newest)
   const allDailyPoints: DayPoint[] = useMemo(() => {
@@ -182,18 +180,23 @@ export default function PainelPage() {
   // Filter points according to selected period (or if a specific day is selected, focus on it)
   const chartPoints = useMemo(() => {
     if (allDailyPoints.length === 0) return [];
-    if (selectedDay !== "TODOS") {
-      // Return up to the selected day
-      const targetTs = parseDateTimestamp(selectedDay);
-      const filtered = allDailyPoints.filter((p) => p.timestamp <= targetTs);
-      return filtered.length > 0 ? filtered : allDailyPoints;
-    }
     // A planilha traz apostas pendentes de jogos que ainda vão acontecer. Elas
     // não podem entrar na curva: têm lucro 0 e desenhariam uma reta plana no
     // futuro, como se a banca tivesse parado de crescer.
     const fimDeHoje = new Date();
     fimDeHoje.setHours(23, 59, 59, 999);
     const ateHoje = allDailyPoints.filter((p) => p.timestamp <= fimDeHoje.getTime());
+
+    // Intervalo escolhido à mão vence a janela: são dois controles do mesmo
+    // eixo, e deixar os dois valendo ao mesmo tempo é o que confunde. Por isso
+    // os botões de janela também somem da tela enquanto há intervalo.
+    if (periodoAtivo) {
+      const deTs = timestampDoISO(de);
+      const ateTs = timestampDoISO(ate);
+      return ateHoje.filter(
+        (p) => (!deTs || p.timestamp >= deTs) && (!ateTs || p.timestamp <= ateTs)
+      );
+    }
 
     const dias = DIAS_DO_PERIODO[period];
     if (dias === null || ateHoje.length === 0) return ateHoje;
@@ -210,7 +213,7 @@ export default function PainelPage() {
     inicio.setDate(inicio.getDate() - (dias - 1));
     inicio.setHours(0, 0, 0, 0);
     return ateHoje.filter((p) => p.timestamp >= inicio.getTime() && p.timestamp <= fim);
-  }, [allDailyPoints, period, selectedDay]);
+  }, [allDailyPoints, period, periodoAtivo, de, ate]);
 
   // Calculate coordinates for SVG rendering
   const chartData = useMemo(() => {
@@ -300,7 +303,7 @@ export default function PainelPage() {
   // Re-triggers the draw-in animation only when the dataset itself changes
   // Inclui as pontas da janela: dois períodos podem ter a mesma quantidade de
   // pontos e, só pelo comprimento, a animação de entrada não re-disparava.
-  const chartKey = `${activeTab}-${period}-${selectedDay}-${chartPoints.length}-${
+  const chartKey = `${activeTab}-${period}-${de}-${ate}-${chartPoints.length}-${
     chartPoints[0]?.date ?? ""
   }-${chartPoints[chartPoints.length - 1]?.date ?? ""}`;
 
@@ -327,11 +330,27 @@ export default function PainelPage() {
     [chartData]
   );
 
-  // Current scope bets (all bets in month or filtered by selectedDay)
+  /**
+   * O recorte que vale para a tela inteira.
+   *
+   * Antes isto era um dia só, e dois blocos — Lucro por Esporte e Ranking de
+   * Adms — ficavam de fora com uma nota explicando a contradição: num dia com
+   * três apostas, a distribuição vira um esporte só. Com intervalo a objeção
+   * cai, quinze dias têm volume de sobra, e a tela inteira passa a dizer a
+   * mesma coisa.
+   */
   const scopedBets = useMemo(() => {
-    if (selectedDay === "TODOS") return allBets;
-    return allBets.filter((b) => b.data === selectedDay);
-  }, [allBets, selectedDay]);
+    if (!periodoAtivo) return allBets;
+    const deTs = timestampDoISO(de);
+    const ateTs = timestampDoISO(ate);
+    return allBets.filter((b) => {
+      const ts = parseDateTimestamp(b.data);
+      if (ts === 0) return false;
+      if (deTs && ts < deTs) return false;
+      if (ateTs && ts > ateTs) return false;
+      return true;
+    });
+  }, [allBets, periodoAtivo, de, ate]);
 
   const totalLucro = useMemo(
     () => converter(scopedBets.reduce((acc, b) => acc + b.lucro, 0)),
@@ -347,8 +366,19 @@ export default function PainelPage() {
   // ROI é razão: não muda com a unidade do visitante
   const roi = useMemo(() => calcularRoi(scopedBets), [scopedBets]);
 
-  const sports = stats?.sports ?? [];
-  const tipsters = stats?.tipsters ?? [];
+  /**
+   * Esportes e adms saem do recorte, não da aba inteira.
+   *
+   * O servidor manda os agregados da aba prontos, e eles continuam valendo
+   * quando não há intervalo. Com intervalo é preciso recalcular — e sai de
+   * graça, porque esta tela já baixa todas as apostas para desenhar o gráfico.
+   */
+  const statsDoRecorte = useMemo(
+    () => (periodoAtivo ? computeStatsFromBets(scopedBets) : null),
+    [periodoAtivo, scopedBets]
+  );
+  const sports = statsDoRecorte?.sports ?? stats?.sports ?? [];
+  const tipsters = statsDoRecorte?.tipsters ?? stats?.tipsters ?? [];
   const recentBets = scopedBets.slice(0, 6);
   const trecho = trechoDaAba(activeTab);
 
@@ -383,10 +413,10 @@ export default function PainelPage() {
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
             Métricas consolidadas, evolução real da banca e atividades {trecho.prefixo}{" "}
             <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>
-            {selectedDay !== "TODOS" && (
+            {periodo && (
               <span>
                 {" "}
-                (Filtrado para o dia <strong>{selectedDay}</strong>)
+                (<strong>{periodo}</strong>)
               </span>
             )}
             .
@@ -397,28 +427,20 @@ export default function PainelPage() {
         {/* Controles de tamanho fixo: nunca encolhem nem quebram a partir de sm.
             Abaixo disso o cabeçalho já empilha e a quebra é bem-vinda. */}
         <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap sm:shrink-0">
-          <label htmlFor="seletor-dia" className="sr-only">
-            Filtrar por dia
-          </label>
-          <select
-            id="seletor-dia"
-            value={selectedDay}
-            onChange={(e) => setSelectedDay(e.target.value)}
-            className="bg-white border border-black/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)] transition-all"
-          >
-            <option value="TODOS">
-              {activeTab === ABA_TODOS ? "Todos os dias" : "Mês completo"} (
-              {formatarInteiro(allBets.length)} tips)
-            </option>
-            {availableDays.map((day) => {
-              const count = contagemPorDia.get(day) ?? 0;
-              return (
-                <option key={day} value={day}>
-                  Dia {day} ({formatarInteiro(count)} {count === 1 ? "tip" : "tips"})
-                </option>
-              );
-            })}
-          </select>
+          {/* Substituiu o antigo seletor de dia. Um dia continua possível —
+              é `de` igual a `até` —, e o intervalo cobre o que aquele não
+              cobria: a quinzena, a semana, os últimos dez dias. */}
+          <FiltroPeriodo
+            de={de}
+            ate={ate}
+            onChange={(novoDe, novoAte) => {
+              setDe(novoDe);
+              setAte(novoAte);
+              setHoveredPoint(null);
+            }}
+            min={limitesDeData.min}
+            max={limitesDeData.max}
+          />
 
           <SeletorAba
             tabs={tabs}
@@ -450,7 +472,7 @@ export default function PainelPage() {
           <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
-                {selectedDay === "TODOS" ? "Lucro Acumulado" : `Lucro em ${selectedDay}`}
+                {periodoAtivo ? "Lucro no Período" : "Lucro Acumulado"}
               </span>
               <div
                 className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -484,8 +506,8 @@ export default function PainelPage() {
               />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
-              {selectedDay !== "TODOS"
-                ? `Resultado obtido no dia ${selectedDay}`
+              {periodoAtivo
+                ? `Resultado ${periodo}`
                 : activeTab === ABA_TODOS
                   ? "Resultado de todos os meses"
                   : `Resultado total em ${activeTab}`}
@@ -626,7 +648,7 @@ export default function PainelPage() {
                         signDisplay: "always",
                       }}
                     />{" "}
-                    ({selectedDay === "TODOS" ? period : `até ${selectedDay}`})
+                    ({periodoAtivo ? periodo : period})
                   </span>
                 )}
                 {/* Maior queda de pico a vale. Lucro e ROI dizem onde a banca
@@ -662,27 +684,36 @@ export default function PainelPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-1 bg-[var(--bg)] p-1 rounded-full border border-black/[0.06] shrink-0">
-              {availablePeriods.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  aria-pressed={period === p && selectedDay === "TODOS"}
-                  onClick={() => {
-                    setPeriod(p);
-                    setSelectedDay("TODOS");
-                    setHoveredPoint(null);
-                  }}
-                  className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
-                    period === p && selectedDay === "TODOS"
-                      ? "bg-[var(--accent)] text-white shadow-sm font-bold"
-                      : "text-[var(--text-2)] hover:text-[var(--accent)]"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
+            {/* Some enquanto há intervalo: janela e intervalo comandam o mesmo
+                eixo, e deixar os dois na tela ao mesmo tempo é o que faz o
+                visitante escolher combinação que se contradiz.
+
+                Sai do DOM em vez de levar `hidden`: o atributo vale
+                `display: none`, e a classe `flex` do Tailwind ganha dele na
+                cascata — os botões continuariam na tela, que foi exatamente o
+                que aconteceu na primeira tentativa. */}
+            {!periodoAtivo && (
+              <div className="flex items-center gap-1 bg-[var(--bg)] p-1 rounded-full border border-black/[0.06] shrink-0">
+                {availablePeriods.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    aria-pressed={period === p}
+                    onClick={() => {
+                      setPeriod(p);
+                      setHoveredPoint(null);
+                    }}
+                    className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
+                      period === p
+                        ? "bg-[var(--accent)] text-white shadow-sm font-bold"
+                        : "text-[var(--text-2)] hover:text-[var(--accent)]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* SVG Canvas Area */}
@@ -943,13 +974,14 @@ export default function PainelPage() {
             >
               Lucro por Esporte
             </h2>
-            {/* Distribuição precisa de volume: num dia com 3 apostas isto viraria
-                um esporte só. Fica no mês inteiro de propósito — mas precisa dizer
-                isso, senão contradiz os KPIs logo acima, que seguem o dia. */}
+            {/* Este bloco já ficou fora do filtro, quando o filtro era um dia
+                só: num dia com três apostas a distribuição virava um esporte
+                só, e era preciso um texto avisando que ali não seguia o resto
+                da tela. Com intervalo a objeção caiu, e a nota some junto. */}
             <p className="text-xs text-[var(--text-3)] mb-3">
-              {selectedDay === "TODOS"
-                ? "Distribuição por modalidades cadastradas"
-                : `${activeTab === ABA_TODOS ? "Todos os meses" : `Mês inteiro de ${activeTab}`}, não o dia ${selectedDay}`}
+              {periodoAtivo
+                ? `Distribuição ${periodo}`
+                : "Distribuição por modalidades cadastradas"}
             </p>
 
             <div className="divide-y divide-black/[0.05] max-h-[220px] overflow-y-auto pr-1">
@@ -1015,9 +1047,9 @@ export default function PainelPage() {
                 Últimas Apostas Registradas
               </h2>
               <p className="text-xs text-[var(--text-3)]">
-                {selectedDay === "TODOS"
-                  ? "As entradas mais recentes da aba"
-                  : `Apostas cadastradas no dia ${selectedDay}`}
+                {periodoAtivo
+                  ? `Apostas registradas ${periodo}`
+                  : "As entradas mais recentes da aba"}
               </p>
             </div>
 
@@ -1036,9 +1068,7 @@ export default function PainelPage() {
                 <SkeletonLinhas quantidade={4} altura="h-14" />
               ) : (
                 <p className="text-center text-xs text-[var(--text-3)] py-6">
-                  {selectedDay === "TODOS"
-                    ? "Sem apostas nesta aba."
-                    : `Sem apostas no dia ${selectedDay}.`}
+                  {periodoAtivo ? `Sem apostas ${periodo}.` : "Sem apostas nesta aba."}
                 </p>
               )
             ) : (
@@ -1126,12 +1156,10 @@ export default function PainelPage() {
               >
                 Ranking de Adms ({rotuloDaAba(activeTab)})
               </h2>
-              {/* Mesmo caso do bloco de esportes: ranking de um dia isolado
-                  costuma ter um adm só, então permanece no mês. */}
               <p className="text-xs text-[var(--text-3)]">
-                {selectedDay === "TODOS"
-                  ? "Quem mais gerou retorno na aba ativa"
-                  : `${activeTab === ABA_TODOS ? "Todos os meses" : `Mês inteiro de ${activeTab}`}, não o dia ${selectedDay}`}
+                {periodoAtivo
+                  ? `Quem mais gerou retorno ${periodo}`
+                  : "Quem mais gerou retorno na aba ativa"}
               </p>
             </div>
 
