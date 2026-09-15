@@ -58,6 +58,20 @@ export function inicioDeHoje(ref: Date = new Date()): number {
   return new Date(ano, mes - 1, dia).getTime();
 }
 
+/**
+ * Descreve um intervalo em palavras, para o cabeçalho dizer o que está na tela.
+ *
+ * Vazio quando não há intervalo — quem chama decide se mostra algo no lugar. Os
+ * dois lados são independentes: só `de` é "a partir de", só `até` é "até", e os
+ * dois iguais são um dia só.
+ */
+export function rotuloDoPeriodo(de: string, ate: string): string {
+  if (de && ate) return de === ate ? `dia ${doISO(de)}` : `${doISO(de)} a ${doISO(ate)}`;
+  if (de) return `a partir de ${doISO(de)}`;
+  if (ate) return `até ${doISO(ate)}`;
+  return "";
+}
+
 /** "YYYY-MM-DD" -> "DD/MM/YYYY", para exibir no padrão do grupo. */
 export function doISO(iso: string): string {
   if (!iso) return "";

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { doISO, inicioDeHoje, paraISO, parseDateTimestamp, timestampDoISO } from "./date";
+import {
+  doISO,
+  inicioDeHoje,
+  paraISO,
+  parseDateTimestamp,
+  rotuloDoPeriodo,
+  timestampDoISO,
+} from "./date";
 
 /**
  * Datas vêm da planilha como texto em "DD/MM/YYYY", digitadas por gente. O
@@ -103,5 +110,26 @@ describe("inicioDeHoje", () => {
     expect(inicioDeHoje(new Date("2026-09-14T12:00:00Z"))).toBe(
       parseDateTimestamp("14/09/2026")
     );
+  });
+});
+
+describe("rotuloDoPeriodo", () => {
+  it("descreve o intervalo fechado", () => {
+    expect(rotuloDoPeriodo("2026-09-01", "2026-09-15")).toBe("01/09/2026 a 15/09/2026");
+  });
+
+  it("chama de dia quando as pontas são iguais", () => {
+    // É o que substitui o antigo seletor de dia do painel.
+    expect(rotuloDoPeriodo("2026-09-14", "2026-09-14")).toBe("dia 14/09/2026");
+  });
+
+  it("aceita intervalo aberto de um lado só", () => {
+    expect(rotuloDoPeriodo("2026-09-14", "")).toBe("a partir de 14/09/2026");
+    expect(rotuloDoPeriodo("", "2026-09-14")).toBe("até 14/09/2026");
+  });
+
+  it("devolve vazio quando não há intervalo", () => {
+    // Quem chama decide o que mostrar no lugar; a função não inventa texto.
+    expect(rotuloDoPeriodo("", "")).toBe("");
   });
 });

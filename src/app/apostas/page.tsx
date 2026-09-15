@@ -17,7 +17,7 @@ import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
-import { parseDateTimestamp, paraISO, timestampDoISO, doISO } from "@/lib/date";
+import { paraISO, parseDateTimestamp, rotuloDoPeriodo, timestampDoISO } from "@/lib/date";
 import { SeletorMultiplo } from "@/components/SeletorMultiplo";
 import { FiltroPeriodo } from "@/components/FiltroPeriodo";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
@@ -298,13 +298,7 @@ export default function ApostasPage() {
   const restantes = filteredBets.length - betsVisiveis.length;
 
   /** Frase curta do recorte de data, para o subtítulo dizer o que está na tela. */
-  const rotuloDoPeriodo = useMemo(() => {
-    if (de && ate)
-      return de === ate ? `dia ${doISO(de)}` : `${doISO(de)} a ${doISO(ate)}`;
-    if (de) return `a partir de ${doISO(de)}`;
-    if (ate) return `até ${doISO(ate)}`;
-    return "";
-  }, [de, ate]);
+  const periodo = rotuloDoPeriodo(de, ate);
 
   const trecho = trechoDaAba(activeTab);
 
@@ -344,7 +338,7 @@ export default function ApostasPage() {
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
             Feed cronológico lido {trecho.prefixo}{" "}
             <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>
-            {rotuloDoPeriodo && <span> ({rotuloDoPeriodo})</span>}.
+            {periodo && <span> ({periodo})</span>}.
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
