@@ -37,23 +37,16 @@ export function TextoQueCai({
 
   if (semMovimento) {
     const Estatico = como;
-    return (
-      <Estatico className={className}>
-        {texto}
-      </Estatico>
-    );
+    return <Estatico className={className}>{texto}</Estatico>;
   }
 
   // Orquestração explícita em vez de staggerChildren + whileInView: aquela
   // combinação calcula atrasos negativos ao sair da tela e o WAAPI rejeita
   // ("offsets must be monotonically non-decreasing"), derrubando a página.
   return (
-    <Tag
-      ref={ref}
-      className={className}
-      aria-label={texto}
-    >
+    <Tag ref={ref} className={className} aria-label={texto}>
       {palavras.map((p, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: a mesma palavra pode aparecer duas vezes no título e a lista nunca é reordenada — o índice é justamente o que garante chave única aqui.
         <span key={`${p}-${i}`} aria-hidden="true">
           <span
             // overflow-hidden recorta a palavra enquanto ela vem de cima,

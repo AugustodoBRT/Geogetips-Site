@@ -1,0 +1,12 @@
+# Commits que só mexeram em espaço em branco.
+#
+# O GitHub lê este arquivo sozinho e pula estes commits no blame. Para valer
+# também no git da sua máquina, rode uma vez:
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Sem isso, o blame de 29 arquivos apontaria para a formatação em vez de para
+# quem escreveu a linha.
+
+# Formata o código com o Biome
+4fb6af906e85a41c49d9dafb2011db4f7b070cf6

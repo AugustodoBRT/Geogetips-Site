@@ -131,6 +131,28 @@ variable e a classe simplesmente não é gerada. Para tons suaves use os tokens
 `src/lib/cores.ts` repete os hexadecimais para o Satori, que não lê CSS variable.
 Depois de mexer em qualquer um dos dois, rode `npm run checar:cores`.
 
+### Verificações
+
+```bash
+npm run lint          # Biome: lint e formatação
+npm run teste         # regras de número (Vitest)
+npm run e2e           # telas, contra o build de produção (Playwright)
+npm run morto         # código sem uso (Knip)
+npm run checar:cores  # paleta em sincronia
+```
+
+O CI roda todas em cada pull request. Detalhes e o porquê de cada escolha em
+[AGENTS.md](AGENTS.md).
+
+Duas notas que economizam tempo:
+
+- `npm run e2e` faz o **próprio** build, numa pasta separada e em modo
+  demonstração, e sobe na porta 3100. Não encosta na `.next` nem derruba o
+  `npm run dev`.
+- O teste de tela roda contra o build de produção de propósito. O `next dev`
+  se comporta diferente no Suspense e na divisão dos pedaços de JavaScript, e
+  já escondeu defeito que só aparecia em produção.
+
 ### 4. Build de Produção
 O build escreve na mesma pasta `.next` que o `npm run dev` usa, e derruba o
 servidor de desenvolvimento que estiver no ar. Para só conferir se o build passa

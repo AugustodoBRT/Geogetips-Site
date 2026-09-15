@@ -129,8 +129,8 @@ export default function HistoricoPage() {
                   />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
-                  {formatarUnidades(consolidado.unidades)} em{" "}
-                  {meses.length} {meses.length === 1 ? "mês" : "meses"}
+                  {formatarUnidades(consolidado.unidades)} em {meses.length}{" "}
+                  {meses.length === 1 ? "mês" : "meses"}
                 </div>
               </div>
 
@@ -181,7 +181,8 @@ export default function HistoricoPage() {
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
                   {formatarInteiro(consolidado.greens)} Green ·{" "}
                   {formatarInteiro(consolidado.reds)} Red
-                  {consolidado.voids > 0 && ` · ${formatarInteiro(consolidado.voids)} Void`}
+                  {consolidado.voids > 0 &&
+                    ` · ${formatarInteiro(consolidado.voids)} Void`}
                 </div>
               </div>
 
@@ -195,11 +196,7 @@ export default function HistoricoPage() {
                   </div>
                 </div>
                 <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
-                  <NumberFlow
-                    value={consolidado.taxaAcerto}
-                    locales="pt-BR"
-                    suffix="%"
-                  />
+                  <NumberFlow value={consolidado.taxaAcerto} locales="pt-BR" suffix="%" />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
                   {mesesNegativos === 0
@@ -306,19 +303,38 @@ export default function HistoricoPage() {
                 </caption>
                 <thead className="bg-[var(--bg-soft)] border-b border-black/[0.06] text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                   <tr>
-                    <th scope="col" className="py-3 px-4">Mês</th>
-                    <th scope="col" className="py-3 px-3 text-right">Apostas</th>
-                    <th scope="col" className="py-3 px-3 text-right">Green</th>
-                    <th scope="col" className="py-3 px-3 text-right">Red</th>
-                    <th scope="col" className="py-3 px-3 text-right">Acerto</th>
-                    <th scope="col" className="py-3 px-3 text-right">Odd méd.</th>
-                    <th scope="col" className="py-3 px-4 text-right">Resultado</th>
-                    <th scope="col" className="py-3 px-4 text-right">ROI</th>
+                    <th scope="col" className="py-3 px-4">
+                      Mês
+                    </th>
+                    <th scope="col" className="py-3 px-3 text-right">
+                      Apostas
+                    </th>
+                    <th scope="col" className="py-3 px-3 text-right">
+                      Green
+                    </th>
+                    <th scope="col" className="py-3 px-3 text-right">
+                      Red
+                    </th>
+                    <th scope="col" className="py-3 px-3 text-right">
+                      Acerto
+                    </th>
+                    <th scope="col" className="py-3 px-3 text-right">
+                      Odd méd.
+                    </th>
+                    <th scope="col" className="py-3 px-4 text-right">
+                      Resultado
+                    </th>
+                    <th scope="col" className="py-3 px-4 text-right">
+                      ROI
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/[0.05]">
                   {meses.map((m) => (
-                    <tr key={m.aba} className="hover:bg-[var(--bg-soft)] transition-colors">
+                    <tr
+                      key={m.aba}
+                      className="hover:bg-[var(--bg-soft)] transition-colors"
+                    >
                       <th
                         scope="row"
                         className="py-3 px-4 font-bold text-[var(--text)] whitespace-nowrap"
@@ -383,14 +399,18 @@ export default function HistoricoPage() {
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${
-                          consolidado.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                          consolidado.lucro >= 0
+                            ? "text-[var(--green)]"
+                            : "text-[var(--red)]"
                         }`}
                       >
                         {formatarReaisComSinal(converter(consolidado.lucro))}
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${
-                          consolidado.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                          consolidado.roi >= 0
+                            ? "text-[var(--green)]"
+                            : "text-[var(--red)]"
                         }`}
                       >
                         {consolidado.roi >= 0 ? "+" : ""}

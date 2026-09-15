@@ -45,7 +45,7 @@ function parseLinhaCsv(linha: string): string[] {
 }
 
 /** CSV completo em matriz. Lida com quebras de linha dentro de campos citados. */
-export function parseCsv(texto: string): string[][] {
+function parseCsv(texto: string): string[][] {
   const linhas: string[] = [];
   let atual = "";
   let dentroDeAspas = false;
@@ -68,7 +68,7 @@ export function parseCsv(texto: string): string[][] {
   return linhas.map(parseLinhaCsv);
 }
 
-export function urlCsvDaAba(spreadsheetId: string, aba: string): string {
+function urlCsvDaAba(spreadsheetId: string, aba: string): string {
   return `${BASE}/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(aba)}`;
 }
 

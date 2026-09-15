@@ -85,9 +85,7 @@ export const ABA_TODOS = "TODOS";
 export function ordemDaAba(nome: string): number {
   const m = nome.trim().match(/^([A-Za-zÀ-ÿ]+)(\d{2})$/);
   if (!m) return 0;
-  const idx = MESES.findIndex(
-    (mes) => mes.toLowerCase() === m[1].toLowerCase()
-  );
+  const idx = MESES.findIndex((mes) => mes.toLowerCase() === m[1].toLowerCase());
   if (idx < 0) return 0;
   return (2000 + parseInt(m[2], 10)) * 100 + idx + 1;
 }

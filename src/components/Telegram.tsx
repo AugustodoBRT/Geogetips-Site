@@ -4,12 +4,7 @@ import { TELEGRAM_URL, PLANILHA_URL } from "@/lib/constants";
 /** Logo do X. O lucide não traz ícones de marca. */
 export function IconeX({ className = "w-4 h-4" }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
       <path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.65l-5.22-6.82-5.96 6.82H1.68l7.73-8.84L1.25 2.25h6.82l4.71 6.23 5.46-6.23Zm-1.16 17.52h1.83L7.09 4.13H5.13l11.95 15.64Z" />
     </svg>
   );
@@ -18,12 +13,7 @@ export function IconeX({ className = "w-4 h-4" }: { className?: string }) {
 /** Logo do Telegram. O lucide não traz ícones de marca. */
 export function IconeTelegram({ className = "w-4 h-4" }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
       <path d="M21.94 4.6a1.32 1.32 0 0 0-1.4-.2L2.9 11.55a1.3 1.3 0 0 0 .1 2.44l4.06 1.3 1.57 4.92a1.05 1.05 0 0 0 1.77.42l2.3-2.35 4.1 3.02a1.3 1.3 0 0 0 2.05-.79l3.42-14.6a1.32 1.32 0 0 0-.33-1.31ZM9.6 14.2l-.6 3.42-1.15-3.6 8.9-5.9-7.15 6.08Z" />
     </svg>
   );
@@ -80,7 +70,9 @@ export function SecaoTelegram() {
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-1/3 left-1/4 h-[140%] w-[70%] rounded-full opacity-25 blur-3xl"
-        style={{ background: "radial-gradient(closest-side, var(--accent), transparent)" }}
+        style={{
+          background: "radial-gradient(closest-side, var(--accent), transparent)",
+        }}
       />
       <div className="relative max-w-3xl">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-bold uppercase tracking-wider mb-5">
@@ -94,14 +86,17 @@ export function SecaoTelegram() {
         </h2>
 
         <p className="text-sm text-[color:color-mix(in_srgb,var(--bg)_70%,transparent)] leading-relaxed mb-7 max-w-xl">
-          Tudo que você vê neste site sai das mesmas entradas que são enviadas no
-          canal. Entre, acompanhe por alguns dias e confira os resultados na
-          planilha antes de decidir qualquer coisa.
+          Tudo que você vê neste site sai das mesmas entradas que são enviadas no canal.
+          Entre, acompanhe por alguns dias e confira os resultados na planilha antes de
+          decidir qualquer coisa.
         </p>
 
         <ul className="space-y-2.5 mb-8 list-none p-0">
           {BENEFICIOS.map((b) => (
-            <li key={b} className="flex items-start gap-2.5 text-sm text-[color:color-mix(in_srgb,var(--bg)_85%,transparent)]">
+            <li
+              key={b}
+              className="flex items-start gap-2.5 text-sm text-[color:color-mix(in_srgb,var(--bg)_85%,transparent)]"
+            >
               <span
                 className="w-1.5 h-1.5 rounded-full bg-[var(--green)] mt-2 shrink-0"
                 aria-hidden="true"

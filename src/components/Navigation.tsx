@@ -18,7 +18,7 @@ const navItems = [
   { label: "Estatísticas", href: "/estatisticas" },
 ];
 
-export default function Navigation() {
+function Navigation() {
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
   const botaoMenu = useRef<HTMLButtonElement>(null);
@@ -80,7 +80,9 @@ export default function Navigation() {
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={`relative px-4 py-1.5 text-xs font-bold rounded-full transition-colors duration-150 ${
-                    isActive ? "text-[var(--text)]" : "text-[var(--text-2)] hover:text-[var(--accent)]"
+                    isActive
+                      ? "text-[var(--text)]"
+                      : "text-[var(--text-2)] hover:text-[var(--accent)]"
                   }`}
                 >
                   {isActive && (

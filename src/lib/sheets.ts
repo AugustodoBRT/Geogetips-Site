@@ -1,19 +1,23 @@
-import path from "path";
-import fs from "fs";
-import { BetItem, BetResult } from "./types";
-import { abaDoMesAtual, abasRecentes, ABA_TODOS, ordemDaAba, reaisParaUnidades } from "./constants";
+import path from "node:path";
+import fs from "node:fs";
+import type { BetItem, BetResult } from "./types";
+import {
+  abaDoMesAtual,
+  abasRecentes,
+  ABA_TODOS,
+  ordemDaAba,
+  reaisParaUnidades,
+} from "./constants";
 import { parseDateTimestamp } from "./date";
 import { computeStatsFromBets } from "./stats";
 import { lerAbaPublica } from "./planilhaPublica";
 
 export { computeStatsFromBets };
-export { parseDateTimestamp };
 
 // A planilha do grupo é pública; o ID não é segredo e vai como padrão para
 // que o site funcione sem nenhuma configuração.
 const SPREADSHEET_ID =
-  process.env.GOOGLE_SPREADSHEET_ID ||
-  "1wIUWUDb4EjV2BfXZgIpYqOwxtjUEpkS46glw0nwdFEc";
+  process.env.GOOGLE_SPREADSHEET_ID || "1wIUWUDb4EjV2BfXZgIpYqOwxtjUEpkS46glw0nwdFEc";
 
 /** Existe credencial configurada? Se não, caímos na leitura pública. */
 function temCredencial(): boolean {
@@ -48,13 +52,11 @@ async function buildAuth() {
   const google = await carregarGoogle();
   const inline = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (inline) {
-    let credentials;
+    let credentials: Record<string, unknown>;
     try {
       credentials = JSON.parse(inline);
     } catch {
-      throw new Error(
-        "GOOGLE_SERVICE_ACCOUNT_JSON existe mas não é um JSON válido."
-      );
+      throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON existe mas não é um JSON válido.");
     }
     return new google.auth.GoogleAuth({ credentials, scopes: SCOPES });
   }
@@ -74,12 +76,12 @@ async function buildAuth() {
   );
 }
 
-export async function getSheetsClient() {
+async function getSheetsClient() {
   const google = await carregarGoogle();
   return google.sheets({ version: "v4", auth: await buildAuth() });
 }
 
-function parseCurrency(str: string): number {
+export function parseCurrency(str: string): number {
   if (!str) return 0;
   // "-R$ 50,00", "R$ 150,00", "-R$160,00", "R$11.771,29"
   const cleaned = str
@@ -88,16 +90,16 @@ function parseCurrency(str: string): number {
     .replace(/\./g, "")
     .replace(",", ".");
   const num = parseFloat(cleaned);
-  return isNaN(num) ? 0 : num;
+  return Number.isNaN(num) ? 0 : num;
 }
 
-function parseOdd(str: string): number {
+export function parseOdd(str: string): number {
   if (!str) return 1.0;
   const num = parseFloat(str.replace(",", ".").trim());
-  return isNaN(num) ? 1.0 : num;
+  return Number.isNaN(num) ? 1.0 : num;
 }
 
-function parseResultado(raw: string): BetResult {
+export function parseResultado(raw: string): BetResult {
   const r = raw.toUpperCase();
   // VOID antes de tudo: "ANULADA" e "REEMBOLSADA" não podem cair em GREEN/RED
   if (
@@ -127,8 +129,14 @@ const cacheBetsPerTab = new Map<string, { data: BetItem[]; timestamp: number }>(
 const TTL_MES_ATUAL = 15 * 1000;
 const TTL_MES_PASSADO = 5 * 60 * 1000;
 
-/** Transforma as linhas B..L em apostas. Igual para API e leitura pública. */
-function linhasParaBets(tab: string, rows: string[][]): BetItem[] {
+/**
+ * Transforma as linhas B..L em apostas. Igual para API e leitura pública.
+ *
+ * Exportada — junto dos quatro parsers acima — para o teste alcançar. São as
+ * funções onde um engano vira número errado no ar sem quebrar nada, que é
+ * exatamente o tipo de defeito que só teste pega.
+ */
+export function linhasParaBets(tab: string, rows: string[][]): BetItem[] {
   const bets: BetItem[] = [];
 
   rows.forEach((row, index) => {
@@ -266,9 +274,7 @@ export async function getBetsFromTab(tabName?: string): Promise<BetItem[]> {
     const publica = await lerAbaPublica(
       SPREADSHEET_ID,
       tab,
-      ordem > 0
-        ? { mes: ordem % 100, ano2: Math.floor(ordem / 100) % 100 }
-        : undefined
+      ordem > 0 ? { mes: ordem % 100, ano2: Math.floor(ordem / 100) % 100 } : undefined
     );
     if (!publica) {
       throw new Error(`Aba "${tab}" não encontrada na planilha pública.`);
@@ -282,7 +288,7 @@ export async function getBetsFromTab(tabName?: string): Promise<BetItem[]> {
   return bets;
 }
 
-export async function getAllBetsFromAllTabs(): Promise<BetItem[]> {
+async function getAllBetsFromAllTabs(): Promise<BetItem[]> {
   const tabs = await getAvailableTabs();
   const monthlyTabs = tabs.filter(
     (t) => !t.toLowerCase().includes("resumo") && !t.toLowerCase().includes("config")

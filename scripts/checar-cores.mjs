@@ -11,12 +11,17 @@ const ts = readFileSync("src/lib/cores.ts", "utf8");
 const css = readFileSync("src/app/globals.css", "utf8");
 
 const emCss = new Map();
-for (const [, nome, valor] of css.matchAll(/(--[a-z0-9-]+)\s*:\s*(#[0-9A-Fa-f]{6})\s*;/g)) {
+for (const [, nome, valor] of css.matchAll(
+  /(--[a-z0-9-]+)\s*:\s*(#[0-9A-Fa-f]{6})\s*;/g
+)) {
   emCss.set(nome, valor.toUpperCase());
 }
 
 const paraToken = (chave) =>
-  "--" + chave.replace(/([A-Z])/g, "-$1").replace(/(\d)/g, "-$1").toLowerCase();
+  `--${chave
+    .replace(/([A-Z])/g, "-$1")
+    .replace(/(\d)/g, "-$1")
+    .toLowerCase()}`;
 
 const problemas = [];
 for (const [, chave, valor] of ts.matchAll(/^\s{2}(\w+):\s*"(#[0-9A-Fa-f]{6})",/gm)) {
@@ -29,7 +34,7 @@ for (const [, chave, valor] of ts.matchAll(/^\s{2}(\w+):\s*"(#[0-9A-Fa-f]{6})",/
 
 if (problemas.length) {
   console.error("Paleta fora de sincronia:");
-  for (const p of problemas) console.error("  - " + p);
+  for (const p of problemas) console.error(`  - ${p}`);
   process.exit(1);
 }
 console.log("Paleta sincronizada entre cores.ts e globals.css.");

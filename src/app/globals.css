@@ -3,32 +3,32 @@
 @tailwind utilities;
 
 :root {
-  --bg: #F6F4F8;
-  --bg-card: #FFFFFF;
-  --bg-tinted: #ECE9F1;
-  --bg-alt: #EFEBF4;
-  --bg-soft: #FCFBFD;
-  --bg-shimmer: #F3F0F7;
+  --bg: #f6f4f8;
+  --bg-card: #ffffff;
+  --bg-tinted: #ece9f1;
+  --bg-alt: #efebf4;
+  --bg-soft: #fcfbfd;
+  --bg-shimmer: #f3f0f7;
 
   /* Preto da marca, para as faixas escuras. Mais escuro e mais violeta que
      --text, que é cor de tinta e não de superfície. */
-  --marca: #0A0714;
+  --marca: #0a0714;
 
   --border: rgba(0, 0, 0, 0.07);
   --border-strong: rgba(0, 0, 0, 0.12);
 
-  --text: #16131F;
-  --text-2: #5D5670;
+  --text: #16131f;
+  --text-2: #5d5670;
   /* #736C82 dava 4,26:1 sobre --bg-alt (o rodapé) e 4,17 sobre --bg-tinted.
      Este passa nas duas (4,70 e 4,60) e continua distinto de --text-2. */
-  --text-3: #6C667A;
+  --text-3: #6c667a;
 
-  --accent: #6B3FE4;
-  --accent-hover: #5A2FD0;
+  --accent: #6b3fe4;
+  --accent-hover: #5a2fd0;
 
-  --green: #0E7A50;
-  --red: #C41E3A;
-  --amber: #8A6408;
+  --green: #0e7a50;
+  --red: #c41e3a;
+  --amber: #8a6408;
 
   /*
    * Tons suaves, derivados das cores acima em vez de repetir os canais.

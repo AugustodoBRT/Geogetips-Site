@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { normalizarTexto } from "@/lib/texto";
 
 interface BookieBadgeProps {
@@ -913,7 +913,7 @@ function monograma(nome: string): string {
   return nome.slice(0, 1).toUpperCase();
 }
 
-export function encontrarCasa(bookie: string): Casa | undefined {
+function encontrarCasa(bookie: string): Casa | undefined {
   const chave = normalizarTexto(bookie).replace(/\s+/g, "");
   return INDICE.get(chave);
 }
@@ -987,6 +987,7 @@ export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
         /* Logo negativa da casa: já traz o nome escrito, então substitui
            monograma e texto. alt vazio porque o title do elemento pai já
            anuncia a casa — repetir daria leitura dupla no leitor de tela. */
+        // biome-ignore lint/performance/noImgElement: next/image não otimiza SVG sem `dangerouslyAllowSVG`, e estas são 99 logos estáticas de poucos KB, já com loading lazy e decoding async — o componente só acrescentaria um servidor de imagem no caminho.
         <img
           src={`/casas/${casa.logo}`}
           alt=""

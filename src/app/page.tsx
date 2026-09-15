@@ -75,8 +75,7 @@ const FUNCIONALIDADES = [
 const PASSOS = [
   {
     titulo: "A entrada chega",
-    texto:
-      "O adm envia a aposta no canal do Telegram, com a casa, o mercado e a odd.",
+    texto: "O adm envia a aposta no canal do Telegram, com a casa, o mercado e a odd.",
   },
   {
     titulo: "Entra na planilha",
@@ -107,11 +106,7 @@ export default async function HomePage() {
 
         {/* Duas linhas separadas: a segunda cai depois e é a que carrega a ênfase */}
         <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl leading-[1.1] tracking-[-1.5px] text-[var(--text)] mb-5">
-          <TextoQueCai
-            texto="Suas apostas merecem"
-            atraso={0.3}
-            className="block"
-          />
+          <TextoQueCai texto="Suas apostas merecem" atraso={0.3} className="block" />
           <TextoQueCai
             texto="matemática de verdade."
             atraso={0.75}
@@ -123,7 +118,8 @@ export default async function HomePage() {
         <EntradaSequencial indice={0} base={1.5}>
           <p className="text-base sm:text-lg text-[var(--text-2)] leading-relaxed max-w-xl mx-auto mb-9 font-sans">
             O GeogeTips transforma dados brutos em decisões inteligentes. Registre,
-            acompanhe e analise cada aposta com a clareza de quem usa números — não achismo.
+            acompanhe e analise cada aposta com a clareza de quem usa números — não
+            achismo.
           </p>
         </EntradaSequencial>
 
@@ -149,7 +145,11 @@ export default async function HomePage() {
 
       {/* Faixa de números — só aparece quando existe dado real para mostrar */}
       {temNumeros && stats && (
-        <EntradaSequencial indice={3} base={1.5} className="flex flex-wrap items-center justify-center gap-6 md:gap-10 px-6 pb-16 text-xs text-[var(--text-3)] font-medium">
+        <EntradaSequencial
+          indice={3}
+          base={1.5}
+          className="flex flex-wrap items-center justify-center gap-6 md:gap-10 px-6 pb-16 text-xs text-[var(--text-3)] font-medium"
+        >
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-[var(--text-2)] text-sm">
               {formatarInteiro(stats.totalBets)}
@@ -201,7 +201,9 @@ export default async function HomePage() {
               </div>
               <div
                 className={`font-serif text-3xl tracking-tight ${
-                  (stats?.totalLucro ?? 0) >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                  (stats?.totalLucro ?? 0) >= 0
+                    ? "text-[var(--green)]"
+                    : "text-[var(--red)]"
                 }`}
               >
                 {temNumeros && stats ? formatarReaisComSinal(stats.totalLucro) : "—"}

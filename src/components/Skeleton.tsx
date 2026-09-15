@@ -1,3 +1,9 @@
+// biome-ignore-all lint/suspicious/noArrayIndexKey: índice como key aqui é
+// correto, não descuido. São marcadores de posição idênticos entre si, em
+// quantidade fixa, que nunca são reordenados nem removidos individualmente. A
+// regra existe para lista de dado real, onde a ordem muda e o React precisa
+// distinguir um item do outro.
+
 /**
  * Esqueletos de carregamento.
  *
@@ -21,7 +27,7 @@
  * produção, nas cinco rotas.
  */
 
-export function Skeleton({ className = "" }: { className?: string }) {
+function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
@@ -98,7 +104,7 @@ export function SkeletonLinhas({
 }
 
 /** Lista de ranking: rótulo à esquerda, barra e número à direita. */
-export function SkeletonRanking({
+function SkeletonRanking({
   linhas = 4,
   titulo = true,
   className = "",
@@ -184,4 +190,3 @@ export function SkeletonCorpoEstatisticas() {
     </>
   );
 }
-
