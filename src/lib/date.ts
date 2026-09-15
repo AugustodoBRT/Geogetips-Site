@@ -36,6 +36,28 @@ export function timestampDoISO(iso: string): number {
   return new Date(a, m - 1, d).getTime();
 }
 
+/**
+ * Meia-noite de hoje, no fuso do grupo.
+ *
+ * Serve para decidir o que é "futuro" sem perguntar ao relógio do servidor: a
+ * Vercel roda em UTC, e entre 21h e meia-noite de São Paulo ela já virou o dia.
+ * Sem isto, uma aposta lançada para amanhã seria tratada como futura durante o
+ * dia e como passada à noite, e o feed mudaria de ordem sozinho.
+ *
+ * O timestamp sai no fuso do servidor, igual ao de `parseDateTimestamp` — os
+ * dois são comparáveis porque ambos representam meia-noite local de uma data.
+ */
+export function inicioDeHoje(ref: Date = new Date()): number {
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(ref);
+  const [ano, mes, dia] = partes.split("-").map((n) => Number.parseInt(n, 10));
+  return new Date(ano, mes - 1, dia).getTime();
+}
+
 /** "YYYY-MM-DD" -> "DD/MM/YYYY", para exibir no padrão do grupo. */
 export function doISO(iso: string): string {
   if (!iso) return "";

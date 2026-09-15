@@ -8,7 +8,7 @@ import {
   ordemDaAba,
   reaisParaUnidades,
 } from "./constants";
-import { parseDateTimestamp } from "./date";
+import { inicioDeHoje, parseDateTimestamp } from "./date";
 import { computeStatsFromBets } from "./stats";
 import { lerAbaPublica } from "./planilhaPublica";
 
@@ -176,12 +176,49 @@ export function linhasParaBets(tab: string, rows: string[][]): BetItem[] {
     });
   });
 
-  // Mais recente primeiro — inclusive dentro do mesmo dia. Ordenar só pela
-  // data preservava a ordem da planilha, que é crescente: "Últimas Apostas
-  // Registradas" mostrava as PRIMEIRAS do dia. A posição na planilha desempata.
+  return ordenarApostas(bets);
+}
+
+/**
+ * Ordem do feed: mais recente primeiro, com as de longo prazo no fim.
+ *
+ * Duas regras, nesta ordem.
+ *
+ * **Aposta de longo prazo pendente vai para o fim.** Campeão de campeonato,
+ * artilheiro e rebaixamento são lançados com a data do evento, meses à frente.
+ * Ordenando só por data decrescente, elas ficavam acima das apostas de hoje —
+ * e a primeira linha do feed, que qualquer um lê como "a mais recente", era uma
+ * aposta que só resolve no ano que vem. Entre elas, a que resolve antes vem
+ * primeiro. Quando o resultado sai, a aposta deixa de ser pendente e volta ao
+ * lugar cronológico dela.
+ *
+ * **O resto é do mais recente para o mais antigo, com desempate dentro do
+ * mesmo dia.** Ordenar só pela data preservava a ordem da planilha, que é
+ * crescente: "Últimas Apostas Registradas" mostrava as PRIMEIRAS do dia. A
+ * posição na planilha desempata.
+ *
+ * Nada aqui muda número: a aposta de longo prazo continua contando no ROI, no
+ * investido e nos pendentes exatamente como contava. Isto é ordenação.
+ */
+export function ordenarApostas(bets: BetItem[], ref: Date = new Date()): BetItem[] {
+  const hoje = inicioDeHoje(ref);
+
   return bets
-    .map((bet, posicao) => ({ bet, posicao, ts: parseDateTimestamp(bet.data) }))
-    .sort((a, b) => b.ts - a.ts || b.posicao - a.posicao)
+    .map((bet, posicao) => {
+      const ts = parseDateTimestamp(bet.data);
+      return {
+        bet,
+        posicao,
+        ts,
+        longoPrazo: bet.resultado === "PENDENTE" && ts > hoje,
+      };
+    })
+    .sort((a, b) => {
+      if (a.longoPrazo !== b.longoPrazo) return a.longoPrazo ? 1 : -1;
+      // Entre as de longo prazo, a que resolve antes vem primeiro.
+      if (a.longoPrazo) return a.ts - b.ts || a.posicao - b.posicao;
+      return b.ts - a.ts || b.posicao - a.posicao;
+    })
     .map((x) => x.bet);
 }
 
@@ -297,6 +334,7 @@ async function getAllBetsFromAllTabs(): Promise<BetItem[]> {
   const results = await Promise.all(monthlyTabs.map((t) => getBetsFromTab(t)));
   const allBets = results.flat();
 
-  allBets.sort((a, b) => parseDateTimestamp(b.data) - parseDateTimestamp(a.data));
-  return allBets;
+  // Mesma regra da aba única: juntar meses não pode reintroduzir a aposta de
+  // longo prazo no topo.
+  return ordenarApostas(allBets);
 }
