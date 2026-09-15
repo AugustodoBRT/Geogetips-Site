@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  descobrirAbas,
   linhasParaBets,
   ordenarApostas,
   parseCurrency,
@@ -299,5 +300,120 @@ describe("ordenarApostas", () => {
 
   it("aguenta lista vazia", () => {
     expect(ordenarApostas([], HOJE)).toEqual([]);
+  });
+});
+
+describe("descobrirAbas", () => {
+  const HOJE = new Date("2026-09-14T12:00:00Z");
+
+  /** Sondagem falsa: existe só o que estiver nesta lista. */
+  function comAbas(existentes: string[]) {
+    const vistas: string[] = [];
+    const sondar = async (aba: string) => {
+      vistas.push(aba);
+      return existentes.includes(aba);
+    };
+    return { sondar, vistas };
+  }
+
+  it("encontra todos os meses seguidos, sem teto fixo", async () => {
+    // O grupo começou em agosto de 2025: são catorze meses. A versão anterior
+    // sondava dezoito fixos e, a partir de fevereiro de 2027, teria deixado o
+    // mês mais antigo cair fora da janela sem avisar ninguém.
+    const meses = [
+      "Setembro26",
+      "Agosto26",
+      "Julho26",
+      "Junho26",
+      "Maio26",
+      "Abril26",
+      "Março26",
+      "Fevereiro26",
+      "Janeiro26",
+      "Dezembro25",
+      "Novembro25",
+      "Outubro25",
+      "Setembro25",
+      "Agosto25",
+    ];
+    const { sondar } = comAbas(meses);
+    expect(await descobrirAbas(sondar, HOJE)).toEqual(meses);
+  });
+
+  it("não perde o histórico quando passa de dezoito meses", async () => {
+    // O caso que a #10 descreve: com dois anos de planilha, o teto antigo
+    // cortava os seis meses mais antigos.
+    // Vinte e quatro meses seguidos, contados para trás a partir de setembro
+    // de 2026 — que é onde o relógio deste teste está.
+    const vinteEQuatro = [
+      "Setembro26",
+      "Agosto26",
+      "Julho26",
+      "Junho26",
+      "Maio26",
+      "Abril26",
+      "Março26",
+      "Fevereiro26",
+      "Janeiro26",
+      "Dezembro25",
+      "Novembro25",
+      "Outubro25",
+      "Setembro25",
+      "Agosto25",
+      "Julho25",
+      "Junho25",
+      "Maio25",
+      "Abril25",
+      "Março25",
+      "Fevereiro25",
+      "Janeiro25",
+      "Dezembro24",
+      "Novembro24",
+      "Outubro24",
+    ];
+    const { sondar } = comAbas(vinteEQuatro);
+    const achadas = await descobrirAbas(sondar, HOJE);
+    expect(achadas).toEqual(vinteEQuatro);
+  });
+
+  it("para depois de três meses vazios seguidos", async () => {
+    const { sondar, vistas } = comAbas(["Setembro26", "Agosto26"]);
+    expect(await descobrirAbas(sondar, HOJE)).toEqual(["Setembro26", "Agosto26"]);
+    // Sondou o lote inteiro em paralelo, mas parou de aceitar no terceiro
+    // vazio: não saiu varrendo dez anos para trás.
+    expect(vistas.length).toBeLessThanOrEqual(12);
+  });
+
+  it("atravessa um buraco de um mês só", async () => {
+    // Mês sem aposta nenhuma não pode cortar o histórico no meio.
+    const { sondar } = comAbas(["Setembro26", "Julho26", "Junho26"]);
+    expect(await descobrirAbas(sondar, HOJE)).toEqual([
+      "Setembro26",
+      "Julho26",
+      "Junho26",
+    ]);
+  });
+
+  it("aguenta o mês atual ainda não existir", async () => {
+    // Nos primeiros dias do mês a aba nova às vezes ainda não foi criada.
+    const { sondar } = comAbas(["Agosto26", "Julho26"]);
+    expect(await descobrirAbas(sondar, HOJE)).toEqual(["Agosto26", "Julho26"]);
+  });
+
+  it("devolve lista vazia quando não existe aba nenhuma", async () => {
+    const { sondar } = comAbas([]);
+    expect(await descobrirAbas(sondar, HOJE)).toEqual([]);
+  });
+
+  it("não varre para sempre se a sondagem disser sim para tudo", async () => {
+    // Trava de segurança: sondagem quebrada não pode virar varredura infinita.
+    const vistas: string[] = [];
+    const sondar = async (aba: string) => {
+      vistas.push(aba);
+      return true;
+    };
+    const achadas = await descobrirAbas(sondar, HOJE);
+    expect(achadas).toHaveLength(120);
+    expect(vistas).toHaveLength(120);
   });
 });

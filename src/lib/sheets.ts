@@ -130,6 +130,16 @@ const TTL_MES_ATUAL = 15 * 1000;
 const TTL_MES_PASSADO = 5 * 60 * 1000;
 
 /**
+ * Por quanto tempo a lista de abas vale.
+ *
+ * Aba nova nasce uma vez por mês. Com 60 s, cada minuto de tráfego pagava uma
+ * varredura inteira da planilha para redescobrir a mesma lista. Cinco minutos
+ * é tempo de sobra para a aba do mês novo aparecer no site e corta a conversa
+ * com o Google por cinco.
+ */
+const TTL_LISTA_DE_ABAS = 5 * 60 * 1000;
+
+/**
  * Transforma as linhas B..L em apostas. Igual para API e leitura pública.
  *
  * Exportada — junto dos quatro parsers acima — para o teste alcançar. São as
@@ -226,29 +236,96 @@ export function ordenarApostas(bets: BetItem[], ref: Date = new Date()): BetItem
  * Abas via leitura pública. Como o gviz não erra em aba inexistente, cada
  * candidata dos últimos 18 meses é validada pelo conteúdo antes de entrar.
  */
-async function getAvailableTabsPublico(): Promise<string[]> {
-  const candidatas = abasRecentes(18);
+/**
+ * Quantos meses seguidos sem aba antes de parar de procurar.
+ *
+ * O grupo publica todo mês, então três buracos seguidos significam que a
+ * planilha acabou ali — não que exista um mês solto mais atrás. Dois seriam
+ * apertado demais: basta uma pausa de fim de ano para cortar o histórico no
+ * meio.
+ */
+const MESES_VAZIOS_PARA_PARAR = 3;
 
-  const encontradas = await Promise.all(
-    candidatas.map(async (aba) => {
-      const ordem = ordemDaAba(aba);
-      const mes = ordem % 100;
-      const ano2 = Math.floor(ordem / 100) % 100;
-      try {
-        const r = await lerAbaPublica(SPREADSHEET_ID, aba, { mes, ano2 });
-        return r && r.linhas.length > 0 ? aba : null;
-      } catch {
-        return null;
+/**
+ * Quantas abas são sondadas de uma vez.
+ *
+ * A varredura custa uma requisição por mês sondado, e elas vão em paralelo
+ * dentro do lote. Lote grande demais desperdiça requisição depois do fim da
+ * planilha; pequeno demais multiplica as rodadas e a espera. Doze cobre um ano
+ * por rodada.
+ */
+const LOTE_DE_SONDAGEM = 12;
+
+/**
+ * Teto de segurança, em meses.
+ *
+ * Nunca deveria ser alcançado — a regra dos três meses vazios para antes. Ele
+ * existe para que um erro de sondagem que devolva "existe" para tudo não vire
+ * uma varredura infinita.
+ */
+const LIMITE_DE_MESES = 120;
+
+/**
+ * Anda para trás a partir do mês atual, mês a mês, até encontrar
+ * `MESES_VAZIOS_PARA_PARAR` seguidos sem aba.
+ *
+ * Substituiu um `abasRecentes(18)` de tamanho fixo. O problema daquele não era
+ * custo, era **perda silenciosa**: o grupo começou em agosto de 2025, e a
+ * partir de fevereiro de 2027 o mês mais antigo sairia da janela. Sumiria do
+ * histórico, deixaria de ser somado na visão de todos os meses, e o
+ * consolidado encolheria sozinho sem nada na tela dizendo por quê.
+ *
+ * Recebe a sondagem por parâmetro para poder ser testada sem rede.
+ */
+export async function descobrirAbas(
+  existe: (aba: string) => Promise<boolean>,
+  ref: Date = new Date()
+): Promise<string[]> {
+  const encontradas: string[] = [];
+  let vaziosSeguidos = 0;
+
+  for (let inicio = 0; inicio < LIMITE_DE_MESES; inicio += LOTE_DE_SONDAGEM) {
+    const lote = abasRecentes(inicio + LOTE_DE_SONDAGEM, ref).slice(inicio);
+    const resultados = await Promise.all(lote.map(existe));
+
+    for (let i = 0; i < lote.length; i++) {
+      if (resultados[i]) {
+        encontradas.push(lote[i]);
+        vaziosSeguidos = 0;
+        continue;
       }
-    })
-  );
+      vaziosSeguidos += 1;
+      if (vaziosSeguidos >= MESES_VAZIOS_PARA_PARAR) return encontradas;
+    }
+  }
 
-  return encontradas.filter((a): a is string => a !== null);
+  return encontradas;
+}
+
+/** Sondagem de verdade: a aba existe e tem linha do mês que deveria conter. */
+async function existeAbaPublica(aba: string): Promise<boolean> {
+  const ordem = ordemDaAba(aba);
+  if (ordem <= 0) return false;
+  const mes = ordem % 100;
+  const ano2 = Math.floor(ordem / 100) % 100;
+  try {
+    // O mês esperado não é zelo à toa: quando a aba não existe, o gviz devolve
+    // a PRIMEIRA aba da planilha em vez de erro. Sem a conferência, a varredura
+    // acharia que todos os meses existem.
+    const r = await lerAbaPublica(SPREADSHEET_ID, aba, { mes, ano2 });
+    return Boolean(r && r.linhas.length > 0);
+  } catch {
+    return false;
+  }
+}
+
+function getAvailableTabsPublico(): Promise<string[]> {
+  return descobrirAbas(existeAbaPublica);
 }
 
 export async function getAvailableTabs(): Promise<string[]> {
   const now = Date.now();
-  if (cacheTabs.tabs.length > 0 && now - cacheTabs.timestamp < 60 * 1000) {
+  if (cacheTabs.tabs.length > 0 && now - cacheTabs.timestamp < TTL_LISTA_DE_ABAS) {
     return cacheTabs.tabs;
   }
 
