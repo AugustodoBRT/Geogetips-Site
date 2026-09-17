@@ -188,8 +188,11 @@ export function computeStatsFromBets(bets: BetItem[]) {
       apostado: parseFloat(c.apostado.toFixed(2)),
       roi: c.apostado > 0 ? parseFloat(((c.lucro / c.apostado) * 100).toFixed(2)) : 0,
     }))
-    .sort((a, b) => b.apostas - a.apostas)
-    .slice(0, 8);
+    // Sem corte aqui de propósito: quantas casas mostrar é decisão de quem
+    // desenha, não de quem calcula. O Painel e o card de Estatísticas cortam em
+    // oito; o diálogo que lista todas precisa da lista inteira, e ela não podia
+    // sair truncada da conta.
+    .sort((a, b) => b.apostas - a.apostas);
 
   return {
     totalBets,

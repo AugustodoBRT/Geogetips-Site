@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import NumberFlow from "@number-flow/react";
 import { PieChart, BarChart2, Hash, Layers } from "lucide-react";
 import { SportBadge } from "@/components/SportBadge";
@@ -8,13 +9,14 @@ import { BookieBadge } from "@/components/BookieBadge";
 import { SeletorAba } from "@/components/SeletorAba";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonCorpoEstatisticas } from "@/components/Skeleton";
+import { Dialogo } from "@/components/Dialogo";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
-import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
+import { formatarInteiro, formatarReais, formatarReaisComSinal } from "@/lib/format";
 import { rotuloDaAba, trechoDaAba } from "@/lib/constants";
 
 const RAIO = 48;
@@ -46,8 +48,14 @@ export default function EstatisticasPage() {
   const pct = (n: number) => Math.round((n / base) * 100);
 
   const sports = stats?.sports ?? [];
-  const bookies = stats?.bookies ?? [];
+  // A conta devolve todas as casas; o card mostra oito, e o diálogo, a lista
+  // inteira. O corte é decisão de desenho, não de cálculo.
+  const casas = stats?.bookies ?? [];
+  const bookies = casas.slice(0, 8);
   const trecho = trechoDaAba(activeTab);
+
+  /** Qual diálogo de detalhe está aberto, se algum. */
+  const [detalhe, setDetalhe] = useState<"esportes" | "casas" | null>(null);
 
   /**
    * Tinta e borda a partir de uma cor de token.
@@ -297,8 +305,17 @@ export default function EstatisticasPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-entrada">
-            {/* Lucro por modalidade */}
-            <div className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
+            {/* Os dois cards são botões inteiros, como os do feed: clicar abre o
+                detalhe completo. É o mesmo gesto que o visitante já conhece de
+                abrir uma aposta. */}
+            <button
+              type="button"
+              onClick={() => setDetalhe("esportes")}
+              aria-label="Ver todos os esportes em detalhe"
+              className={
+                "w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer hover:border-[color:color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+              }
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
@@ -351,10 +368,16 @@ export default function EstatisticasPage() {
                   })
                 )}
               </div>
-            </div>
+            </button>
 
-            {/* Casas */}
-            <div className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4">
+            <button
+              type="button"
+              onClick={() => setDetalhe("casas")}
+              aria-label="Ver todas as casas em detalhe"
+              className={
+                "w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer hover:border-[color:color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+              }
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
@@ -405,10 +428,177 @@ export default function EstatisticasPage() {
                   ))
                 )}
               </div>
-            </div>
+            </button>
           </div>
         </>
       )}
+      {/* Um filho só, com key, dentro do AnimatePresence — a regra que impede o
+          véu de ficar preso no DOM engolindo clique depois de fechar. */}
+      <AnimatePresence>
+        {detalhe === "esportes" && (
+          <Dialogo
+            key="detalhe-esportes"
+            rotulo={`Todos os esportes ${trecho.prefixo} ${trecho.nome}`}
+            onFechar={() => setDetalhe(null)}
+            largura="max-w-2xl"
+          >
+            <div className="pb-3 border-b border-black/[0.06]">
+              <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
+                Todos os esportes
+              </h2>
+              <p className="text-xs text-[var(--text-3)]">
+                {formatarInteiro(sports.length)}{" "}
+                {sports.length === 1 ? "modalidade" : "modalidades"} {trecho.prefixo}{" "}
+                {trecho.nome}
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
+                  <tr>
+                    <th scope="col" className="py-2 pr-3">
+                      Esporte
+                    </th>
+                    <th scope="col" className="py-2 px-3 text-right">
+                      Apostas
+                    </th>
+                    <th scope="col" className="py-2 px-3 text-right">
+                      Acerto
+                    </th>
+                    <th scope="col" className="py-2 px-3 text-right">
+                      ROI
+                    </th>
+                    <th scope="col" className="py-2 pl-3 text-right">
+                      Resultado
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-black/[0.05]">
+                  {sports.map((s) => (
+                    <tr key={s.esporte}>
+                      <td className="py-2.5 pr-3">
+                        <SportBadge sport={s.esporte} />
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono text-[var(--text-2)]">
+                        {formatarInteiro(s.apostas)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono text-[var(--text-2)]">
+                        {s.taxaAcerto.toFixed(1).replace(".", ",")}%
+                      </td>
+                      <td
+                        className={`py-2.5 px-3 text-right font-mono font-bold ${
+                          s.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                        }`}
+                      >
+                        {s.roi >= 0 ? "+" : ""}
+                        {s.roi.toFixed(2).replace(".", ",")}%
+                      </td>
+                      <td
+                        className={`py-2.5 pl-3 text-right font-mono font-bold whitespace-nowrap ${
+                          s.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                        }`}
+                      >
+                        {formatarReaisComSinal(converter(s.lucro))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setDetalhe(null)}
+              className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors"
+            >
+              Fechar
+            </button>
+          </Dialogo>
+        )}
+
+        {detalhe === "casas" && (
+          <Dialogo
+            key="detalhe-casas"
+            rotulo={`Todas as casas ${trecho.prefixo} ${trecho.nome}`}
+            onFechar={() => setDetalhe(null)}
+            largura="max-w-2xl"
+          >
+            <div className="pb-3 border-b border-black/[0.06]">
+              <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
+                Todas as casas
+              </h2>
+              <p className="text-xs text-[var(--text-3)]">
+                {formatarInteiro(casas.length)} {casas.length === 1 ? "casa" : "casas"}{" "}
+                {trecho.prefixo} {trecho.nome}
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
+                  <tr>
+                    <th scope="col" className="py-2 pr-3">
+                      Casa
+                    </th>
+                    <th scope="col" className="py-2 px-3 text-right">
+                      Apostas
+                    </th>
+                    <th scope="col" className="py-2 px-3 text-right">
+                      Apostado
+                    </th>
+                    <th scope="col" className="py-2 px-3 text-right">
+                      ROI
+                    </th>
+                    <th scope="col" className="py-2 pl-3 text-right">
+                      Resultado
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-black/[0.05]">
+                  {casas.map((b) => (
+                    <tr key={b.casa}>
+                      <td className="py-2.5 pr-3">
+                        <BookieBadge bookie={b.casa} />
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono text-[var(--text-2)]">
+                        {formatarInteiro(b.apostas)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono text-[var(--text-2)] whitespace-nowrap">
+                        {formatarReais(converter(b.apostado))}
+                      </td>
+                      <td
+                        className={`py-2.5 px-3 text-right font-mono font-bold ${
+                          b.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                        }`}
+                      >
+                        {b.roi >= 0 ? "+" : ""}
+                        {b.roi.toFixed(2).replace(".", ",")}%
+                      </td>
+                      <td
+                        className={`py-2.5 pl-3 text-right font-mono font-bold whitespace-nowrap ${
+                          b.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                        }`}
+                      >
+                        {formatarReaisComSinal(converter(b.lucro))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setDetalhe(null)}
+              className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors"
+            >
+              Fechar
+            </button>
+          </Dialogo>
+        )}
+      </AnimatePresence>
+
       <SecaoTelegram />
     </div>
   );
