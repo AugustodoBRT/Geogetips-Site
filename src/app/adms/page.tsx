@@ -106,7 +106,7 @@ export default function AdmsPage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.28, delay: Math.min(index * 0.05, 0.3) }}
-                className="w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-5 flex flex-col justify-between cursor-pointer hover:border-[color:color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+                className="w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-5 flex flex-col justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">

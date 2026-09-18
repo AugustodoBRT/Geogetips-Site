@@ -62,7 +62,17 @@ export function Dialogo({
   useEffect(() => {
     focoAnterior.current = document.activeElement as HTMLElement;
     const overflowAnterior = document.body.style.overflow;
+    const paddingAnterior = document.body.style.paddingRight;
+
+    // Travar a rolagem faz a barra sumir, e a página inteira alarga pela
+    // largura dela — de 8 a 17 pixels, conforme o sistema. Tudo se desloca no
+    // instante em que o diálogo abre, e o topo fixo dá um salto visível. Repor
+    // a largura como espaçamento mantém o layout parado.
+    const larguraDaBarra = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
+    if (larguraDaBarra > 0) {
+      document.body.style.paddingRight = `${larguraDaBarra}px`;
+    }
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -95,6 +105,7 @@ export function Dialogo({
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = overflowAnterior;
+      document.body.style.paddingRight = paddingAnterior;
       focoAnterior.current?.focus?.();
     };
   }, []);
