@@ -96,3 +96,27 @@ test("os cards de Estatísticas abrem o detalhe completo", async ({ page }) => {
   await page.getByRole("link", { name: "Painel", exact: true }).first().click();
   await expect(page).toHaveURL(/\/painel$/);
 });
+
+test("o card do adm abre o detalhe por casa e por esporte", async ({ page }) => {
+  await page.goto("/adms");
+
+  const card = page.getByRole("button", { name: /^Ver o desempenho de / }).first();
+  await expect(card).toBeVisible({ timeout: 15_000 });
+  await card.click();
+
+  const dialogo = page.getByRole("dialog");
+  await expect(dialogo).toBeVisible();
+  await expect(dialogo).toBeFocused();
+
+  // As duas listas: é a resposta para "de onde veio o resultado deste adm".
+  await expect(dialogo.getByText("Por casa")).toBeVisible();
+  await expect(dialogo.getByText("Por esporte")).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(dialogo).toBeHidden();
+  await expect(page.locator(".fixed.inset-0")).toHaveCount(0);
+  await expect(card).toBeFocused();
+
+  await page.getByRole("link", { name: "Painel", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/painel$/);
+});

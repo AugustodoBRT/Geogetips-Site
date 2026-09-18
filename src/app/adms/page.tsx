@@ -1,17 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Award } from "lucide-react";
 import { SportBadge } from "@/components/SportBadge";
 import { SeletorAba } from "@/components/SeletorAba";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonCorpoAdms } from "@/components/Skeleton";
+import { Dialogo } from "@/components/Dialogo";
+import { BookieBadge } from "@/components/BookieBadge";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
-import { formatarInteiro, formatarUnidades } from "@/lib/format";
+import { formatarInteiro, formatarReaisComSinal, formatarUnidades } from "@/lib/format";
+import { useUnidade } from "@/hooks/useUnidade";
 import { trechoDaAba } from "@/lib/constants";
+import type { RecorteDoAdm } from "@/lib/types";
 
 export default function AdmsPage() {
   const {
@@ -27,6 +32,11 @@ export default function AdmsPage() {
   } = useBets({ onlyStats: true });
 
   const adms = stats?.tipsters ?? [];
+  const { converter } = useUnidade();
+
+  /** Adm cujo detalhe está aberto, se algum. */
+  const [aberto, setAberto] = useState<string | null>(null);
+  const detalhe = adms.find((a) => a.nome === aberto) ?? null;
   const trecho = trechoDaAba(activeTab);
 
   return (
@@ -85,13 +95,18 @@ export default function AdmsPage() {
               { rotulo: "pendente", n: adm.pendentes, cor: "var(--accent)" },
             ].filter((f) => f.n > 0);
             return (
-              <motion.div
+              // O card inteiro é botão, como os do feed e os de Estatísticas:
+              // clicar abre o detalhe. O número do adm sozinho não diz de onde
+              // veio, e é o "de onde" que muda a leitura.
+              <motion.button
                 key={adm.nome}
-                layout
+                type="button"
+                onClick={() => setAberto(adm.nome)}
+                aria-label={`Ver o desempenho de ${adm.nome} por casa e por esporte`}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.28, delay: Math.min(index * 0.05, 0.3) }}
-                className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm transition-colors space-y-5 flex flex-col justify-between"
+                className="w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-5 flex flex-col justify-between cursor-pointer hover:border-[color:color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
@@ -216,12 +231,105 @@ export default function AdmsPage() {
                     ))}
                   </div>
                 </div>
-              </motion.div>
+              </motion.button>
             );
           })}
         </div>
       )}
+      {detalhe && (
+        <Dialogo
+          key="detalhe-adm"
+          rotulo={`Desempenho de ${detalhe.nome} por casa e por esporte`}
+          onFechar={() => setAberto(null)}
+          largura="max-w-2xl"
+        >
+          <div className="pb-3 border-b border-black/[0.06]">
+            <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
+              {detalhe.nome}
+            </h2>
+            <p className="text-xs text-[var(--text-3)]">
+              {formatarInteiro(detalhe.totalApostas)}{" "}
+              {detalhe.totalApostas === 1 ? "aposta" : "apostas"} {trecho.prefixo}{" "}
+              {trecho.nome} · {formatarUnidades(detalhe.lucroUnidades)}
+            </p>
+          </div>
+
+          {/* Duas listas, mesma pergunta: de onde veio o resultado. Casa
+                primeiro porque é a que muda a leitura — casa limita conta boa,
+                e concentração numa só é risco que o número total esconde. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <Recorte
+              titulo="Por casa"
+              itens={detalhe.porCasa}
+              converter={converter}
+              casa
+            />
+            <Recorte
+              titulo="Por esporte"
+              itens={detalhe.porEsporte}
+              converter={converter}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setAberto(null)}
+            className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors"
+          >
+            Fechar
+          </button>
+        </Dialogo>
+      )}
+
       <SecaoTelegram />
+    </div>
+  );
+}
+
+/** Uma das duas listas do detalhe do adm. */
+function Recorte({
+  titulo,
+  itens,
+  converter,
+  casa = false,
+}: {
+  titulo: string;
+  itens: RecorteDoAdm[];
+  converter: (v: number) => number;
+  /** Usa a pílula da casa em vez do selo de esporte. */
+  casa?: boolean;
+}) {
+  return (
+    <div className="space-y-2">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">
+        {titulo}
+      </h3>
+      {itens.length === 0 ? (
+        <p className="text-xs text-[var(--text-3)]">Nada nesta aba.</p>
+      ) : (
+        <div className="divide-y divide-black/[0.05]">
+          {itens.map((i) => (
+            <div key={i.nome} className="py-2 flex items-center justify-between gap-3">
+              <div className="min-w-0 space-y-0.5">
+                {casa ? <BookieBadge bookie={i.nome} /> : <SportBadge sport={i.nome} />}
+                <div className="text-[10.5px] text-[var(--text-3)] whitespace-nowrap">
+                  {formatarInteiro(i.apostas)} tips ·{" "}
+                  {i.taxaAcerto.toFixed(1).replace(".", ",")}% acerto · ROI{" "}
+                  {i.roi >= 0 ? "+" : ""}
+                  {i.roi.toFixed(2).replace(".", ",")}%
+                </div>
+              </div>
+              <span
+                className={`font-mono text-xs font-bold shrink-0 ${
+                  i.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                }`}
+              >
+                {formatarReaisComSinal(converter(i.lucro))}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

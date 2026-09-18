@@ -27,15 +27,21 @@ interface DialogoProps {
  * - **Esc fecha**, e clicar no véu também;
  * - entra e **sai** com animação, e a saída é mais discreta que a entrada.
  *
- * Monta só quando há o que mostrar: quem controla entrada e saída é o
- * `AnimatePresence` de quem chama. Aqui dentro não há estado de aberto ou
- * fechado, o que deixa os efeitos simples — o que roda na montagem é
- * exatamente o que precisa ser desfeito na desmontagem.
+ * Monta só quando há o que mostrar, e **desmonta direto — sem animação de
+ * saída**.
  *
- * **O detalhe que custou caro:** `pointerEvents: none` entra junto com a saída.
- * Uma versão anterior deste diálogo deixava o véu de tela cheia preso no DOM
- * com opacidade 0, invisível, **engolindo todo clique da página**. Há teste de
- * tela para isso em `e2e/sobreposicoes.spec.ts`.
+ * Isso é decisão, não esquecimento. Envolver o diálogo num `AnimatePresence`
+ * para animar a saída foi tentado, e falhou do mesmo jeito que já havia falhado
+ * duas vezes neste projeto: o `AnimatePresence` segurava o filho para animar,
+ * a animação nunca terminava, e o véu de tela cheia ficava preso no DOM —
+ * invisível e **engolindo todo clique da página**. Verificado no build de
+ * produção, com a saída reduzida a uma simples opacidade e com o `layout` dos
+ * cards removido: continuava travando.
+ *
+ * Desmontar direto é determinístico. Custa uma animação de saída de 200 ms e
+ * devolve a garantia de que nada sobra na tela. Há teste de tela para isso em
+ * `e2e/sobreposicoes.spec.ts`, e ele existe exatamente porque este defeito já
+ * voltou três vezes.
  */
 export function Dialogo({
   rotulo,
@@ -98,7 +104,6 @@ export function Dialogo({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
       initial={VEU.initial}
       animate={VEU.animate}
-      exit={{ ...VEU.exit, pointerEvents: "none" }}
       transition={{ duration: DURACAO.toque }}
       onClick={onFechar}
     >
@@ -113,7 +118,6 @@ export function Dialogo({
         animate={ENTRADA_SOBREPOSICAO.animate}
         // A saída é mais curta e mais discreta que a entrada: quem fechou já
         // está olhando para outra coisa.
-        exit={{ ...ENTRADA_SOBREPOSICAO.exit, scale: 0.98 }}
         transition={MOLA_CURTA}
         className={`bg-white border border-black/[0.1] rounded-2xl ${largura} w-full p-6 shadow-2xl space-y-5 outline-none max-h-[90vh] overflow-y-auto`}
       >

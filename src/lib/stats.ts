@@ -2,7 +2,13 @@
  * Cálculos puros sobre apostas. Sem dependência de servidor, para que
  * client components possam importar as mesmas contas que a API usa.
  */
-import type { BetItem, TipsterStat, SportBreakdown, BookieBreakdown } from "./types";
+import type {
+  BetItem,
+  BookieBreakdown,
+  RecorteDoAdm,
+  SportBreakdown,
+  TipsterStat,
+} from "./types";
 import { reaisParaUnidades } from "./constants";
 
 /**
@@ -39,6 +45,51 @@ export function mediaDeOdd(bets: BetItem[]): number {
   return parseFloat((soma / bets.length).toFixed(2));
 }
 
+/** Acumulador de um recorte: uma casa ou um esporte dentro de um adm. */
+interface Acumulado {
+  apostas: number;
+  greens: number;
+  reds: number;
+  lucro: number;
+  apostado: number;
+}
+
+function somar(mapa: Map<string, Acumulado>, chave: string, b: BetItem): void {
+  const a = mapa.get(chave) || {
+    apostas: 0,
+    greens: 0,
+    reds: 0,
+    lucro: 0,
+    apostado: 0,
+  };
+  a.apostas += 1;
+  a.lucro += b.lucro;
+  a.apostado += b.valor;
+  if (b.resultado === "GREEN") a.greens += 1;
+  if (b.resultado === "RED") a.reds += 1;
+  mapa.set(chave, a);
+}
+
+/**
+ * Fecha os recortes de um adm, do mais usado para o menos.
+ *
+ * Mesmas definições do resto do site, e é o que importa: taxa de acerto sobre
+ * as finalizadas, ROI sobre tudo que foi apostado — inclusive pendentes e
+ * anuladas. Recorte que calculasse diferente do total faria as duas contas não
+ * fecharem na mesma tela.
+ */
+function recortes(mapa: Map<string, Acumulado>): RecorteDoAdm[] {
+  return Array.from(mapa.entries())
+    .map(([nome, a]) => ({
+      nome,
+      apostas: a.apostas,
+      taxaAcerto: taxaDeAcerto(a.greens, a.reds),
+      lucro: parseFloat(a.lucro.toFixed(2)),
+      roi: a.apostado > 0 ? parseFloat(((a.lucro / a.apostado) * 100).toFixed(2)) : 0,
+    }))
+    .sort((x, y) => y.apostas - x.apostas);
+}
+
 export function computeStatsFromBets(bets: BetItem[]) {
   const totalBets = bets.length;
   const greenBets = bets.filter((b) => b.resultado === "GREEN");
@@ -72,6 +123,8 @@ export function computeStatsFromBets(bets: BetItem[]) {
       apostado: number;
       somaOdds: number;
       finalizadas: number;
+      porCasa: Map<string, Acumulado>;
+      porEsporte: Map<string, Acumulado>;
     }
   >();
 
@@ -87,7 +140,11 @@ export function computeStatsFromBets(bets: BetItem[]) {
       apostado: 0,
       somaOdds: 0,
       finalizadas: 0,
+      porCasa: new Map(),
+      porEsporte: new Map(),
     };
+    somar(t.porCasa, b.casa || "Sem Casa", b);
+    somar(t.porEsporte, b.esporte || "Outros", b);
     t.total += 1;
     t.lucro += b.lucro;
     if (b.esporte) t.esportes.add(b.esporte);
@@ -119,6 +176,8 @@ export function computeStatsFromBets(bets: BetItem[]) {
       voids: d.voids,
       pendentes: d.pendentes,
       roi: d.apostado > 0 ? parseFloat(((d.lucro / d.apostado) * 100).toFixed(2)) : 0,
+      porCasa: recortes(d.porCasa),
+      porEsporte: recortes(d.porEsporte),
     }))
     .sort((a, b) => b.lucroUnidades - a.lucroUnidades);
 
