@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
+import { semRolagemSuave } from "./ajudantes";
 
 /**
  * Os dias do feed de Apostas, que recolhem e expandem.
@@ -39,7 +40,6 @@ test("recolher tudo deixa só os dias, e cada dia abre com a contagem que promet
 
   await page.getByRole("button", { name: "Recolher tudo" }).click();
   await expect(cartoes(page)).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Recolher tudo" })).toBeDisabled();
 
   // Abre o segundo dia, e só ele.
   const segundo = dias.nth(1);
@@ -58,7 +58,6 @@ test("expandir tudo abre todas as apostas do filtro", async ({ page }) => {
   await expect(cartoes(page)).toHaveCount(0);
 
   await page.getByRole("button", { name: "Expandir tudo" }).click();
-  await expect(page.getByRole("button", { name: "Expandir tudo" })).toBeDisabled();
 
   // A soma dos cabeçalhos é o total de cartões — nenhum dia esconde aposta.
   let soma = 0;
@@ -66,6 +65,50 @@ test("expandir tudo abre todas as apostas do filtro", async ({ page }) => {
     soma += await contagemDoCabecalho(cabecalho);
   }
   await expect(cartoes(page)).toHaveCount(soma);
+});
+
+test("um botão só alterna entre recolher e expandir, conforme a ação anterior", async ({
+  page,
+}) => {
+  const alternar = page.getByRole("button", { name: /^(Recolher|Expandir) tudo$/ });
+  await expect(alternar).toHaveCount(1);
+
+  // Mora na barra de filtros, ao lado da faixa de odd — sem linha própria.
+  const barraDaOdd = page
+    .getByRole("group", { name: "Filtrar por faixa de odd" })
+    .locator("..");
+  await expect(barraDaOdd.getByRole("button", { name: /tudo$/ })).toHaveCount(1);
+
+  await expect(alternar).toHaveText("Recolher tudo");
+  await alternar.click();
+  await expect(cartoes(page)).toHaveCount(0);
+  await expect(alternar).toHaveText("Expandir tudo");
+
+  // Abrir um dia à mão não troca a oferta: a ação anterior foi recolher.
+  await cabecalhos(page).first().click();
+  await expect(alternar).toHaveText("Expandir tudo");
+
+  await alternar.click();
+  await expect(alternar).toHaveText("Recolher tudo");
+
+  // E fechar um dia à mão também não.
+  await cabecalhos(page).first().click();
+  await expect(alternar).toHaveText("Recolher tudo");
+});
+
+test("clicar na setinha recolhe e expande o dia", async ({ page }) => {
+  // A seta fica na borda esquerda de um botão da largura da tela. Com o
+  // afundar de 3% que todo botão do site faz ao ser pressionado, essa borda
+  // andava ~16 px para dentro entre o apertar e o soltar: o cursor sobre a seta
+  // ficava fora do botão, e o clique ia para o elemento de fora.
+  const primeiro = cabecalhos(page).first();
+  const seta = primeiro.locator("svg").first();
+  await expect(primeiro).toHaveAttribute("aria-expanded", "true");
+
+  await seta.click();
+  await expect(primeiro).toHaveAttribute("aria-expanded", "false");
+  await seta.click();
+  await expect(primeiro).toHaveAttribute("aria-expanded", "true");
 });
 
 test("o dia recolhe e expande pelo teclado", async ({ page }) => {
@@ -86,6 +129,9 @@ test("o cartão da aposta sobe no hover", async ({ page }) => {
   const deslocamentoY = () =>
     cartao.evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m42);
 
+  // Rolagem suave desligada: o porquê está em e2e/ajudantes.ts.
+  await semRolagemSuave(page);
+  await cartao.scrollIntoViewIfNeeded();
   await expect.poll(deslocamentoY).toBe(0);
   await cartao.hover();
   await expect.poll(deslocamentoY).toBeLessThan(-1);
