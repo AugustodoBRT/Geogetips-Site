@@ -703,7 +703,7 @@ export default function ApostasPage() {
                           type="button"
                           onClick={() => setSelectedBet(bet)}
                           aria-label={`Ver detalhes: ${bet.partida}, ${bet.tip}`}
-                          className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)] hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors cursor-pointer grid grid-cols-[5px_1fr] group mb-2"
+                          className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:-translate-y-0.5 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150 grid grid-cols-[5px_1fr] group mb-2"
                         >
                           <div
                             className={

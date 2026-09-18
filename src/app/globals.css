@@ -52,6 +52,17 @@
 html {
   font-size: 15px;
   scroll-behavior: smooth;
+
+  /* Reserva a calha da barra de rolagem desde sempre.
+
+     Sem isto, travar a rolagem para abrir um diálogo faz a barra sumir e a
+     página inteira alargar pela largura dela — 8 pixels aqui, até 17 em outros
+     sistemas. Tudo se desloca no instante em que o diálogo abre, e o topo fixo
+     dá um salto visível. Compensar com espaçamento no `body` não resolve: o
+     cabeçalho é `position: fixed` e se mede pela janela, não pelo body.
+
+     Custa uma faixa fina à direita em página curta. Vale o preço. */
+  scrollbar-gutter: stable;
 }
 
 body {

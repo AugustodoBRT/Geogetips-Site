@@ -971,12 +971,21 @@ export default function PainelPage() {
           className="lg:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4"
         >
           <div>
-            <h2
-              id="titulo-esportes"
-              className="text-base font-bold text-[var(--text)] tracking-tight mb-1"
-            >
-              Top Esportes
-            </h2>
+            <div className="flex items-start justify-between gap-3 mb-1">
+              <h2
+                id="titulo-esportes"
+                className="text-base font-bold text-[var(--text)] tracking-tight"
+              >
+                Top Esportes
+              </h2>
+              <Link
+                href="/estatisticas"
+                className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0"
+              >
+                <span>Detalhes</span>
+                <ArrowUpRight className="w-3 h-3" aria-hidden="true" />
+              </Link>
+            </div>
             {/* Este bloco já ficou fora do filtro, quando o filtro era um dia
                 só: num dia com três apostas a distribuição virava um esporte
                 só, e era preciso um texto avisando que ali não seguia o resto
@@ -1023,14 +1032,6 @@ export default function PainelPage() {
               )}
             </div>
           </div>
-
-          <Link
-            href="/estatisticas"
-            className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl text-center transition-colors flex items-center justify-center gap-1"
-          >
-            <span>Ver Estatísticas Completas</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </Link>
         </section>
       </div>
 
@@ -1051,12 +1052,21 @@ export default function PainelPage() {
         className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
       >
         <div>
-          <h2
-            id="titulo-casas"
-            className="text-base font-bold text-[var(--text)] tracking-tight mb-1"
-          >
-            Top Casas
-          </h2>
+          <div className="flex items-start justify-between gap-3 mb-1">
+            <h2
+              id="titulo-casas"
+              className="text-base font-bold text-[var(--text)] tracking-tight"
+            >
+              Top Casas
+            </h2>
+            <Link
+              href="/estatisticas"
+              className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0"
+            >
+              <span>Ver todas</span>
+              <ArrowUpRight className="w-3 h-3" aria-hidden="true" />
+            </Link>
+          </div>
           <p className="text-xs text-[var(--text-3)]">
             {periodoAtivo ? `As mais usadas ${periodo}` : "As mais usadas na aba ativa"}
           </p>
@@ -1095,16 +1105,6 @@ export default function PainelPage() {
             ))}
           </div>
         )}
-
-        {/* Oito é recorte, e o site precisa dizer que é — senão quem procura
-            uma casa fora da lista conclui que ela não existe. */}
-        <Link
-          href="/estatisticas"
-          className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl text-center transition-colors flex items-center justify-center gap-1"
-        >
-          <span>Ver todas as casas</span>
-          <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
-        </Link>
       </section>
 
       {/* Bottom Section: Recent Activity Stream (6 cols) + Top Adms Leaderboard (6 cols) */}

@@ -313,7 +313,7 @@ export default function EstatisticasPage() {
               onClick={() => setDetalhe("esportes")}
               aria-label="Ver todos os esportes em detalhe"
               className={
-                "w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer hover:border-[color:color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+                "w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
               }
             >
               <div className="flex items-center justify-between">
@@ -375,7 +375,7 @@ export default function EstatisticasPage() {
               onClick={() => setDetalhe("casas")}
               aria-label="Ver todas as casas em detalhe"
               className={
-                "w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer hover:border-[color:color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-card focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+                "w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
               }
             >
               <div className="flex items-center justify-between">
