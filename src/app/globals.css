@@ -89,7 +89,12 @@ body {
    Especificidade baixa de propósito (0,1,1), para perder de qualquer
    `active:scale-*` escrito à mão na classe do elemento; quem já tinha um valor
    próprio continua com o dele. Sem `transition` aqui: retorno de toque é
-   feedback, não animação, e qualquer atraso o transforma em atraso. */
+   feedback, não animação, e qualquer atraso o transforma em atraso.
+
+   **Botão largo anula com `active:transform-none`.** 3% de um botão de 1.140
+   px são 17 px por lado: entre o apertar e o soltar, a borda foge de baixo do
+   cursor, o soltar cai no elemento de fora e o clique não chega ao botão. Foi
+   assim que a seta do dia, em Apostas, parou de responder. */
 button:active {
   transform: scale(0.97);
 }

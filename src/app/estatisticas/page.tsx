@@ -507,7 +507,7 @@ export default function EstatisticasPage() {
           <button
             type="button"
             onClick={() => setDetalhe(null)}
-            className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors"
+            className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors active:transform-none"
           >
             Fechar
           </button>
@@ -588,7 +588,7 @@ export default function EstatisticasPage() {
           <button
             type="button"
             onClick={() => setDetalhe(null)}
-            className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors"
+            className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors active:transform-none"
           >
             Fechar
           </button>

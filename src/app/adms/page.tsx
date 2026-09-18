@@ -284,7 +284,7 @@ export default function AdmsPage() {
           <button
             type="button"
             onClick={() => setAberto(null)}
-            className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors"
+            className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors active:transform-none"
           >
             Fechar
           </button>

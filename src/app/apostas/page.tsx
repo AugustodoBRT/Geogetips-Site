@@ -343,6 +343,12 @@ export default function ApostasPage() {
     setEscolhas(new Map());
   }
 
+  // Um botão só, que oferece o contrário do último "tudo": depois de recolher
+  // tudo, expandir; depois de expandir, recolher. Abrir ou fechar dias à mão
+  // não troca a oferta — a não ser que deixe o botão sem efeito: com tudo
+  // aberto ele recolhe, e com tudo fechado ele expande, venha de onde vier.
+  const expandirEhAProxima = !todosAbertos && (todosFechados || abertura === "nenhum");
+
   const fecharDetalhe = useCallback(() => setSelectedBet(null), []);
 
   async function handleCopyBet(bet: BetItem) {
@@ -605,75 +611,65 @@ export default function ApostasPage() {
               />
             </div>
 
-            {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no
                   lugar é <fieldset>, que chega com borda, margem e padding do
                   navegador e existe para agrupar campo de formulário. Aqui é uma
                   barra de pílulas: trocar custaria regressão visual sem ganho de
                   leitura. */}
-            <div
-              className="flex items-center gap-1"
-              role="group"
-              aria-label="Filtrar por faixa de odd"
-            >
-              <span className="text-[11px] font-medium text-[var(--text-3)] mr-1">
-                Odd:
-              </span>
-              {(
-                [
-                  { label: "Todas", val: "TODAS" },
-                  { label: "< 1,8", val: "BAIXA" },
-                  { label: "1,8 – 3,0", val: "MEDIA" },
-                  { label: "> 3,0", val: "ALTA" },
-                ] as const
-              ).map((range) => (
+              <div
+                className="flex items-center gap-1"
+                role="group"
+                aria-label="Filtrar por faixa de odd"
+              >
+                <span className="text-[11px] font-medium text-[var(--text-3)] mr-1">
+                  Odd:
+                </span>
+                {(
+                  [
+                    { label: "Todas", val: "TODAS" },
+                    { label: "< 1,8", val: "BAIXA" },
+                    { label: "1,8 – 3,0", val: "MEDIA" },
+                    { label: "> 3,0", val: "ALTA" },
+                  ] as const
+                ).map((range) => (
+                  <button
+                    key={range.val}
+                    type="button"
+                    onClick={() => setOddRangeFilter(range.val)}
+                    aria-pressed={oddRangeFilter === range.val}
+                    className={`px-2 py-0.5 text-[10.5px] font-semibold rounded-full border transition-all ${
+                      oddRangeFilter === range.val
+                        ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                        : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                    }`}
+                  >
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Recolher e expandir os dias mora aqui, no fim da barra de
+                  filtros, e não numa linha própria: é o controle que decide o
+                  que o filtro mostra, e fica ao alcance de quem acabou de
+                  filtrar. Só nos cartões, que é onde há dias. */}
+              {viewMode === "cards" && !mostrarEsqueleto && !erro && dias.length > 0 && (
                 <button
-                  key={range.val}
                   type="button"
-                  onClick={() => setOddRangeFilter(range.val)}
-                  aria-pressed={oddRangeFilter === range.val}
-                  className={`px-2 py-0.5 text-[10.5px] font-semibold rounded-full border transition-all ${
-                    oddRangeFilter === range.val
-                      ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                      : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
-                  }`}
+                  onClick={() => abrirTodos(expandirEhAProxima)}
+                  className="flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold rounded-full border bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
                 >
-                  {range.label}
+                  {expandirEhAProxima ? (
+                    <ChevronsUpDown className="w-3 h-3" aria-hidden="true" />
+                  ) : (
+                    <ChevronsDownUp className="w-3 h-3" aria-hidden="true" />
+                  )}
+                  {expandirEhAProxima ? "Expandir tudo" : "Recolher tudo"}
                 </button>
-              ))}
+              )}
             </div>
           </div>
         </div>
-
-        {/* Barra dos dias: só nos cartões, que é onde há dias para abrir. */}
-        {viewMode === "cards" && !mostrarEsqueleto && !erro && dias.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-2 -mb-2">
-            <p className="text-[11px] text-[var(--text-3)]">
-              {formatarInteiro(dias.length)} {dias.length === 1 ? "dia" : "dias"} ·{" "}
-              {formatarInteiro(filteredBets.length)}{" "}
-              {filteredBets.length === 1 ? "aposta" : "apostas"}
-            </p>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => abrirTodos(true)}
-                disabled={todosAbertos}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-40 disabled:pointer-events-none transition-colors"
-              >
-                <ChevronsUpDown className="w-3.5 h-3.5" aria-hidden="true" />
-                Expandir tudo
-              </button>
-              <button
-                type="button"
-                onClick={() => abrirTodos(false)}
-                disabled={todosFechados}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-40 disabled:pointer-events-none transition-colors"
-              >
-                <ChevronsDownUp className="w-3.5 h-3.5" aria-hidden="true" />
-                Recolher tudo
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Feed */}
         {mostrarEsqueleto ? (
@@ -704,14 +700,21 @@ export default function ApostasPage() {
 
                       Abrir e fechar é instantâneo, de propósito: é gesto de
                       repetição, e quem recolhe dez dias seguidos não quer
-                      esperar dez animações. Só a seta gira. */}
+                      esperar dez animações. Só a seta gira.
+
+                      E não afunda ao ser pressionado. O `scale(0.97)` que
+                      todo botão faz no clique (globals.css), num botão da
+                      largura da tela, puxa a borda esquerda ~17 px para dentro
+                      — e a seta, que mora nela, fugia de baixo do cursor entre
+                      o apertar e o soltar. O clique acabava no <h2> de fora e
+                      nunca chegava ao botão: clicar na seta não fazia nada. */}
                   <h2>
                     <button
                       type="button"
                       onClick={() => alternarDia(dia.data)}
                       aria-expanded={aberto}
                       aria-controls={aberto ? idApostas : undefined}
-                      className="group/dia w-full flex items-center gap-3 py-1 rounded-lg text-left focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer"
+                      className="group/dia w-full flex items-center gap-3 py-1 rounded-lg text-left focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer active:transform-none"
                     >
                       <ChevronDown
                         className={`w-4 h-4 shrink-0 text-[var(--text-3)] group-hover/dia:text-[var(--accent)] transition-transform duration-150 ${
