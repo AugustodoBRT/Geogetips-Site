@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { DURACAO, ENTRADA_SOBREPOSICAO, MOLA_CURTA, VEU } from "@/lib/movimento";
 
 interface DialogoProps {
@@ -25,7 +26,7 @@ interface DialogoProps {
  *   a quem o abriu ao fechar — senão quem navega por teclado volta para o topo
  *   da página sem entender por quê;
  * - **Esc fecha**, e clicar no véu também;
- * - entra e **sai** com animação, e a saída é mais discreta que a entrada.
+ * - entra com animação curta — e sai sem nenhuma, pelo motivo logo abaixo.
  *
  * Monta só quando há o que mostrar, e **desmonta direto — sem animação de
  * saída**.
@@ -42,6 +43,15 @@ interface DialogoProps {
  * devolve a garantia de que nada sobra na tela. Há teste de tela para isso em
  * `e2e/sobreposicoes.spec.ts`, e ele existe exatamente porque este defeito já
  * voltou três vezes.
+ *
+ * **Renderiza no `body`, por portal.** Filho do contêiner da página, o véu
+ * herdava o que o contêiner impusesse aos filhos: em Adms e Estatísticas o
+ * `space-y-8` lhe dava `margin-top: 2rem`, e o véu começava 30 pixels abaixo do
+ * topo — uma faixa clara em cima, com o menu metade escurecido, parecendo tela
+ * cortada. Um `transform` de animação num ancestral faria pior: o `fixed`
+ * passaria a se medir por ele, e não pela janela. No `body` nada disso alcança.
+ * Os eventos continuam subindo pela árvore do React, então o clique no véu e o
+ * foco funcionam como antes.
  */
 export function Dialogo({
   rotulo,
@@ -110,7 +120,7 @@ export function Dialogo({
     };
   }, []);
 
-  return (
+  return createPortal(
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
       initial={VEU.initial}
@@ -127,13 +137,12 @@ export function Dialogo({
         onClick={(e) => e.stopPropagation()}
         initial={ENTRADA_SOBREPOSICAO.initial}
         animate={ENTRADA_SOBREPOSICAO.animate}
-        // A saída é mais curta e mais discreta que a entrada: quem fechou já
-        // está olhando para outra coisa.
         transition={MOLA_CURTA}
         className={`bg-white border border-black/[0.1] rounded-2xl ${largura} w-full p-6 shadow-2xl space-y-5 outline-none max-h-[90vh] overflow-y-auto`}
       >
         {children}
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }

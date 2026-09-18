@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
+import { semRolagemSuave } from "./ajudantes";
 
 /**
  * O card clicável sobe no hover.
@@ -19,6 +20,8 @@ async function deslocamentoY(alvo: Locator) {
 
 async function confereQueSobe(page: Page, card: Locator) {
   await expect(card).toBeVisible({ timeout: 15_000 });
+  await semRolagemSuave(page);
+  await card.scrollIntoViewIfNeeded();
   // Espera a entrada em cascata assentar antes de medir o repouso.
   await expect.poll(() => deslocamentoY(card)).toBe(0);
 
