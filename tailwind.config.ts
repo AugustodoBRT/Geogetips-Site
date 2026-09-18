@@ -56,6 +56,14 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(6px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        // Só opacidade, para elemento que tem hover com `transform`. Animação
+        // ganha de classe na cascata enquanto roda — e, com `both`, depois dela
+        // também: a `entrada` deixaria o translateY(0) final grudado e o card
+        // nunca subiria no hover. Sem transform aqui, não há o que disputar.
+        aparecer: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
       },
       animation: {
         shimmer: "shimmer 1.6s ease-in-out infinite",
@@ -63,6 +71,7 @@ const config: Config = {
         "surgir-x": "surgir-x 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
         "surgir-y": "surgir-y 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
         entrada: "entrada 0.26s cubic-bezier(0.16, 1, 0.3, 1) both",
+        aparecer: "aparecer 0.2s ease-out both",
       },
       boxShadow: {
         subtle: "0 1px 2px rgba(0,0,0,0.03), 0 8px 32px rgba(0,0,0,0.05)",
