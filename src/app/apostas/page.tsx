@@ -1,10 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import NumberFlow from "@number-flow/react";
-import { Search, LayoutGrid, List, Award } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  LayoutGrid,
+  List,
+  Search,
+} from "lucide-react";
 import type { BetItem, BetResult } from "@/lib/types";
 import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
@@ -21,7 +27,8 @@ import { paraISO, parseDateTimestamp, rotuloDoPeriodo, timestampDoISO } from "@/
 import { SeletorMultiplo } from "@/components/SeletorMultiplo";
 import { FiltroPeriodo } from "@/components/FiltroPeriodo";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
-import { rotuloDaAba, trechoDaAba } from "@/lib/constants";
+import { agruparPorDia, diasAbertosDeSaida } from "@/lib/dias";
+import { trechoDaAba } from "@/lib/constants";
 import {
   formatarInteiro,
   formatarOdd,
@@ -30,13 +37,25 @@ import {
 } from "@/lib/format";
 
 /**
- * Quantas apostas o feed desenha por vez.
+ * Quantas apostas a tela desenha de saída.
  *
  * Sem limite, Abril26 punha 2.452 linhas na tela de uma vez: 44.753 nós no DOM
- * e 665.421 px de altura, cerca de 800 telas de rolagem. Renderizar em blocos
+ * e 665.421 px de altura, cerca de 800 telas de rolagem. Desenhar só uma parte
  * derruba isso para a ordem de 2 mil nós e é o que devolve a fluidez à busca.
+ *
+ * Nos cartões o limite é por dia: os dias mais recentes abrem até somar isto, e
+ * os anteriores aparecem recolhidos. Na tabela, que não tem dias, é por bloco,
+ * com "Mostrar mais" no fim.
  */
 const APOSTAS_POR_BLOCO = 100;
+
+/**
+ * Quais dias do feed estão abertos, antes das escolhas feitas dia a dia.
+ *
+ * - `automatica`: os mais recentes, até somar {@link APOSTAS_POR_BLOCO}.
+ * - `todos` e `nenhum`: o que Expandir tudo e Recolher tudo pedem.
+ */
+type Abertura = "automatica" | "todos" | "nenhum";
 
 /**
  * O detalhe da aposta só desce quando alguém abre uma.
@@ -87,6 +106,11 @@ export default function ApostasPage() {
 
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [visiveis, setVisiveis] = useState(APOSTAS_POR_BLOCO);
+  const [abertura, setAbertura] = useState<Abertura>("automatica");
+  // O que o visitante abriu ou fechou à mão, dia a dia. Guarda a decisão, e não
+  // um "inverter": o padrão de um dia muda quando o filtro muda, e um inverter
+  // guardado passaria a fechar o dia que a pessoa tinha aberto.
+  const [escolhas, setEscolhas] = useState<ReadonlyMap<string, boolean>>(new Map());
   const [selectedBet, setSelectedBet] = useState<BetItem | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -103,6 +127,8 @@ export default function ApostasPage() {
     setSportsFilter([]);
     setBookiesFilter([]);
     setAdmsFilter([]);
+    setAbertura("automatica");
+    setEscolhas(new Map());
   }, [activeTab]);
 
   // Listas de filtro em ordem alfabética, para o usuário achar o item
@@ -253,32 +279,6 @@ export default function ApostasPage() {
     };
   }, [filteredBets, converter]);
 
-  const topAdms = useMemo(() => {
-    const map = new Map<
-      string,
-      { total: number; greens: number; reds: number; profit: number }
-    >();
-    bets.forEach((b) => {
-      const cur = map.get(b.tipster) || { total: 0, greens: 0, reds: 0, profit: 0 };
-      cur.total += 1;
-      cur.profit += b.lucro;
-      if (b.resultado === "GREEN") cur.greens += 1;
-      if (b.resultado === "RED") cur.reds += 1;
-      map.set(b.tipster, cur);
-    });
-
-    return Array.from(map.entries())
-      .map(([nome, d]) => ({
-        nome,
-        total: d.total,
-        profit: d.profit,
-        // Mesma definição da página de Adms: pendente não conta como perdida.
-        winRate: taxaDeAcerto(d.greens, d.reds),
-      }))
-      .sort((a, b) => b.profit - a.profit)
-      .slice(0, 4);
-  }, [bets]);
-
   // Volta ao primeiro bloco sempre que o recorte muda, senão o visitante
   // continuaria vendo 500 linhas depois de restringir o filtro.
   useEffect(() => {
@@ -310,17 +310,38 @@ export default function ApostasPage() {
 
   const trecho = trechoDaAba(activeTab);
 
-  const groupedByDate = useMemo(() => {
-    const map = new Map<string, BetItem[]>();
-    betsVisiveis.forEach((bet) => {
-      const list = map.get(bet.data) || [];
-      list.push(bet);
-      map.set(bet.data, list);
-    });
-    return Array.from(map.entries()).sort(
-      (a, b) => parseDateTimestamp(b[0]) - parseDateTimestamp(a[0])
-    );
-  }, [betsVisiveis]);
+  // O feed em dias, sobre tudo o que o filtro deixa passar — e não só sobre o
+  // que já está desenhado. Antes o último dia da tela podia aparecer com metade
+  // da contagem até alguém clicar em "Mostrar mais"; com o dia recolhível, o
+  // cabeçalho é o que fica à vista, e tem de falar do dia inteiro. A ordem e o
+  // porquê de não reordenar estão em lib/dias.ts.
+  const dias = useMemo(() => agruparPorDia(filteredBets), [filteredBets]);
+  const abertosDeSaida = useMemo(
+    () => diasAbertosDeSaida(dias, APOSTAS_POR_BLOCO),
+    [dias]
+  );
+
+  const estaAberto = useCallback(
+    (data: string) =>
+      escolhas.get(data) ??
+      (abertura === "todos" || (abertura === "automatica" && abertosDeSaida.has(data))),
+    [escolhas, abertura, abertosDeSaida]
+  );
+
+  const todosAbertos = dias.every((d) => estaAberto(d.data));
+  const todosFechados = dias.every((d) => !estaAberto(d.data));
+
+  function alternarDia(data: string) {
+    const abrir = !estaAberto(data);
+    setEscolhas((anteriores) => new Map(anteriores).set(data, abrir));
+  }
+
+  // Tudo ou nada apaga as escolhas de dia: "recolher tudo" que deixasse aberto
+  // o dia que a pessoa abriu à mão não estaria recolhendo tudo.
+  function abrirTodos(abrir: boolean) {
+    setAbertura(abrir ? "todos" : "nenhum");
+    setEscolhas(new Map());
+  }
 
   const fecharDetalhe = useCallback(() => setSelectedBet(null), []);
 
@@ -623,53 +644,35 @@ export default function ApostasPage() {
           </div>
         </div>
 
-        {/* Top Adms em faixa, e não mais em coluna lateral.
-              A lateral custava um terço da largura da tela para mostrar quatro
-              linhas, e o feed — que é o assunto da página — ficava espremido em
-              8/12 do começo ao fim da rolagem. Aqui o ranking continua visível
-              sem cobrar largura de ninguém, e /adms segue sendo a tela completa
-              do assunto. */}
-        {topAdms.length > 0 && (
-          <section
-            aria-labelledby="titulo-top-adms"
-            className="bg-white border border-black/[0.07] rounded-2xl p-4 shadow-sm"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h2
-                id="titulo-top-adms"
-                className="text-xs font-bold uppercase tracking-wider text-[var(--text-3)]"
+        {/* Barra dos dias: só nos cartões, que é onde há dias para abrir. */}
+        {viewMode === "cards" && !mostrarEsqueleto && !erro && dias.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-2 -mb-2">
+            <p className="text-[11px] text-[var(--text-3)]">
+              {formatarInteiro(dias.length)} {dias.length === 1 ? "dia" : "dias"} ·{" "}
+              {formatarInteiro(filteredBets.length)}{" "}
+              {filteredBets.length === 1 ? "aposta" : "apostas"}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => abrirTodos(true)}
+                disabled={todosAbertos}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-40 disabled:pointer-events-none transition-colors"
               >
-                Top Adms ({rotuloDaAba(activeTab)})
-              </h2>
-              <Award className="w-4 h-4 text-[var(--green)]" aria-hidden="true" />
+                <ChevronsUpDown className="w-3.5 h-3.5" aria-hidden="true" />
+                Expandir tudo
+              </button>
+              <button
+                type="button"
+                onClick={() => abrirTodos(false)}
+                disabled={todosFechados}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-40 disabled:pointer-events-none transition-colors"
+              >
+                <ChevronsDownUp className="w-3.5 h-3.5" aria-hidden="true" />
+                Recolher tudo
+              </button>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
-              {topAdms.map((adm, i) => (
-                <div key={adm.nome} className="flex items-center gap-2.5 min-w-0">
-                  <span className="font-mono text-xs font-bold text-[var(--text-3)] shrink-0">
-                    #{i + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-[var(--text)] truncate">
-                      {adm.nome}
-                    </div>
-                    <div className="text-[10.5px] text-[var(--text-3)] whitespace-nowrap">
-                      {formatarInteiro(adm.total)} tips ·{" "}
-                      {adm.winRate.toFixed(1).replace(".", ",")}% acerto
-                    </div>
-                  </div>
-                  <span
-                    className={`font-mono text-xs font-bold shrink-0 ml-auto ${
-                      adm.profit >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                    }`}
-                  >
-                    {formatarReaisComSinal(converter(adm.profit))}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
+          </div>
         )}
 
         {/* Feed */}
@@ -684,133 +687,169 @@ export default function ApostasPage() {
             </p>
           </div>
         ) : viewMode === "cards" ? (
-          <div className="space-y-6 animate-entrada">
-            {groupedByDate.map(([date, dayBets]) => {
-              const lucroDia = dayBets.reduce((acc, b) => acc + b.lucro, 0);
+          <div className="space-y-3 animate-entrada">
+            {dias.map((dia, indice) => {
+              const aberto = estaAberto(dia.data);
+              const idApostas = `apostas-do-dia-${indice}`;
               // Sem `layout` do framer: ela anima mudanças de tamanho por
               // transform, e ao mudar a altura das linhas a seção inteira
               // travou em scaleY(11.67) com translateY de 1504px — o feed
               // ficava esticado e ilegível. Mesmo motivo pelo qual o
               // AnimatePresence saiu das linhas.
               return (
-                <section key={date} className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-xs font-mono font-bold text-[var(--text)]">
-                      {date}
-                    </h2>
-                    <span className="text-[11px] text-[var(--text-3)]">
-                      ({dayBets.length} {dayBets.length === 1 ? "aposta" : "apostas"})
-                    </span>
-                    <div className="flex-1 h-px bg-black/[0.06]" />
-                    <span
-                      className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                        lucroDia >= 0
-                          ? "bg-[var(--green-soft)] text-[var(--green)]"
-                          : "bg-[var(--red-soft)] text-[var(--red)]"
-                      }`}
+                <section key={dia.data} className="space-y-2">
+                  {/* O cabeçalho inteiro é o botão, e continua dizendo quantas
+                      apostas o dia tem e como ele fechou mesmo recolhido — é o
+                      que deixa o mês legível como lista de dias.
+
+                      Abrir e fechar é instantâneo, de propósito: é gesto de
+                      repetição, e quem recolhe dez dias seguidos não quer
+                      esperar dez animações. Só a seta gira. */}
+                  <h2>
+                    <button
+                      type="button"
+                      onClick={() => alternarDia(dia.data)}
+                      aria-expanded={aberto}
+                      aria-controls={aberto ? idApostas : undefined}
+                      className="group/dia w-full flex items-center gap-3 py-1 rounded-lg text-left focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer"
                     >
-                      {formatarReaisComSinal(converter(lucroDia))}
-                    </span>
-                  </div>
-
-                  {/* Sem AnimatePresence de propósito.
-                        Com ela (mode="popLayout"), remover muitos itens de uma vez
-                        — o que acontece a cada troca de filtro — deixava os antigos
-                        presos no DOM e VISÍVEIS: o rodapé dizia "Exibindo 100" com
-                        301 linhas na tela. Sair sem animação é determinístico; a
-                        animação de entrada continua funcionando. */}
-                  {dayBets.map((bet) => {
-                    const isGreen = bet.resultado === "GREEN";
-                    const isRed = bet.resultado === "RED";
-                    const isVoid = bet.resultado === "VOID";
-
-                    return (
-                      <motion.button
-                        key={bet.id}
-                        initial={{ opacity: 0, scale: 0.97 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.2 }}
-                        type="button"
-                        onClick={() => setSelectedBet(bet)}
-                        aria-label={`Ver detalhes: ${bet.partida}, ${bet.tip}`}
-                        className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:-translate-y-0.5 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150 grid grid-cols-[5px_1fr] group mb-2"
+                      <ChevronDown
+                        className={`w-4 h-4 shrink-0 text-[var(--text-3)] group-hover/dia:text-[var(--accent)] transition-transform duration-150 ${
+                          aberto ? "" : "-rotate-90"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span className="text-xs font-mono font-bold text-[var(--text)] group-hover/dia:text-[var(--accent)] transition-colors">
+                        {dia.data}
+                      </span>
+                      <span className="text-[11px] text-[var(--text-3)]">
+                        ({formatarInteiro(dia.apostas.length)}{" "}
+                        {dia.apostas.length === 1 ? "aposta" : "apostas"})
+                      </span>
+                      <span className="flex-1 h-px bg-black/[0.06]" aria-hidden="true" />
+                      <span
+                        className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                          dia.lucro >= 0
+                            ? "bg-[var(--green-soft)] text-[var(--green)]"
+                            : "bg-[var(--red-soft)] text-[var(--red)]"
+                        }`}
                       >
-                        <div
-                          className={
-                            isGreen
-                              ? "bg-[var(--green)]"
-                              : isRed
-                                ? "bg-[var(--red)]"
-                                : isVoid
-                                  ? "bg-[var(--text-3)]"
-                                  : "bg-[var(--amber)]"
-                          }
-                        />
+                        {formatarReaisComSinal(converter(dia.lucro))}
+                      </span>
+                    </button>
+                  </h2>
 
-                        <div className="p-3.5 sm:p-4 space-y-2 min-w-0">
-                          {/* Linha 1 — quebra no mobile em vez de ser cortada */}
-                          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-                            <SportBadge sport={bet.esporte} />
-                            <span className="text-[13.5px] font-bold text-[var(--text)] tracking-tight group-hover:text-[var(--accent)] transition-colors min-w-0 flex-1 truncate">
-                              {bet.partida}
-                            </span>
-                            <BookieBadge bookie={bet.casa} />
-                          </div>
+                  {/* Recolhido, o dia sai do DOM em vez de só se esconder: é o
+                      que mantém leve um mês de 2.452 apostas. */}
+                  {aberto && (
+                    <div id={idApostas} className="space-y-2">
+                      {dia.apostas.map((bet) => {
+                        const isGreen = bet.resultado === "GREEN";
+                        const isRed = bet.resultado === "RED";
+                        const isVoid = bet.resultado === "VOID";
 
-                          {/* Linha 2 — odd, valor, status e lucro sempre visíveis */}
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1.5 border-t border-black/[0.04]">
-                            {/* No mobile a tip ocupa a linha inteira; a
-                                    partir de sm divide espaço com o resto. */}
-                            <span className="text-xs text-[var(--text-2)] font-medium w-full sm:w-auto sm:min-w-0 sm:flex-1 truncate">
-                              {bet.tip}
-                            </span>
-
-                            {bet.tipster && bet.tipster !== "Geral" && (
-                              <span className="text-[10px] text-[var(--text-3)] px-1.5 py-0.5 bg-[var(--bg)] rounded shrink-0">
-                                {bet.tipster}
-                              </span>
-                            )}
-
-                            <span className="text-xs font-mono font-bold text-[var(--text)] bg-[var(--bg)] px-2 py-0.5 rounded border border-black/[0.04] shrink-0">
-                              @{formatarOdd(bet.odd)}
-                            </span>
-
-                            <span className="text-xs font-mono text-[var(--text-2)] shrink-0">
-                              {formatarReais(converter(bet.valor))}
-                            </span>
-
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider shrink-0 ${
+                        return (
+                          // Botão comum, com entrada só de opacidade e por CSS.
+                          // Era um motion.button com entrada em escala, e o
+                          // framer deixa `transform` no style do elemento:
+                          // estilo inline ganha de classe, e o
+                          // hover:-translate-y-0.5 nunca acontecia. Sem framer
+                          // aqui a linha também sai mais barata, e há milhares
+                          // delas num mês.
+                          //
+                          // `content-visibility: auto` deixa o navegador pular o
+                          // layout do cartão fora da tela. Com Abril26 inteiro
+                          // aberto (2.452 cartões), Expandir tudo caiu de 517
+                          // para 194 ms e cada troca de filtro de ~600 para
+                          // ~325 ms. O tamanho reservado é a caixa de conteúdo
+                          // medida — 87 px no desktop, 128 no celular, onde a
+                          // tip ganha linha própria — e o `auto` troca pelo
+                          // tamanho real assim que o cartão é desenhado uma vez.
+                          <button
+                            key={bet.id}
+                            type="button"
+                            onClick={() => setSelectedBet(bet)}
+                            aria-label={`Ver detalhes: ${bet.partida}, ${bet.tip}`}
+                            className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:-translate-y-0.5 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150 grid grid-cols-[5px_1fr] group animate-aparecer [content-visibility:auto] [contain-intrinsic-size:auto_5.8rem] max-sm:[contain-intrinsic-size:auto_8.5rem]"
+                          >
+                            <div
+                              className={
                                 isGreen
-                                  ? "bg-[var(--green-soft)] text-[var(--green)]"
+                                  ? "bg-[var(--green)]"
                                   : isRed
-                                    ? "bg-[var(--red-soft)] text-[var(--red)]"
+                                    ? "bg-[var(--red)]"
                                     : isVoid
-                                      ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
-                                      : "bg-[var(--amber-soft)] text-[var(--amber)]"
-                              }`}
-                            >
-                              {bet.resultado}
-                            </span>
+                                      ? "bg-[var(--text-3)]"
+                                      : "bg-[var(--amber)]"
+                              }
+                            />
 
-                            <span
-                              className={`font-mono text-xs font-bold shrink-0 ${
-                                isGreen
-                                  ? "text-[var(--green)]"
-                                  : isRed
-                                    ? "text-[var(--red)]"
-                                    : "text-[var(--text-3)]"
-                              }`}
-                            >
-                              {bet.resultado === "PENDENTE" || isVoid
-                                ? "—"
-                                : formatarReaisComSinal(converter(bet.lucro))}
-                            </span>
-                          </div>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
+                            <div className="p-3.5 sm:p-4 space-y-2 min-w-0">
+                              {/* Linha 1 — quebra no mobile em vez de ser cortada */}
+                              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                                <SportBadge sport={bet.esporte} />
+                                <span className="text-[13.5px] font-bold text-[var(--text)] tracking-tight group-hover:text-[var(--accent)] transition-colors min-w-0 flex-1 truncate">
+                                  {bet.partida}
+                                </span>
+                                <BookieBadge bookie={bet.casa} />
+                              </div>
+
+                              {/* Linha 2 — odd, valor, status e lucro sempre visíveis */}
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1.5 border-t border-black/[0.04]">
+                                {/* No mobile a tip ocupa a linha inteira; a
+                                        partir de sm divide espaço com o resto. */}
+                                <span className="text-xs text-[var(--text-2)] font-medium w-full sm:w-auto sm:min-w-0 sm:flex-1 truncate">
+                                  {bet.tip}
+                                </span>
+
+                                {bet.tipster && bet.tipster !== "Geral" && (
+                                  <span className="text-[10px] text-[var(--text-3)] px-1.5 py-0.5 bg-[var(--bg)] rounded shrink-0">
+                                    {bet.tipster}
+                                  </span>
+                                )}
+
+                                <span className="text-xs font-mono font-bold text-[var(--text)] bg-[var(--bg)] px-2 py-0.5 rounded border border-black/[0.04] shrink-0">
+                                  @{formatarOdd(bet.odd)}
+                                </span>
+
+                                <span className="text-xs font-mono text-[var(--text-2)] shrink-0">
+                                  {formatarReais(converter(bet.valor))}
+                                </span>
+
+                                <span
+                                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider shrink-0 ${
+                                    isGreen
+                                      ? "bg-[var(--green-soft)] text-[var(--green)]"
+                                      : isRed
+                                        ? "bg-[var(--red-soft)] text-[var(--red)]"
+                                        : isVoid
+                                          ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
+                                          : "bg-[var(--amber-soft)] text-[var(--amber)]"
+                                  }`}
+                                >
+                                  {bet.resultado}
+                                </span>
+
+                                <span
+                                  className={`font-mono text-xs font-bold shrink-0 ${
+                                    isGreen
+                                      ? "text-[var(--green)]"
+                                      : isRed
+                                        ? "text-[var(--red)]"
+                                        : "text-[var(--text-3)]"
+                                  }`}
+                                >
+                                  {bet.resultado === "PENDENTE" || isVoid
+                                    ? "—"
+                                    : formatarReaisComSinal(converter(bet.lucro))}
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </section>
               );
             })}
@@ -931,7 +970,7 @@ export default function ApostasPage() {
           </div>
         )}
 
-        {restantes > 0 && (
+        {viewMode === "table" && restantes > 0 && (
           <div className="mt-5 flex flex-col items-center gap-2">
             <button
               type="button"
