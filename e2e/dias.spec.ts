@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
+import { semRolagemSuave } from "./ajudantes";
 
 /**
  * Os dias do feed de Apostas, que recolhem e expandem.
@@ -86,6 +87,9 @@ test("o cartão da aposta sobe no hover", async ({ page }) => {
   const deslocamentoY = () =>
     cartao.evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m42);
 
+  // Rolagem suave desligada: o porquê está em e2e/ajudantes.ts.
+  await semRolagemSuave(page);
+  await cartao.scrollIntoViewIfNeeded();
   await expect.poll(deslocamentoY).toBe(0);
   await cartao.hover();
   await expect.poll(deslocamentoY).toBeLessThan(-1);

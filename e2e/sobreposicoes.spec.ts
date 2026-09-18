@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 /**
  * O teste do véu fantasma.
@@ -14,9 +14,23 @@ import { expect, test } from "@playwright/test";
  * sozinho: **depois de fechar, o próximo clique tem de chegar ao seu alvo.**
  */
 
-test("o detalhe da aposta abre, fecha e devolve o clique à página", async ({
-  page,
-}) => {
+/**
+ * O véu cobre a janela inteira, do topo ao pé.
+ *
+ * Em Adms e Estatísticas o véu começava 30 pixels abaixo do topo: filho do
+ * contêiner da página, herdava o `margin-top` do `space-y-8` dele, e sobrava uma
+ * faixa clara em cima, com o menu metade escurecido. Parecia tela cortada. Em
+ * Apostas não acontecia, porque lá o contêiner não tem `space-y` — o defeito
+ * dependia de onde o diálogo era aberto, e por isso cada diálogo confere.
+ */
+async function confereQueOVeuCobreATela(page: Page) {
+  const veu = await page.getByRole("dialog").locator("..").boundingBox();
+  const janela = page.viewportSize();
+  expect(veu?.y).toBe(0);
+  expect(veu?.height).toBe(janela?.height);
+}
+
+test("o detalhe da aposta abre, fecha e devolve o clique à página", async ({ page }) => {
   await page.goto("/apostas");
 
   const primeira = page.locator("main button").filter({ hasText: /x / }).first();
@@ -27,6 +41,7 @@ test("o detalhe da aposta abre, fecha e devolve o clique à página", async ({
   await expect(dialogo).toBeVisible();
   // O foco entra no diálogo: quem navega por teclado não fica preso atrás dele.
   await expect(dialogo).toBeFocused();
+  await confereQueOVeuCobreATela(page);
 
   await page.keyboard.press("Escape");
   await expect(dialogo).toBeHidden();
@@ -39,9 +54,7 @@ test("o detalhe da aposta abre, fecha e devolve o clique à página", async ({
   await expect(page).toHaveURL(/\/painel$/);
 });
 
-test("o menu do celular abre, fecha e devolve o clique à página", async ({
-  page,
-}) => {
+test("o menu do celular abre, fecha e devolve o clique à página", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/apostas");
 
@@ -75,6 +88,7 @@ test("os cards de Estatísticas abrem o detalhe completo", async ({ page }) => {
   const dialogo = page.getByRole("dialog");
   await expect(dialogo).toBeVisible();
   await expect(dialogo).toBeFocused();
+  await confereQueOVeuCobreATela(page);
 
   // O diálogo lista as casas com as colunas que o card não tem espaço para
   // mostrar. Ele também deixa de cortar em oito — mas isso a demonstração não
@@ -107,6 +121,7 @@ test("o card do adm abre o detalhe por casa e por esporte", async ({ page }) => 
   const dialogo = page.getByRole("dialog");
   await expect(dialogo).toBeVisible();
   await expect(dialogo).toBeFocused();
+  await confereQueOVeuCobreATela(page);
 
   // As duas listas: é a resposta para "de onde veio o resultado deste adm".
   await expect(dialogo.getByText("Por casa")).toBeVisible();
