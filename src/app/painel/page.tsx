@@ -379,7 +379,9 @@ export default function PainelPage() {
   );
   const sports = statsDoRecorte?.sports ?? stats?.sports ?? [];
   const tipsters = statsDoRecorte?.tipsters ?? stats?.tipsters ?? [];
-  const casas = statsDoRecorte?.bookies ?? stats?.bookies ?? [];
+  // Oito no Painel: é um resumo, e o caminho para a lista inteira está no
+  // rodapé do bloco.
+  const casas = (statsDoRecorte?.bookies ?? stats?.bookies ?? []).slice(0, 8);
   const recentBets = scopedBets.slice(0, 6);
   const trecho = trechoDaAba(activeTab);
 

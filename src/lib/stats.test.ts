@@ -188,3 +188,105 @@ describe("computeStatsFromBets", () => {
     expect(s.tipsters).toEqual([]);
   });
 });
+
+describe("recortes do adm", () => {
+  it("separa o desempenho por casa e por esporte", () => {
+    const s = computeStatsFromBets([
+      aposta({
+        tipster: "Manel",
+        casa: "Bet365",
+        esporte: "Futebol",
+        resultado: "GREEN",
+        valor: 100,
+        lucro: 100,
+      }),
+      aposta({
+        tipster: "Manel",
+        casa: "Bet365",
+        esporte: "NBA",
+        resultado: "RED",
+        valor: 100,
+        lucro: -100,
+      }),
+      aposta({
+        tipster: "Manel",
+        casa: "Betano",
+        esporte: "Futebol",
+        resultado: "GREEN",
+        valor: 100,
+        lucro: 50,
+      }),
+    ]);
+    const manel = s.tipsters[0];
+
+    // Da casa mais usada para a menos.
+    expect(manel.porCasa.map((c) => c.nome)).toEqual(["Bet365", "Betano"]);
+    const bet365 = manel.porCasa[0];
+    expect(bet365.apostas).toBe(2);
+    expect(bet365.taxaAcerto).toBe(50);
+    expect(bet365.lucro).toBe(0);
+    expect(bet365.roi).toBe(0);
+
+    const futebol = manel.porEsporte.find((e) => e.nome === "Futebol");
+    expect(futebol?.apostas).toBe(2);
+    expect(futebol?.lucro).toBe(150);
+  });
+
+  it("fecha com o total do adm: a soma dos recortes é o todo", () => {
+    // Se um recorte calculasse diferente do total, as duas contas não fechariam
+    // na mesma tela — e a tela mostra as duas.
+    const s = computeStatsFromBets([
+      aposta({
+        tipster: "Manel",
+        casa: "A",
+        esporte: "Futebol",
+        resultado: "GREEN",
+        valor: 100,
+        lucro: 80,
+      }),
+      aposta({
+        tipster: "Manel",
+        casa: "B",
+        esporte: "NBA",
+        resultado: "RED",
+        valor: 100,
+        lucro: -100,
+      }),
+      aposta({
+        tipster: "Manel",
+        casa: "B",
+        esporte: "NBA",
+        resultado: "VOID",
+        valor: 100,
+        lucro: 0,
+      }),
+      aposta({
+        tipster: "Manel",
+        casa: "A",
+        esporte: "Futebol",
+        resultado: "PENDENTE",
+        valor: 100,
+        lucro: 0,
+      }),
+    ]);
+    const manel = s.tipsters[0];
+    const somaCasas = manel.porCasa.reduce((n, c) => n + c.apostas, 0);
+    const somaEsportes = manel.porEsporte.reduce((n, e) => n + e.apostas, 0);
+    expect(somaCasas).toBe(manel.totalApostas);
+    expect(somaEsportes).toBe(manel.totalApostas);
+
+    // ROI do recorte na mesma definição do site: anulada e pendente no
+    // investido.
+    const casaA = manel.porCasa.find((c) => c.nome === "A");
+    expect(casaA?.roi).toBe(40);
+  });
+
+  it("não deixa aposta sem casa nem sem esporte cair fora da conta", () => {
+    const s = computeStatsFromBets([
+      aposta({ tipster: "Manel", casa: "", esporte: "", resultado: "GREEN", lucro: 10 }),
+    ]);
+    const manel = s.tipsters[0];
+    expect(manel.porCasa[0].nome).toBe("Sem Casa");
+    expect(manel.porEsporte[0].nome).toBe("Outros");
+  });
+});

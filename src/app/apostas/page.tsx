@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import NumberFlow from "@number-flow/react";
 import { Search, LayoutGrid, List, Award } from "lucide-react";
@@ -952,21 +952,18 @@ export default function ApostasPage() {
         <SecaoTelegram />
       </div>
 
-      {/* Um filho só, com key, dentro do AnimatePresence. A versão anterior
-          passava o véu e o diálogo soltos num fragmento, e era isso que fazia
-          o véu ficar preso no DOM engolindo clique depois de fechar. */}
-      <AnimatePresence>
-        {selectedBet && (
-          <DetalheAposta
-            key="detalhe-aposta"
-            bet={selectedBet}
-            onFechar={fecharDetalhe}
-            onCopiar={handleCopyBet}
-            copiado={copied}
-            converter={converter}
-          />
-        )}
-      </AnimatePresence>
+      {/* Sem AnimatePresence: o diálogo desmonta direto, e o porquê está em
+          Dialogo.tsx — animar a saída deixava o véu preso no DOM engolindo
+          clique, três vezes neste projeto. */}
+      {selectedBet && (
+        <DetalheAposta
+          bet={selectedBet}
+          onFechar={fecharDetalhe}
+          onCopiar={handleCopyBet}
+          copiado={copied}
+          converter={converter}
+        />
+      )}
     </div>
   );
 }

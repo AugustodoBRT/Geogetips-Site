@@ -22,6 +22,22 @@ export interface BetItem {
   lucro: number;
 }
 
+/**
+ * Recorte do desempenho de um adm dentro de uma casa ou de um esporte.
+ *
+ * Existe porque o número do adm sozinho esconde de onde ele veio: ROI alto
+ * concentrado numa casa só muda a leitura, principalmente porque casa limita
+ * conta boa.
+ */
+export interface RecorteDoAdm {
+  /** Nome da casa ou do esporte. */
+  nome: string;
+  apostas: number;
+  taxaAcerto: number;
+  lucro: number;
+  roi: number;
+}
+
 export interface TipsterStat {
   nome: string;
   esportes: string[];
@@ -44,6 +60,10 @@ export interface TipsterStat {
   reds: number;
   voids: number;
   pendentes: number;
+  /** Desempenho do adm em cada casa, da mais usada para a menos. */
+  porCasa: RecorteDoAdm[];
+  /** Desempenho do adm em cada esporte, do mais usado para o menos. */
+  porEsporte: RecorteDoAdm[];
 }
 
 export interface SportBreakdown {
