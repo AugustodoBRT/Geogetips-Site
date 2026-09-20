@@ -33,6 +33,50 @@ export function formatarInteiro(valor: number): string {
   return INTEIRO.format(valor);
 }
 
+/**
+ * Menor e maior unidade que o site aceita de quem digita.
+ *
+ * O teto não é frescura: com 1u = R$ 1 bilhão, o KPI vira uma tira de dígitos
+ * que atravessa o card, e nenhuma banca real chega perto. O piso é um centavo.
+ */
+export const UNIDADE_MINIMA = 0.01;
+export const UNIDADE_MAXIMA = 1_000_000;
+
+/**
+ * Lê um número escrito como se escreve no Brasil.
+ *
+ * O campo de unidade só trocava vírgula por ponto e entregava a `parseFloat`.
+ * Quem digitava **"1.000"**, pensando em mil reais, recebia **R$ 1,00** — e daí
+ * em diante o site inteiro mostrava valores cem vezes menores, em silêncio, num
+ * site cuja promessa é bater com a planilha.
+ *
+ * As regras, na ordem em que decidem:
+ *
+ * - vírgula é sempre decimal, e ponto antes dela é milhar: "1.500,50" → 1500.5
+ * - só pontos, em grupos de três ("1.000", "12.345.678"): milhar → 1000
+ * - um ponto só, com uma ou duas casas ("1.5", "12.34"): decimal, porque é
+ *   assim que sai de teclado de celular e de copiar-colar
+ * - texto sem dígito, zero, negativo ou fora dos limites: `null`, e quem chamou
+ *   decide o que fazer
+ */
+export function lerNumeroBR(texto: string): number | null {
+  const limpo = texto.replace(/\s|R\$/g, "").trim();
+  if (!/\d/.test(limpo) || /[^\d.,-]/.test(limpo)) return null;
+
+  let normalizado: string;
+  if (limpo.includes(",")) {
+    normalizado = limpo.replace(/\./g, "").replace(",", ".");
+  } else if (/^-?\d{1,3}(\.\d{3})+$/.test(limpo)) {
+    normalizado = limpo.replace(/\./g, "");
+  } else {
+    normalizado = limpo;
+  }
+
+  const n = Number.parseFloat(normalizado);
+  if (!Number.isFinite(n) || n < UNIDADE_MINIMA || n > UNIDADE_MAXIMA) return null;
+  return n;
+}
+
 /** 1.72 -> "1,72" */
 export function formatarOdd(odd: number): string {
   return odd.toFixed(2).replace(".", ",");

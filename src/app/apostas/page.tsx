@@ -28,6 +28,7 @@ import { SeletorMultiplo } from "@/components/SeletorMultiplo";
 import { FiltroPeriodo } from "@/components/FiltroPeriodo";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
 import { agruparPorDia, diasAbertosDeSaida } from "@/lib/dias";
+import { normalizarTexto } from "@/lib/texto";
 import { trechoDaAba } from "@/lib/constants";
 import {
   formatarInteiro,
@@ -201,17 +202,32 @@ export default function ApostasPage() {
     return m;
   }, [bets]);
 
+  /**
+   * O texto procurável de cada aposta, sem acento e em minúsculas.
+   *
+   * A busca comparava os campos crus: "Milão" achava 10 apostas e "milao"
+   * achava 33, porque a planilha grafa o mesmo time das duas formas — e nenhuma
+   * das duas buscas mostrava as 43. Normalizar dentro do filtro resolveria, mas
+   * refaria a conta em até 7.858 apostas a cada tecla; aqui é uma vez por aba.
+   */
+  const indiceDeBusca = useMemo(() => {
+    const indice = new Map<string, string>();
+    for (const bet of bets) {
+      indice.set(
+        bet.id,
+        normalizarTexto(`${bet.partida} ${bet.tip} ${bet.casa} ${bet.tipster}`)
+      );
+    }
+    return indice;
+  }, [bets]);
+
   const filteredBets = useMemo(() => {
-    const termo = buscaAplicada.toLowerCase();
+    const termo = normalizarTexto(buscaAplicada);
     const deTs = timestampDoISO(de);
     const ateTs = timestampDoISO(ate);
     return bets.filter((bet) => {
       const matchesSearch =
-        termo === "" ||
-        bet.partida.toLowerCase().includes(termo) ||
-        bet.tip.toLowerCase().includes(termo) ||
-        bet.casa.toLowerCase().includes(termo) ||
-        bet.tipster.toLowerCase().includes(termo);
+        termo === "" || (indiceDeBusca.get(bet.id) ?? "").includes(termo);
 
       const matchesStatus = statusFilter === "TODAS" || bet.resultado === statusFilter;
       const matchesSport =
@@ -246,6 +262,7 @@ export default function ApostasPage() {
     });
   }, [
     bets,
+    indiceDeBusca,
     buscaAplicada,
     statusFilter,
     sportsFilter,
