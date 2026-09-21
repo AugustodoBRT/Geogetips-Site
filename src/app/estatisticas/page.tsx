@@ -496,8 +496,13 @@ export default function EstatisticasPage() {
                   <th scope="col" className="py-2 pr-1.5 sm:pr-3 whitespace-nowrap">
                     Esporte
                   </th>
+                  {/* "Tips" no celular: o cabeçalho por extenso mandava na
+                      largura da coluna, e a tabela precisa caber na caixa do
+                      diálogo sem rolagem lateral. É a palavra que o resto do
+                      site já usa para a mesma coisa. */}
                   <th scope="col" className="py-2 px-1.5 sm:px-3 text-right">
-                    Apostas
+                    <span className="sm:hidden">Tips</span>
+                    <span className="hidden sm:inline">Apostas</span>
                   </th>
                   {/* Some no celular: com cinco colunas em 375px a tabela
                       passava da largura do diálogo e o Resultado — o número que
@@ -585,8 +590,13 @@ export default function EstatisticasPage() {
                   <th scope="col" className="py-2 pr-1.5 sm:pr-3 whitespace-nowrap">
                     Casa
                   </th>
+                  {/* "Tips" no celular: o cabeçalho por extenso mandava na
+                      largura da coluna, e a tabela precisa caber na caixa do
+                      diálogo sem rolagem lateral. É a palavra que o resto do
+                      site já usa para a mesma coisa. */}
                   <th scope="col" className="py-2 px-1.5 sm:px-3 text-right">
-                    Apostas
+                    <span className="sm:hidden">Tips</span>
+                    <span className="hidden sm:inline">Apostas</span>
                   </th>
                   <th
                     scope="col"
