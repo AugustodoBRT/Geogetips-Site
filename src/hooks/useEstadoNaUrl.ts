@@ -33,7 +33,12 @@ import { escreverConsulta, lerConsulta } from "@/lib/endereco";
  */
 export function useEstadoNaUrl(
   valores: Record<string, string>,
-  aplicar: (lidos: Record<string, string>) => void
+  aplicar: (lidos: Record<string, string>) => void,
+  /**
+   * Quando a tela pode escrever no endereço. O Painel só sabe qual janela é a
+   * padrão depois que os dados chegam; escrever antes sujava o endereço.
+   */
+  habilitado = true
 ) {
   const [pronto, setPronto] = useState(false);
   const aplicarRef = useRef(aplicar);
@@ -48,7 +53,7 @@ export function useEstadoNaUrl(
   const consulta = escreverConsulta(valores);
 
   useEffect(() => {
-    if (!pronto) return;
+    if (!pronto || !habilitado) return;
     const { pathname, search, hash } = window.location;
     if (search === consulta) return;
     window.history.replaceState(
@@ -56,5 +61,5 @@ export function useEstadoNaUrl(
       "",
       `${pathname}${consulta}${hash}`
     );
-  }, [pronto, consulta]);
+  }, [pronto, habilitado, consulta]);
 }

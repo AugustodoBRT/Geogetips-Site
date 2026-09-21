@@ -131,3 +131,16 @@ test("o Painel relê a planilha sozinho a cada minuto, só com a aba à vista", 
   });
   await expect.poll(() => leituras).toBe(inicial + 2);
 });
+
+test("abrir o Painel não suja o endereço com a janela que a aba escolheu sozinha", async ({
+  page,
+}) => {
+  // Num mês curto a janela de 30 dias não existe, e a tela cai em "Tudo" por
+  // conta própria. Isso não é escolha da pessoa: o endereço tem de ficar limpo.
+  await page.goto("/painel");
+  await expect(page.getByRole("region", { name: "Indicadores do período" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.waitForTimeout(800);
+  await expect(page).toHaveURL(/\/painel$/);
+});
