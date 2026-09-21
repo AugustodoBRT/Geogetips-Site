@@ -88,15 +88,6 @@ export default function PainelPage() {
     return () => clearInterval(id);
   }, []);
 
-  // Todas as abas cobrem período maior, então a janela padrão muda junto
-  const availablePeriods: readonly ("7D" | "30D" | "90D" | "120D" | "Tudo")[] = useMemo(
-    () =>
-      activeTab === ABA_TODOS
-        ? (["30D", "90D", "120D", "Tudo"] as const)
-        : (["7D", "30D", "90D", "Tudo"] as const),
-    [activeTab]
-  );
-
   useEffect(() => {
     setDe("");
     setAte("");
@@ -115,6 +106,45 @@ export default function PainelPage() {
     dates.sort((a, b) => parseDateTimestamp(b) - parseDateTimestamp(a));
     return dates;
   }, [allBets]);
+
+  /**
+   * Quantos dias de calendário a aba cobre, da primeira aposta à última.
+   */
+  const diasDaAba = useMemo(() => {
+    if (availableDays.length === 0) return 0;
+    const maisNovo = parseDateTimestamp(availableDays[0]);
+    const maisAntigo = parseDateTimestamp(availableDays[availableDays.length - 1]);
+    return Math.round((maisNovo - maisAntigo) / 86_400_000) + 1;
+  }, [availableDays]);
+
+  /**
+   * As janelas que fazem diferença nesta aba.
+   *
+   * Janela maior que o próprio recorte desenha exatamente o mesmo traço que
+   * "Tudo": numa aba de mês, 30D, 90D e Tudo eram três botões para o mesmo
+   * gráfico — três jeitos de não mudar nada. Só entra janela menor que o
+   * intervalo coberto pela aba; "Tudo" fica sempre.
+   */
+  const availablePeriods: readonly ("7D" | "30D" | "90D" | "120D" | "Tudo")[] = useMemo(
+    () => [
+      ...(["7D", "30D", "90D", "120D"] as const).filter(
+        (j) => DIAS_DO_PERIODO[j] < diasDaAba
+      ),
+      "Tudo" as const,
+    ],
+    [diasDaAba]
+  );
+
+  // A janela escolhida pode não existir na aba nova (ou some quando a aba
+  // encolhe); sem isto o botão pressionado sumia da tela e o gráfico ficava
+  // preso numa janela que ninguém conseguia mais trocar.
+  //
+  // Só depois que a aba tem dados: antes deles `diasDaAba` é 0, toda janela
+  // ficaria "grande demais", e a tela abria em "Tudo" antes de saber o que a
+  // aba cobre — trocando o padrão de 30D por acidente.
+  useEffect(() => {
+    if (diasDaAba > 0 && !availablePeriods.includes(period)) setPeriod("Tudo");
+  }, [availablePeriods, period, diasDaAba]);
 
   // Extremos da aba, para o calendário não abrir em dia sem aposta nenhuma.
   const limitesDeData = useMemo(() => {
@@ -1156,32 +1186,20 @@ export default function PainelPage() {
                 return (
                   <div
                     key={bet.id}
-                    className="p-3 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3 text-xs"
+                    className="p-3 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    {/* Duas linhas, e a tip com a segunda inteira.
+                        Antes tudo dividia uma linha só: o selo de resultado e o
+                        lucro, que não encolhem, ficavam com 161 px dos 290 do
+                        cartão, e sobravam 49 px para partida, tip, odd e
+                        escudo. A tip aparecia como "J…". Agora o que não
+                        encolhe fica em cima, e a tip começa embaixo com a
+                        largura do cartão. */}
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <SportBadge sport={bet.esporte} />
-                      <div className="min-w-0">
-                        <div className="font-bold text-[var(--text)] truncate">
-                          {bet.partida}
-                        </div>
-                        {/* `truncate` num container flex não trunca: recorta os filhos
-                          sem reticências. Num viewport de 375px a odd e a casa
-                          terminavam fora da tela e sumiam sem aviso. Agora só o
-                          texto da tip encolhe; odd e casa não cedem espaço. */}
-                        <div className="text-[11px] text-[var(--text-2)] flex items-center gap-1.5 mt-0.5 min-w-0">
-                          <span className="truncate">{bet.tip}</span>
-                          <span className="shrink-0">·</span>
-                          <strong className="font-mono shrink-0">
-                            @{formatarOdd(bet.odd)}
-                          </strong>
-                          {bet.casa && (
-                            <BookieBadge
-                              bookie={bet.casa}
-                              className="scale-90 origin-left shrink-0"
-                            />
-                          )}
-                        </div>
-                      </div>
+                      <span className="font-bold text-[var(--text)] truncate">
+                        {bet.partida}
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-2.5 shrink-0">
@@ -1211,6 +1229,23 @@ export default function PainelPage() {
                           ? "—"
                           : formatarReaisComSinal(converter(bet.lucro))}
                       </span>
+                    </div>
+
+                    {/* `truncate` num container flex não trunca: recorta os
+                        filhos sem reticências. Por isso só o texto da tip
+                        encolhe; odd e escudo não cedem espaço. */}
+                    <div className="w-full text-[11px] text-[var(--text-2)] flex items-center gap-1.5 min-w-0">
+                      <span className="truncate">{bet.tip}</span>
+                      <span className="shrink-0">·</span>
+                      <strong className="font-mono shrink-0">
+                        @{formatarOdd(bet.odd)}
+                      </strong>
+                      {bet.casa && (
+                        <BookieBadge
+                          bookie={bet.casa}
+                          className="scale-90 origin-left shrink-0"
+                        />
+                      )}
                     </div>
                   </div>
                 );

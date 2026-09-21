@@ -16,7 +16,12 @@ import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
-import { formatarInteiro, formatarReais, formatarReaisComSinal } from "@/lib/format";
+import {
+  formatarInteiro,
+  formatarReais,
+  formatarReaisComSinal,
+  percentuaisRedondos,
+} from "@/lib/format";
 import { rotuloDaAba, trechoDaAba } from "@/lib/constants";
 
 const RAIO = 48;
@@ -43,9 +48,21 @@ export default function EstatisticasPage() {
   const pendings = stats?.pendings ?? 0;
   const voids = stats?.voids ?? 0;
 
-  // Denominador seguro só para as proporções do donut
+  // Denominador seguro para os arcos da rosca, que são desenhados em fração.
   const base = totalBets || 1;
-  const pct = (n: number) => Math.round((n / base) * 100);
+
+  /**
+   * As quatro fatias da rosca em porcentagem inteira, somando 100.
+   *
+   * Arredondar cada uma por conta própria dava 28 + 57 + 10 + 6 = 101% na
+   * legenda, com o total logo ao lado dizendo 1.099 apostas.
+   */
+  const [pctGreen, pctRed, pctPendente, pctVoid] = percentuaisRedondos([
+    greens,
+    reds,
+    pendings,
+    voids,
+  ]);
 
   const sports = stats?.sports ?? [];
   // A conta devolve todas as casas; o card mostra oito, e o diálogo, a lista
@@ -194,11 +211,28 @@ export default function EstatisticasPage() {
 
                 <div className="space-y-3 w-full sm:w-auto">
                   {[
-                    { rotulo: "Green (Vitórias)", n: greens, cor: "var(--green)" },
-                    { rotulo: "Red (Perdas)", n: reds, cor: "var(--red)" },
-                    { rotulo: "Pendente", n: pendings, cor: "var(--amber)" },
+                    {
+                      rotulo: "Green (Vitórias)",
+                      n: greens,
+                      pct: pctGreen,
+                      cor: "var(--green)",
+                    },
+                    { rotulo: "Red (Perdas)", n: reds, pct: pctRed, cor: "var(--red)" },
+                    {
+                      rotulo: "Pendente",
+                      n: pendings,
+                      pct: pctPendente,
+                      cor: "var(--amber)",
+                    },
                     ...(voids > 0
-                      ? [{ rotulo: "Void (anulada)", n: voids, cor: "var(--text-3)" }]
+                      ? [
+                          {
+                            rotulo: "Void (anulada)",
+                            n: voids,
+                            pct: pctVoid,
+                            cor: "var(--text-3)",
+                          },
+                        ]
                       : []),
                   ].map((linha) => (
                     <div
@@ -220,7 +254,7 @@ export default function EstatisticasPage() {
                         className="font-mono font-bold text-xs"
                         style={{ color: linha.cor }}
                       >
-                        {formatarInteiro(linha.n)} ({pct(linha.n)}%)
+                        {formatarInteiro(linha.n)} ({linha.pct}%)
                       </span>
                     </div>
                   ))}
@@ -307,13 +341,18 @@ export default function EstatisticasPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-entrada">
             {/* Os dois cards são botões inteiros, como os do feed: clicar abre o
                 detalhe completo. É o mesmo gesto que o visitante já conhece de
-                abrir uma aposta. */}
+                abrir uma aposta.
+
+                `flex flex-col` não é enfeite: botão centraliza o conteúdo na
+                vertical quando sobra altura, e sobra sempre que o card ao lado
+                é mais alto. O Top Esportes ficava com o conteúdo boiando no
+                meio, com vazio em cima e embaixo. */}
             <button
               type="button"
               onClick={() => setDetalhe("esportes")}
               aria-label="Ver todos os esportes em detalhe"
               className={
-                "w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
+                "w-full h-full flex flex-col items-stretch text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
               }
             >
               <div className="flex items-center justify-between">
@@ -375,7 +414,7 @@ export default function EstatisticasPage() {
               onClick={() => setDetalhe("casas")}
               aria-label="Ver todas as casas em detalhe"
               className={
-                "w-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
+                "w-full h-full flex flex-col items-stretch text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
               }
             >
               <div className="flex items-center justify-between">
@@ -451,22 +490,30 @@ export default function EstatisticasPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-[11px] sm:text-xs">
               <thead className="text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                 <tr>
-                  <th scope="col" className="py-2 pr-3">
+                  <th scope="col" className="py-2 pr-1.5 sm:pr-3 whitespace-nowrap">
                     Esporte
                   </th>
-                  <th scope="col" className="py-2 px-3 text-right">
+                  <th scope="col" className="py-2 px-1.5 sm:px-3 text-right">
                     Apostas
                   </th>
-                  <th scope="col" className="py-2 px-3 text-right">
+                  {/* Some no celular: com cinco colunas em 375px a tabela
+                      passava da largura do diálogo e o Resultado — o número que
+                      a pessoa veio ver — ficava fora da tela, só alcançável
+                      arrastando de lado. Acerto e Apostado são os detalhes;
+                      ROI e Resultado, o assunto. */}
+                  <th
+                    scope="col"
+                    className="py-2 px-1.5 sm:px-3 text-right hidden sm:table-cell"
+                  >
                     Acerto
                   </th>
-                  <th scope="col" className="py-2 px-3 text-right">
+                  <th scope="col" className="py-2 px-1.5 sm:px-3 text-right">
                     ROI
                   </th>
-                  <th scope="col" className="py-2 pl-3 text-right">
+                  <th scope="col" className="py-2 pl-1.5 sm:pl-3 text-right">
                     Resultado
                   </th>
                 </tr>
@@ -474,17 +521,17 @@ export default function EstatisticasPage() {
               <tbody className="divide-y divide-black/[0.05]">
                 {sports.map((s) => (
                   <tr key={s.esporte}>
-                    <td className="py-2.5 pr-3">
+                    <td className="py-2.5 pr-1.5 sm:pr-3">
                       <SportBadge sport={s.esporte} />
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[var(--text-2)]">
+                    <td className="py-2.5 px-1.5 sm:px-3 text-right font-mono text-[var(--text-2)]">
                       {formatarInteiro(s.apostas)}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[var(--text-2)]">
+                    <td className="py-2.5 px-1.5 sm:px-3 text-right font-mono text-[var(--text-2)] hidden sm:table-cell">
                       {s.taxaAcerto.toFixed(1).replace(".", ",")}%
                     </td>
                     <td
-                      className={`py-2.5 px-3 text-right font-mono font-bold ${
+                      className={`py-2.5 px-1.5 sm:px-3 text-right font-mono font-bold ${
                         s.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                       }`}
                     >
@@ -492,7 +539,7 @@ export default function EstatisticasPage() {
                       {s.roi.toFixed(2).replace(".", ",")}%
                     </td>
                     <td
-                      className={`py-2.5 pl-3 text-right font-mono font-bold whitespace-nowrap ${
+                      className={`py-2.5 pl-1.5 sm:pl-3 text-right font-mono font-bold whitespace-nowrap ${
                         s.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                       }`}
                     >
@@ -532,22 +579,25 @@ export default function EstatisticasPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-[11px] sm:text-xs">
               <thead className="text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                 <tr>
-                  <th scope="col" className="py-2 pr-3">
+                  <th scope="col" className="py-2 pr-1.5 sm:pr-3 whitespace-nowrap">
                     Casa
                   </th>
-                  <th scope="col" className="py-2 px-3 text-right">
+                  <th scope="col" className="py-2 px-1.5 sm:px-3 text-right">
                     Apostas
                   </th>
-                  <th scope="col" className="py-2 px-3 text-right">
+                  <th
+                    scope="col"
+                    className="py-2 px-1.5 sm:px-3 text-right hidden sm:table-cell"
+                  >
                     Apostado
                   </th>
-                  <th scope="col" className="py-2 px-3 text-right">
+                  <th scope="col" className="py-2 px-1.5 sm:px-3 text-right">
                     ROI
                   </th>
-                  <th scope="col" className="py-2 pl-3 text-right">
+                  <th scope="col" className="py-2 pl-1.5 sm:pl-3 text-right">
                     Resultado
                   </th>
                 </tr>
@@ -555,17 +605,17 @@ export default function EstatisticasPage() {
               <tbody className="divide-y divide-black/[0.05]">
                 {casas.map((b) => (
                   <tr key={b.casa}>
-                    <td className="py-2.5 pr-3">
+                    <td className="py-2.5 pr-1.5 sm:pr-3">
                       <BookieBadge bookie={b.casa} />
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[var(--text-2)]">
+                    <td className="py-2.5 px-1.5 sm:px-3 text-right font-mono text-[var(--text-2)]">
                       {formatarInteiro(b.apostas)}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[var(--text-2)] whitespace-nowrap">
+                    <td className="py-2.5 px-1.5 sm:px-3 text-right font-mono text-[var(--text-2)] whitespace-nowrap hidden sm:table-cell">
                       {formatarReais(converter(b.apostado))}
                     </td>
                     <td
-                      className={`py-2.5 px-3 text-right font-mono font-bold ${
+                      className={`py-2.5 px-1.5 sm:px-3 text-right font-mono font-bold ${
                         b.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                       }`}
                     >
@@ -573,7 +623,7 @@ export default function EstatisticasPage() {
                       {b.roi.toFixed(2).replace(".", ",")}%
                     </td>
                     <td
-                      className={`py-2.5 pl-3 text-right font-mono font-bold whitespace-nowrap ${
+                      className={`py-2.5 pl-1.5 sm:pl-3 text-right font-mono font-bold whitespace-nowrap ${
                         b.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                       }`}
                     >

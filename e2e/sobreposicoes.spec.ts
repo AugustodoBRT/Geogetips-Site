@@ -37,8 +37,11 @@ test("o detalhe da aposta abre, fecha e devolve o clique à página", async ({ p
   await primeira.waitFor({ state: "visible", timeout: 15_000 });
   await primeira.click();
 
+  // O detalhe da aposta é carregado sob demanda, num pacote à parte: a primeira
+  // abertura espera a rede. Com a suíte inteira rodando em paralelo isso passou
+  // dos 5 s padrão uma vez, e o teste falhou sem defeito nenhum no site.
   const dialogo = page.getByRole("dialog");
-  await expect(dialogo).toBeVisible();
+  await expect(dialogo).toBeVisible({ timeout: 15_000 });
   // O foco entra no diálogo: quem navega por teclado não fica preso atrás dele.
   await expect(dialogo).toBeFocused();
   await confereQueOVeuCobreATela(page);
