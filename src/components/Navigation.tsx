@@ -8,6 +8,7 @@ import { DURACAO, MOLA_CURTA, VEU } from "@/lib/movimento";
 import { Menu, X } from "lucide-react";
 import { BotaoTelegram, IconeTelegram } from "@/components/Telegram";
 import { BotaoTema } from "@/components/BotaoTema";
+import { MarcaG } from "@/components/MarcaG";
 import { TELEGRAM_URL } from "@/lib/constants";
 
 const navItems = [
@@ -96,9 +97,8 @@ function Navigation() {
       >
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-[32px] h-[32px] bg-[var(--text)] rounded-xl flex items-center justify-center text-[var(--bg)] font-bold text-sm tracking-tight transition-transform group-hover:scale-95 shadow-sm">
-              G
-            </div>
+            {/* No hover o G gira um pouco, como nó em órbita. */}
+            <MarcaG className="w-[32px] h-[32px] text-[var(--text)] transition-transform duration-300 group-hover:-rotate-12" />
             <span className="font-serif text-xl tracking-tight text-[var(--text)]">
               Geoge<span className="text-[var(--accent)]">Tips</span>
             </span>

@@ -1,5 +1,6 @@
 import { CORES } from "@/lib/cores";
 import { ImageResponse } from "next/og";
+import { MarcaG } from "@/components/MarcaG";
 import { getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
 import { computeStatsFromBets } from "@/lib/stats";
 import { MOCK_BETS } from "@/lib/data";
@@ -82,9 +83,7 @@ export default async function OpenGraphImage() {
       : [];
 
   // Tudo que a Inter escreve na imagem, para o recorte da fonte levar só isso.
-  const textoInter = ["G", ...metricas.flatMap((m) => [m.rotulo, m.valor]), RODAPE].join(
-    ""
-  );
+  const textoInter = [...metricas.flatMap((m) => [m.rotulo, m.valor]), RODAPE].join("");
 
   const [serif, serifItalico, interNegrito, interMedio] = await Promise.all([
     carregarFonte("DM+Serif+Display", `GeogeTips${TITULO_1}`),
@@ -136,23 +135,8 @@ export default async function OpenGraphImage() {
         fontFamily: SANS,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div
-          style={{
-            width: 52,
-            height: 52,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: CORES.text,
-            color: CORES.bg,
-            fontSize: 30,
-            fontWeight: 700,
-            borderRadius: 14,
-          }}
-        >
-          G
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <MarcaG tamanho={52} tinta={CORES.text} no={CORES.accent} fundo={CORES.bg} />
         <div
           style={{
             display: "flex",
