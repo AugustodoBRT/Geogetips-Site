@@ -27,11 +27,11 @@ interface BotaoTelegramProps {
 
 const ESTILOS = {
   primario:
-    "px-7 py-3 bg-[var(--accent)] text-white text-sm font-semibold rounded-full hover:bg-[var(--accent-hover)] active:scale-[0.98] shadow-sm",
+    "px-7 py-3 bg-[var(--accent)] text-[var(--sobre-cor)] text-sm font-semibold rounded-full hover:bg-[var(--accent-hover)] active:scale-[0.98] shadow-sm",
   secundario:
-    "px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-black/15 rounded-full hover:border-[var(--accent)] hover:text-[var(--accent)] active:scale-[0.98]",
+    "px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-tinta/15 rounded-full hover:border-[var(--accent)] hover:text-[var(--accent)] active:scale-[0.98]",
   compacto:
-    "px-4 py-2 bg-[var(--accent)] text-white text-xs font-bold rounded-full hover:bg-[var(--accent-hover)] active:scale-[0.98] shadow-sm",
+    "px-4 py-2 bg-[var(--accent)] text-[var(--sobre-cor)] text-xs font-bold rounded-full hover:bg-[var(--accent-hover)] active:scale-[0.98] shadow-sm",
 } as const;
 
 export function BotaoTelegram({
@@ -63,8 +63,11 @@ const BENEFICIOS = [
  * é o único momento do site em que pedimos algo dele.
  */
 export function SecaoTelegram() {
+  // Escura nos dois temas: é a cor da marca, não do tema. Por isso o texto sai
+  // de --sobre-marca, e não de --bg, que no escuro também é escuro. No escuro a
+  // borda fina separa a faixa do fundo, que ficou quase da mesma cor.
   return (
-    <section className="relative overflow-hidden bg-[var(--marca)] text-[var(--bg)] rounded-2xl px-7 py-9 sm:px-10 sm:py-11">
+    <section className="relative overflow-hidden bg-[var(--marca)] text-[var(--sobre-marca)] border border-[var(--marca-borda)] rounded-2xl px-7 py-9 sm:px-10 sm:py-11">
       {/* Brilho radial roxo, como na arte da marca. Roxo aqui só funciona como
           chão: sobre este preto ele dá 3,01:1, insuficiente para texto. */}
       <div
@@ -85,7 +88,7 @@ export function SecaoTelegram() {
           <br />O grupo também.
         </h2>
 
-        <p className="text-sm text-[color:color-mix(in_srgb,var(--bg)_70%,transparent)] leading-relaxed mb-7 max-w-xl">
+        <p className="text-sm text-[color:color-mix(in_srgb,var(--sobre-marca)_70%,transparent)] leading-relaxed mb-7 max-w-xl">
           Tudo que você vê neste site sai das mesmas entradas que são enviadas no canal.
           Entre, acompanhe por alguns dias e confira os resultados na planilha antes de
           decidir qualquer coisa.
@@ -95,7 +98,7 @@ export function SecaoTelegram() {
           {BENEFICIOS.map((b) => (
             <li
               key={b}
-              className="flex items-start gap-2.5 text-sm text-[color:color-mix(in_srgb,var(--bg)_85%,transparent)]"
+              className="flex items-start gap-2.5 text-sm text-[color:color-mix(in_srgb,var(--sobre-marca)_85%,transparent)]"
             >
               <span
                 className="w-1.5 h-1.5 rounded-full bg-[var(--green)] mt-2 shrink-0"
@@ -111,7 +114,7 @@ export function SecaoTelegram() {
             href={TELEGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-7 py-3 bg-[var(--bg)] text-[var(--text)] text-sm font-bold rounded-full hover:opacity-90 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white transition-all"
+            className="inline-flex items-center gap-2 px-7 py-3 bg-[var(--sobre-marca)] text-[var(--marca)] text-sm font-bold rounded-full hover:opacity-90 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white transition-all"
           >
             <IconeTelegram className="w-4 h-4" />
             <span>Entrar no grupo grátis</span>
@@ -122,7 +125,7 @@ export function SecaoTelegram() {
             href={PLANILHA_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 border border-white/25 text-[var(--bg)] text-sm font-semibold rounded-full hover:bg-white/10 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 border border-white/25 text-[var(--sobre-marca)] text-sm font-semibold rounded-full hover:bg-white/10 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white transition-all"
           >
             <Table2 className="w-4 h-4" />
             <span>Conferir a planilha</span>
@@ -130,7 +133,7 @@ export function SecaoTelegram() {
           </a>
         </div>
 
-        <p className="text-[11px] text-[color:color-mix(in_srgb,var(--bg)_60%,transparent)] mt-4">
+        <p className="text-[11px] text-[color:color-mix(in_srgb,var(--sobre-marca)_60%,transparent)] mt-4">
           @vemproGeogeTips · planilha aberta em modo somente leitura · 18+
         </p>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useReducedMotion } from "framer-motion";
+import { useSemMovimento } from "@/hooks/useSemMovimento";
 
 /**
  * Fio de progresso logo abaixo do topo, enquanto há leitura da planilha em
@@ -21,7 +21,7 @@ import { useReducedMotion } from "framer-motion";
  * começar antes de a anterior terminar de sumir.
  */
 export function BarraDeProgresso({ ativo }: { ativo: boolean }) {
-  const semMovimento = useReducedMotion();
+  const semMovimento = useSemMovimento();
   const [montado, setMontado] = useState(false);
 
   useEffect(() => {

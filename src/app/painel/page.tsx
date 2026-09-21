@@ -560,7 +560,7 @@ export default function PainelPage() {
           aria-label="Indicadores do período"
           className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 animate-entrada"
         >
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
+          <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
                 {periodoAtivo ? "Lucro no Período" : "Lucro Acumulado"}
@@ -597,7 +597,7 @@ export default function PainelPage() {
                 }}
               />
             </div>
-            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
               {periodoAtivo
                 ? `Resultado ${periodo}`
                 : activeTab === ABA_TODOS
@@ -606,7 +606,7 @@ export default function PainelPage() {
             </div>
           </div>
 
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
+          <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">ROI</span>
               <div className="hidden sm:flex w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] items-center justify-center">
@@ -628,12 +628,12 @@ export default function PainelPage() {
                 suffix="%"
               />
             </div>
-            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
               Lucro sobre o total apostado
             </div>
           </div>
 
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
+          <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
                 Total de Apostas
@@ -650,13 +650,13 @@ export default function PainelPage() {
             >
               <NumeroAnimado value={totalBets} locales="pt-BR" />
             </div>
-            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
               {formatarInteiro(greens)} Green · {formatarInteiro(reds)} Red
               {voids > 0 && ` · ${formatarInteiro(voids)} Void`}
             </div>
           </div>
 
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
+          <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
                 Taxa de Acerto
@@ -668,12 +668,12 @@ export default function PainelPage() {
             <div className="font-serif text-2xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
               <NumeroAnimado value={taxaAcerto} locales="pt-BR" suffix="%" />
             </div>
-            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+            <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
               Das apostas finalizadas
             </div>
           </div>
 
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0 col-span-2 lg:col-span-1">
+          <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0 col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
                 Apostas Pendentes
@@ -697,7 +697,7 @@ export default function PainelPage() {
             </div>
             {/* Zero pendência é a situação boa, não um alerta — âmbar só quando há. */}
             <div
-              className={`text-xs font-medium pt-1 border-t border-black/[0.04] ${
+              className={`text-xs font-medium pt-1 border-t border-tinta/[0.04] ${
                 pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text-2)]"
               }`}
             >
@@ -714,7 +714,7 @@ export default function PainelPage() {
         {/* Real Chart Box */}
         <section
           aria-labelledby="titulo-evolucao"
-          className="lg:col-span-8 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden"
+          className="lg:col-span-8 bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
             <div>
@@ -787,7 +787,7 @@ export default function PainelPage() {
                 cascata — os botões continuariam na tela, que foi exatamente o
                 que aconteceu na primeira tentativa. */}
             {!periodoAtivo && (
-              <div className="flex items-center gap-1 bg-[var(--bg)] p-1 rounded-full border border-black/[0.06] shrink-0">
+              <div className="flex items-center gap-1 bg-[var(--bg)] p-1 rounded-full border border-tinta/[0.06] shrink-0">
                 {availablePeriods.map((p) => (
                   <button
                     key={p}
@@ -799,7 +799,7 @@ export default function PainelPage() {
                     }}
                     className={`px-3 py-1 min-h-[24px] text-xs font-semibold rounded-full transition-all ${
                       period === p
-                        ? "bg-[var(--accent)] text-white shadow-sm font-bold"
+                        ? "bg-[var(--accent)] text-[var(--sobre-cor)] shadow-sm font-bold"
                         : "text-[var(--text-2)] hover:text-[var(--accent)]"
                     }`}
                   >
@@ -882,7 +882,7 @@ export default function PainelPage() {
                   y1={chartData.padTop}
                   x2={chartData.width - chartData.padRight}
                   y2={chartData.padTop}
-                  stroke="rgba(0,0,0,0.05)"
+                  stroke="rgb(var(--tinta-rgb) / 0.05)"
                   strokeDasharray="4 4"
                 />
                 <text
@@ -905,7 +905,7 @@ export default function PainelPage() {
                         y1={chartData.zeroY}
                         x2={chartData.width - chartData.padRight}
                         y2={chartData.zeroY}
-                        stroke="rgba(0,0,0,0.12)"
+                        stroke="rgb(var(--tinta-rgb) / 0.12)"
                         strokeWidth="1"
                       />
                       <text
@@ -925,7 +925,7 @@ export default function PainelPage() {
                   y1={chartData.height - chartData.padBottom}
                   x2={chartData.width - chartData.padRight}
                   y2={chartData.height - chartData.padBottom}
-                  stroke="rgba(0,0,0,0.05)"
+                  stroke="rgb(var(--tinta-rgb) / 0.05)"
                 />
 
                 {/* Gradient Area */}
@@ -1059,7 +1059,7 @@ export default function PainelPage() {
         {/* Breakdown by Sport */}
         <section
           aria-labelledby="titulo-esportes"
-          className="lg:col-span-4 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4"
+          className="lg:col-span-4 bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4"
         >
           <div>
             <div className="flex items-start justify-between gap-3 mb-1">
@@ -1087,7 +1087,7 @@ export default function PainelPage() {
                 : "Distribuição por modalidades cadastradas"}
             </p>
 
-            <div className="divide-y divide-black/[0.05] max-h-[220px] overflow-y-auto pr-1">
+            <div className="divide-y divide-tinta/[0.05] max-h-[220px] overflow-y-auto pr-1">
               {sports.length === 0 ? (
                 <div className="py-4">
                   {loading ? (
@@ -1140,7 +1140,7 @@ export default function PainelPage() {
           e o valor. */}
       <section
         aria-labelledby="titulo-casas"
-        className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
+        className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
       >
         <div>
           <div className="flex items-start justify-between gap-3 mb-1">
@@ -1176,7 +1176,7 @@ export default function PainelPage() {
             {casas.map((b) => (
               <div
                 key={b.casa}
-                className="py-2.5 flex items-center justify-between gap-3 border-b border-black/[0.05]"
+                className="py-2.5 flex items-center justify-between gap-3 border-b border-tinta/[0.05]"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <BookieBadge bookie={b.casa} />
@@ -1203,7 +1203,7 @@ export default function PainelPage() {
         {/* Recent Bets Stream */}
         <section
           aria-labelledby="titulo-ultimas"
-          className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
+          className="lg:col-span-7 bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -1247,7 +1247,7 @@ export default function PainelPage() {
                 return (
                   <div
                     key={bet.id}
-                    className="p-3 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs"
+                    className="p-3 bg-[var(--bg-soft)] rounded-xl border border-tinta/[0.04] flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs"
                   >
                     {/* Duas linhas, e a tip com a segunda inteira.
                         Antes tudo dividia uma linha só: o selo de resultado e o
@@ -1318,7 +1318,7 @@ export default function PainelPage() {
         {/* Top Adms Box */}
         <section
           aria-labelledby="titulo-ranking"
-          className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
+          className="lg:col-span-5 bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm space-y-4"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -1357,7 +1357,7 @@ export default function PainelPage() {
               tipsters.slice(0, 4).map((t, idx) => (
                 <div
                   key={t.nome}
-                  className="p-3.5 bg-[var(--bg-soft)] rounded-xl border border-black/[0.04] flex items-center justify-between gap-3"
+                  className="p-3.5 bg-[var(--bg-soft)] rounded-xl border border-tinta/[0.04] flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-xs font-bold text-[var(--text-3)] w-4">

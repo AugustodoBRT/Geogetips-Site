@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useRef } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import { useSemMovimento } from "@/hooks/useSemMovimento";
 import { SAIDA_SUAVE } from "@/lib/movimento";
 
 interface TextoQueCaiProps {
@@ -27,7 +28,7 @@ export function TextoQueCai({
   intervalo = 0.085,
   como = "span",
 }: TextoQueCaiProps) {
-  const semMovimento = useReducedMotion();
+  const semMovimento = useSemMovimento();
   const palavras = useMemo(() => texto.split(" "), [texto]);
   const ref = useRef<HTMLElement>(null);
   // Reanima toda vez que o título entra na tela, descendo ou subindo
@@ -103,7 +104,7 @@ export function Revelar({
   atraso = 0,
   distancia = 28,
 }: RevelarProps) {
-  const semMovimento = useReducedMotion();
+  const semMovimento = useSemMovimento();
 
   if (semMovimento) return <div className={className}>{children}</div>;
 
@@ -137,7 +138,7 @@ export function EntradaSequencial({
   base?: number;
   passo?: number;
 }) {
-  const semMovimento = useReducedMotion();
+  const semMovimento = useSemMovimento();
 
   if (semMovimento) return <div className={className}>{children}</div>;
 

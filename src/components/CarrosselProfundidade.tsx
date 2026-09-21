@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import {
   motion,
-  useReducedMotion,
   useScroll,
   useTransform,
   useMotionTemplate,
@@ -119,7 +118,7 @@ function Card({ item, indice, total, progresso }: CardProps) {
   return (
     <motion.article
       style={{ scale: escala, opacity: opacidade, filter: desfoque, y }}
-      className="absolute inset-x-0 top-0 mx-auto max-w-2xl bg-white border border-black/[0.07] rounded-2xl p-7 sm:p-9 shadow-subtle"
+      className="absolute inset-x-0 top-0 mx-auto max-w-2xl bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-7 sm:p-9 shadow-subtle"
     >
       <div
         className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${item.corIcone}`}
@@ -132,7 +131,7 @@ function Card({ item, indice, total, progresso }: CardProps) {
       <p className="text-[15px] sm:text-base text-[var(--text-2)] leading-relaxed">
         {item.texto}
       </p>
-      <div className="mt-6 pt-4 border-t border-black/[0.06] font-mono text-[11px] text-[var(--text-3)]">
+      <div className="mt-6 pt-4 border-t border-tinta/[0.06] font-mono text-[11px] text-[var(--text-3)]">
         {String(indice + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
       </div>
     </motion.article>
@@ -171,7 +170,6 @@ export function CarrosselProfundidade({
   cabecalho?: React.ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const semMovimento = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -189,7 +187,7 @@ export function CarrosselProfundidade({
         {itens.map((item) => (
           <article
             key={item.titulo}
-            className="bg-white border border-black/[0.07] rounded-2xl p-7 shadow-sm"
+            className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-7 shadow-sm"
           >
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center mb-5 ${item.corIcone}`}
@@ -208,8 +206,6 @@ export function CarrosselProfundidade({
     </div>
   );
 
-  if (semMovimento) return grade;
-
   // No celular também vai a grade. Cada card pede 85% da altura da tela em
   // rolagem, e no celular isso dava ~2.800 px — umas quatro telas — para
   // cinco cartões de duas linhas. A grade mostra o mesmo com a rolagem nativa
@@ -222,13 +218,18 @@ export function CarrosselProfundidade({
   // montado de novo embaixo de quem estivesse rolando. A versão escondida
   // fica fora da árvore de acessibilidade, então leitor de tela não ouve
   // nada em dobro.
+  //
+  // "Reduzir movimento" também decide no CSS (`motion-reduce:`), pelo mesmo
+  // motivo: decidido no render, o navegador desenhava a grade onde o servidor
+  // tinha mandado o carrossel, e a hidratação quebrava. O `!` é para ganhar do
+  // `md:`, que o Tailwind escreve depois na folha.
   return (
     <>
-      <div className="md:hidden">{grade}</div>
+      <div className="md:hidden motion-reduce:!block">{grade}</div>
       <div
         ref={ref}
         style={{ height: `${itens.length * ALTURA_POR_CARD_VH}vh` }}
-        className="relative hidden md:block"
+        className="relative hidden md:block motion-reduce:!hidden"
       >
         <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-hidden">
           <div className="max-w-5xl mx-auto px-6 h-full flex flex-col justify-center gap-8 sm:gap-10">

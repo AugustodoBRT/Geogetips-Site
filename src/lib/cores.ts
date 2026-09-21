@@ -9,8 +9,9 @@
  *   - o `themeColor` do metadata vira uma meta tag, e o navegador espera um
  *     valor literal ali.
  *
- * Os valores precisam bater com o bloco `:root` do globals.css. Rode
- * `npm run checar:cores` depois de mexer em qualquer um dos dois.
+ * Os valores precisam bater com o globals.css — `CORES` com o bloco `:root`, e
+ * `CORES_ESCURO` com o do tema escuro. Rode `npm run checar:cores` depois de
+ * mexer em qualquer um dos dois.
  */
 export const CORES = {
   bg: "#F6F4F8",
@@ -22,4 +23,12 @@ export const CORES = {
   green: "#0E7A50",
   red: "#C41E3A",
   amber: "#8A6408",
+} as const;
+
+/**
+ * Só o que precisa de literal no escuro: a cor da barra do navegador. Ícone e
+ * imagem de compartilhamento são arquivos gerados uma vez, e ficam claros.
+ */
+export const CORES_ESCURO = {
+  bg: "#0E0C14",
 } as const;

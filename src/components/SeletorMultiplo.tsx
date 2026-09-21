@@ -102,8 +102,8 @@ export function SeletorMultiplo({
         aria-controls={idLista}
         className={`flex items-center gap-1.5 border rounded-full px-3 py-1 text-xs font-semibold outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer transition-colors ${
           n > 0
-            ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-            : "bg-[var(--bg)] text-[var(--text-2)] border-black/[0.06] hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)]"
+            ? "bg-[var(--accent)] text-[var(--sobre-cor)] border-[var(--accent)]"
+            : "bg-[var(--bg)] text-[var(--text-2)] border-tinta/[0.06] hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)]"
         }`}
       >
         <span className="max-w-[13rem] truncate">{rotulo}</span>
@@ -119,7 +119,7 @@ export function SeletorMultiplo({
           onClick={() => onChange([])}
           aria-label={`Limpar filtro de ${substantivo}`}
           title={`Limpar filtro de ${substantivo}`}
-          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-white border border-black/[0.12] text-[var(--text-2)] hover:text-[var(--red)] flex items-center justify-center shadow-sm"
+          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[var(--bg-card)] border border-tinta/[0.12] text-[var(--text-2)] hover:text-[var(--red)] flex items-center justify-center shadow-sm"
         >
           <X className="w-2.5 h-2.5" aria-hidden="true" />
         </button>
@@ -139,7 +139,7 @@ export function SeletorMultiplo({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -2, pointerEvents: "none" }}
             transition={{ duration: DURACAO.toque, ease: SAIDA_SUAVE }}
-            className={`absolute z-30 mt-2 w-60 max-w-[calc(100vw-1rem)] max-h-72 overflow-y-auto bg-white border border-black/[0.1] rounded-xl shadow-lg p-1 ${
+            className={`absolute z-30 mt-2 w-60 max-w-[calc(100vw-1rem)] max-h-72 overflow-y-auto bg-[var(--bg-elevado)] border border-tinta/[0.1] rounded-xl shadow-lg p-1 ${
               paraDireita ? "right-0" : "left-0"
             }`}
           >
@@ -166,8 +166,8 @@ export function SeletorMultiplo({
                       aria-hidden="true"
                       className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
                         marcada
-                          ? "bg-[var(--accent)] border-[var(--accent)] text-white"
-                          : "border-black/[0.18]"
+                          ? "bg-[var(--accent)] border-[var(--accent)] text-[var(--sobre-cor)]"
+                          : "border-tinta/[0.18]"
                       }`}
                     >
                       {marcada && <Check className="w-2.5 h-2.5" strokeWidth={3.5} />}

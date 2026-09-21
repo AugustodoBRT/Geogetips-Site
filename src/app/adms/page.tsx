@@ -87,7 +87,7 @@ export default function AdmsPage() {
       {mostrarEsqueleto ? (
         <SkeletonCorpoAdms />
       ) : erro ? null : adms.length === 0 ? (
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center text-[var(--text-3)]">
+        <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-16 text-center text-[var(--text-3)]">
           <p className="text-sm font-medium">
             Nenhum adm com dados {trecho.prefixo} {trecho.nome}.
           </p>
@@ -124,7 +124,7 @@ export default function AdmsPage() {
                   type="button"
                   onClick={() => setAberto(adm.nome)}
                   aria-label={`Ver o desempenho de ${adm.nome} por casa e por esporte`}
-                  className="w-full h-full text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-5 flex flex-col justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
+                  className="w-full h-full text-left bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm space-y-5 flex flex-col justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
@@ -163,7 +163,7 @@ export default function AdmsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 bg-[var(--bg-soft)] p-3 rounded-xl border border-black/[0.04] text-center">
+                  <div className="grid grid-cols-3 gap-2 bg-[var(--bg-soft)] p-3 rounded-xl border border-tinta/[0.04] text-center">
                     <div>
                       <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)] font-semibold">
                         Acerto
@@ -262,7 +262,7 @@ export default function AdmsPage() {
           onFechar={() => setAberto(null)}
           largura="max-w-2xl"
         >
-          <div className="pb-3 border-b border-black/[0.06]">
+          <div className="pb-3 border-b border-tinta/[0.06]">
             <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
               {detalhe.nome}
             </h2>
@@ -326,7 +326,7 @@ function Recorte({
       {itens.length === 0 ? (
         <p className="text-xs text-[var(--text-3)]">Nada nesta aba.</p>
       ) : (
-        <div className="divide-y divide-black/[0.05]">
+        <div className="divide-y divide-tinta/[0.05]">
           {itens.map((i) => (
             <div key={i.nome} className="py-2 flex items-center justify-between gap-3">
               <div className="min-w-0 space-y-0.5">

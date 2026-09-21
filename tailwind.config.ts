@@ -1,6 +1,9 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // O tema sai do atributo que o script do <head> põe no <html>, e não da
+  // mídia: a pessoa pode escolher o contrário do aparelho.
+  darkMode: ["selector", '[data-tema="escuro"]'],
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -17,7 +20,14 @@ const config: Config = {
       // src/app/globals.css como CSS variables, e o código as consome
       // via `-[var(--token)]`. Uma segunda lista aqui já existiu, ficou
       // desatualizada e virou armadilha — quem escrevesse `bg-accent`
-      // recebia a cor antiga. Para trocar a paleta, edite só o :root.
+      // recebia a cor antiga. Para trocar a paleta, edite só o globals.css.
+      //
+      // A exceção é `tinta`, que não guarda valor nenhum: aponta para os
+      // canais de --tinta-rgb para o Tailwind poder aplicar opacidade
+      // (`border-tinta/[0.07]`), o que ele não faz com `var()` puro.
+      colors: {
+        tinta: "rgb(var(--tinta-rgb) / <alpha-value>)",
+      },
       fontFamily: {
         serif: ["var(--font-serif)", "DM Serif Display", "Georgia", "serif"],
         sans: ["var(--font-sans)", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],

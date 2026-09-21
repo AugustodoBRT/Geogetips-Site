@@ -59,7 +59,7 @@ export function SeletorUnidade() {
   return (
     <section
       aria-labelledby="titulo-unidade"
-      className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm"
+      className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-5 shadow-sm"
     >
       <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
         <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -95,8 +95,8 @@ export function SeletorUnidade() {
                 aria-pressed={unidade === v}
                 className={`px-2.5 py-1 min-h-[24px] min-w-[24px] text-[11px] font-bold rounded-full border transition-all ${
                   unidade === v
-                    ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                    : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                    ? "bg-[var(--accent)] text-[var(--sobre-cor)] border-[var(--accent)]"
+                    : "bg-[var(--bg-card)] text-[var(--text-2)] border-tinta/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
                 }`}
               >
                 {v}
@@ -138,7 +138,7 @@ export function SeletorUnidade() {
                     aplicar((e.target as HTMLInputElement).value);
                   }
                 }}
-                className="w-28 bg-[var(--bg)] border border-black/[0.1] rounded-full pl-9 pr-3 py-1.5 text-xs font-bold font-mono text-[var(--text)] outline-none focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+                className="w-28 bg-[var(--bg)] border border-tinta/[0.1] rounded-full pl-9 pr-3 py-1.5 text-xs font-bold font-mono text-[var(--text)] outline-none focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
               />
             </div>
 
@@ -171,7 +171,7 @@ export function SeletorUnidade() {
       )}
 
       {personalizada && (
-        <div className="mt-3 pt-3 border-t border-black/[0.05] flex items-start gap-2.5">
+        <div className="mt-3 pt-3 border-t border-tinta/[0.05] flex items-start gap-2.5">
           <AlertTriangle
             className="w-3.5 h-3.5 text-[var(--amber)] mt-0.5 shrink-0"
             aria-hidden="true"
