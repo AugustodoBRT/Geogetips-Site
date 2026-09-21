@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ResumoMes } from "@/app/api/resumo/route";
+import { useReleituraAutomatica } from "@/hooks/useReleituraAutomatica";
 
 export interface UseResumoMensal {
   meses: ResumoMes[];
@@ -27,14 +28,27 @@ export function useResumoMensal(): UseResumoMensal {
 
   const recarregar = useCallback(() => setNonce((n) => n + 1), []);
 
+  // Mesma releitura de fundo do useBets: silenciosa, e sem apagar a tela se
+  // falhar.
+  const silenciosaRef = useRef(false);
+  const releituraSilenciosa = useCallback(() => {
+    silenciosaRef.current = true;
+    setNonce((n) => n + 1);
+  }, []);
+  useReleituraAutomatica(releituraSilenciosa);
+
   useEffect(() => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
+    const silenciosa = silenciosaRef.current;
+    silenciosaRef.current = false;
 
     async function carregar() {
-      setLoading(true);
-      setErro(null);
+      if (!silenciosa) {
+        setLoading(true);
+        setErro(null);
+      }
       try {
         const res = await fetch("/api/resumo", {
           signal: controller.signal,
@@ -46,6 +60,7 @@ export function useResumoMensal(): UseResumoMensal {
         if (controller.signal.aborted) return;
 
         if (!res.ok || !json.success) {
+          if (silenciosa) return;
           setErro(json?.error || `A planilha não respondeu (HTTP ${res.status}).`);
           setMeses([]);
           setConsolidado(null);
@@ -57,6 +72,7 @@ export function useResumoMensal(): UseResumoMensal {
         setConsolidado(json.consolidado ?? null);
       } catch (err) {
         if ((err as Error)?.name === "AbortError") return;
+        if (silenciosa) return;
         setErro("Não foi possível falar com o servidor. Verifique sua conexão.");
         setMeses([]);
         setConsolidado(null);

@@ -11,11 +11,13 @@ import { Dialogo } from "@/components/Dialogo";
 import { BookieBadge } from "@/components/BookieBadge";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
+import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { formatarInteiro, formatarReaisComSinal, formatarUnidades } from "@/lib/format";
 import { useUnidade } from "@/hooks/useUnidade";
 import { trechoDaAba } from "@/lib/constants";
+import { abaDoEndereco, abaParaEndereco } from "@/lib/endereco";
 import type { RecorteDoAdm } from "@/lib/types";
 
 export default function AdmsPage() {
@@ -30,6 +32,13 @@ export default function AdmsPage() {
     isMock,
     recarregar,
   } = useBets({ onlyStats: true });
+
+  // A aba no endereço: o link de Abril26 abre Abril26, e o Painel chega aqui
+  // levando a aba que estava olhando.
+  useEstadoNaUrl({ aba: abaParaEndereco(activeTab) }, (lidos) => {
+    const aba = abaDoEndereco(lidos.aba);
+    if (aba && aba !== activeTab) setActiveTab(aba);
+  });
 
   const adms = stats?.tipsters ?? [];
   const { converter } = useUnidade();

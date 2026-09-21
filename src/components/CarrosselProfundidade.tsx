@@ -158,80 +158,95 @@ export function CarrosselProfundidade({
 
   // Sem movimento, o carrossel vira uma grade normal: mesmo conteúdo, sem
   // depender de rolagem para revelar informação.
-  if (semMovimento) {
-    return (
-      <div className="max-w-5xl mx-auto px-6">
-        {/* Na versão animada o gap da área fixa separa os dois; aqui não havia
-            nada, e o título encostava no primeiro card. */}
-        <div className="mb-8">{cabecalho}</div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {itens.map((item) => (
-            <article
-              key={item.titulo}
-              className="bg-white border border-black/[0.07] rounded-2xl p-7 shadow-sm"
+  const grade = (
+    <div className="max-w-5xl mx-auto px-6">
+      {/* Na versão animada o gap da área fixa separa os dois; aqui não havia
+          nada, e o título encostava no primeiro card. */}
+      <div className="mb-8">{cabecalho}</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {itens.map((item) => (
+          <article
+            key={item.titulo}
+            className="bg-white border border-black/[0.07] rounded-2xl p-7 shadow-sm"
+          >
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center mb-5 ${item.corIcone}`}
             >
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center mb-5 ${item.corIcone}`}
-              >
-                {item.icone}
-              </div>
-              <h3 className="text-base font-bold text-[var(--text)] mb-1.5 tracking-tight">
-                {item.titulo}
-              </h3>
-              <p className="text-[13.5px] text-[var(--text-2)] leading-relaxed">
-                {item.texto}
-              </p>
-            </article>
-          ))}
-        </div>
+              {item.icone}
+            </div>
+            <h3 className="text-base font-bold text-[var(--text)] mb-1.5 tracking-tight">
+              {item.titulo}
+            </h3>
+            <p className="text-[13.5px] text-[var(--text-2)] leading-relaxed">
+              {item.texto}
+            </p>
+          </article>
+        ))}
       </div>
-    );
-  }
+    </div>
+  );
 
+  if (semMovimento) return grade;
+
+  // No celular também vai a grade. Cada card pede 85% da altura da tela em
+  // rolagem, e no celular isso dava ~2.800 px — umas quatro telas — para
+  // cinco cartões de duas linhas. A grade mostra o mesmo com a rolagem nativa
+  // e um terço da altura; o efeito de profundidade fica para a tela larga.
+  //
+  // A escolha é do CSS, não de um `matchMedia` depois de carregar: assim o
+  // servidor já manda as duas e a largura decide desde a primeira pintura.
+  // Decidindo no navegador, o celular abria com o carrossel e trocava pela
+  // grade logo em seguida — a página pulava, e o título era desmontado e
+  // montado de novo embaixo de quem estivesse rolando. A versão escondida
+  // fica fora da árvore de acessibilidade, então leitor de tela não ouve
+  // nada em dobro.
   return (
-    <div
-      ref={ref}
-      style={{ height: `${itens.length * ALTURA_POR_CARD_VH}vh` }}
-      className="relative"
-    >
-      <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-hidden">
-        <div className="max-w-5xl mx-auto px-6 h-full flex flex-col justify-center gap-8 sm:gap-10">
-          {/* Cabeçalho dentro da área fixa: sem isso ele fica preso no topo do
+    <>
+      <div className="md:hidden">{grade}</div>
+      <div
+        ref={ref}
+        style={{ height: `${itens.length * ALTURA_POR_CARD_VH}vh` }}
+        className="relative hidden md:block"
+      >
+        <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-hidden">
+          <div className="max-w-5xl mx-auto px-6 h-full flex flex-col justify-center gap-8 sm:gap-10">
+            {/* Cabeçalho dentro da área fixa: sem isso ele fica preso no topo do
               documento enquanto os cards ficam centralizados na viewport, e
               abre um vão enorme entre um e outro. */}
-          {cabecalho}
+            {cabecalho}
 
-          {/* Altura fixa para todos: o card é posicionado em absoluto e sem
+            {/* Altura fixa para todos: o card é posicionado em absoluto e sem
               isso o bloco pularia conforme o texto de cada um. Calibrada para
               o card mais alto (~305px) sem sobrar vão. */}
-          <div className="relative flex-none h-[min(46vh,360px)]">
-            {/* Trilha de progresso lateral */}
-            <div
-              className="absolute -left-2 sm:-left-6 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10"
-              aria-hidden="true"
-            >
+            <div className="relative flex-none h-[min(46vh,360px)]">
+              {/* Trilha de progresso lateral */}
+              <div
+                className="absolute -left-2 sm:-left-6 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10"
+                aria-hidden="true"
+              >
+                {itens.map((item, i) => (
+                  <Marcador
+                    key={item.titulo}
+                    indice={i}
+                    total={itens.length}
+                    progresso={scrollYProgress}
+                  />
+                ))}
+              </div>
+
               {itens.map((item, i) => (
-                <Marcador
+                <Card
                   key={item.titulo}
+                  item={item}
                   indice={i}
                   total={itens.length}
                   progresso={scrollYProgress}
                 />
               ))}
             </div>
-
-            {itens.map((item, i) => (
-              <Card
-                key={item.titulo}
-                item={item}
-                indice={i}
-                total={itens.length}
-                progresso={scrollYProgress}
-              />
-            ))}
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

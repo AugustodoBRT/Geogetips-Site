@@ -18,7 +18,9 @@ import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useResumoMensal } from "@/hooks/useResumoMensal";
 import { useUnidade } from "@/hooks/useUnidade";
-import { abaCurta } from "@/lib/constants";
+import Link from "next/link";
+import { abaCurta, abaDoMesAtual } from "@/lib/constants";
+import { comAba } from "@/lib/endereco";
 import {
   formatarInteiro,
   formatarOdd,
@@ -41,6 +43,12 @@ export default function HistoricoPage() {
   );
 
   const mesesNegativos = meses.filter((m) => m.lucro < 0).length;
+
+  // O mês corrente ainda está correndo: tem pendentes, e o resultado dele vai
+  // mudar. Entra no consolidado — é dado real —, mas não pode aparecer ao lado
+  // dos meses fechados como se estivesse fechado.
+  const mesAtual = abaDoMesAtual();
+  const emAndamento = meses.find((m) => m.aba === mesAtual);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -131,6 +139,12 @@ export default function HistoricoPage() {
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
                   {formatarUnidades(consolidado.unidades)} em {meses.length}{" "}
                   {meses.length === 1 ? "mês" : "meses"}
+                  {emAndamento && (
+                    <span className="text-[var(--amber)]">
+                      {" "}
+                      · {abaCurta(emAndamento.aba)} em andamento
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -246,6 +260,7 @@ export default function HistoricoPage() {
                 {cronologico.map((m, i) => {
                   const positivo = m.lucro >= 0;
                   const altura = (Math.abs(m.lucro) / maiorAbs) * 100;
+                  const parcial = m.aba === mesAtual;
                   return (
                     <div
                       key={m.aba}
@@ -255,7 +270,7 @@ export default function HistoricoPage() {
                       <div className="h-[90px] w-full flex flex-col justify-end">
                         {positivo && (
                           <div
-                            className="w-full rounded-t-md bg-[var(--green)] origin-bottom animate-surgir-y"
+                            className={`w-full rounded-t-md bg-[var(--green)] origin-bottom animate-surgir-y ${parcial ? "opacity-55" : ""}`}
                             style={{
                               height: `${Math.max(altura, 2)}%`,
                               animationDelay: `${i * 50}ms`,
@@ -270,7 +285,7 @@ export default function HistoricoPage() {
                       <div className="h-[90px] w-full">
                         {!positivo && (
                           <div
-                            className="w-full rounded-b-md bg-[var(--red)] origin-top animate-surgir-y"
+                            className={`w-full rounded-b-md bg-[var(--red)] origin-top animate-surgir-y ${parcial ? "opacity-55" : ""}`}
                             style={{
                               height: `${Math.max(altura, 2)}%`,
                               animationDelay: `${i * 50}ms`,
@@ -290,6 +305,11 @@ export default function HistoricoPage() {
                         >
                           {formatarUnidades(m.unidades)}
                         </div>
+                        {parcial && (
+                          <div className="text-[9.5px] font-semibold text-[var(--amber)] whitespace-nowrap">
+                            parcial
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -343,7 +363,22 @@ export default function HistoricoPage() {
                         scope="row"
                         className="py-3 px-4 font-bold text-[var(--text)] whitespace-nowrap"
                       >
-                        {m.aba}
+                        {/* O mês escrito como no gráfico logo acima — antes era
+                            "set/26" lá e "Setembro26" aqui. E leva ao Painel
+                            daquele mês, que é a pergunta natural depois de ver
+                            a linha: o que aconteceu nele? */}
+                        <Link
+                          href={comAba("/painel", m.aba)}
+                          className="inline-flex items-center gap-1.5 py-[5px] -my-[5px] hover:text-[var(--accent)] hover:underline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded"
+                          title={`Abrir o Painel de ${abaCurta(m.aba)}`}
+                        >
+                          {abaCurta(m.aba)}
+                        </Link>
+                        {m.aba === mesAtual && (
+                          <span className="ml-2 px-1.5 py-0.5 rounded-full bg-[var(--amber-soft)] text-[var(--amber)] text-[10px] font-semibold align-middle">
+                            em andamento
+                          </span>
+                        )}
                       </th>
                       <td className="py-3 px-3 font-mono text-right text-[var(--text-2)]">
                         {formatarInteiro(m.apostas)}

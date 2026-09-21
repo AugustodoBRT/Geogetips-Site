@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { NumeroAnimado } from "@/components/NumeroAnimado";
 import {
@@ -19,6 +19,7 @@ import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonLinhas } from "@/components/Skeleton";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
+import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
@@ -30,6 +31,13 @@ import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
 import { agruparPorDia, diasAbertosDeSaida } from "@/lib/dias";
 import { normalizarTexto } from "@/lib/texto";
 import { trechoDaAba } from "@/lib/constants";
+import {
+  abaDoEndereco,
+  abaParaEndereco,
+  escolher,
+  lerData,
+  lerLista,
+} from "@/lib/endereco";
 import {
   formatarInteiro,
   formatarOdd,
@@ -120,9 +128,18 @@ export default function ApostasPage() {
     return () => clearTimeout(id);
   }, [search]);
 
+  // A aba que chegou pelo endereço, junto com o recorte. Ver o efeito abaixo.
+  const abaDoLink = useRef<string | null>(null);
+
   // Trocar de aba zera os recortes presos ao mês anterior: as datas não
   // existem na aba nova e as casas/esportes podem não existir também.
   useEffect(() => {
+    // Menos quando a aba veio do endereço: aí o recorte veio com ela, e zerar
+    // apagaria justamente o filtro que a pessoa abriu pelo link.
+    if (abaDoLink.current === activeTab) {
+      abaDoLink.current = null;
+      return;
+    }
     setDe("");
     setAte("");
     setSportsFilter([]);
@@ -131,6 +148,49 @@ export default function ApostasPage() {
     setAbertura("automatica");
     setEscolhas(new Map());
   }, [activeTab]);
+
+  // O recorte vai para o endereço, e volta dele ao abrir: "voltar" do navegador
+  // devolve a tela como estava, e o link compartilhado abre o mesmo recorte.
+  useEstadoNaUrl(
+    {
+      aba: abaParaEndereco(activeTab),
+      q: buscaAplicada,
+      resultado: statusFilter === "TODAS" ? "" : statusFilter.toLowerCase(),
+      esporte: sportsFilter.join(","),
+      casa: bookiesFilter.join(","),
+      adm: admsFilter.join(","),
+      de,
+      ate,
+      odd: oddRangeFilter === "TODAS" ? "" : oddRangeFilter.toLowerCase(),
+      vista: viewMode === "table" ? "tabela" : "",
+    },
+    (lidos) => {
+      const aba = abaDoEndereco(lidos.aba);
+      if (aba && aba !== activeTab) {
+        abaDoLink.current = aba;
+        setActiveTab(aba);
+      }
+      if (lidos.q) {
+        setSearch(lidos.q);
+        setBuscaAplicada(lidos.q);
+      }
+      const resultado = escolher(lidos.resultado?.toUpperCase(), [
+        "GREEN",
+        "RED",
+        "VOID",
+        "PENDENTE",
+      ] as const);
+      if (resultado) setStatusFilter(resultado);
+      setSportsFilter(lerLista(lidos.esporte));
+      setBookiesFilter(lerLista(lidos.casa));
+      setAdmsFilter(lerLista(lidos.adm));
+      setDe(lerData(lidos.de));
+      setAte(lerData(lidos.ate));
+      const odd = escolher(lidos.odd?.toUpperCase(), ["BAIXA", "MEDIA", "ALTA"] as const);
+      if (odd) setOddRangeFilter(odd);
+      if (lidos.vista === "tabela") setViewMode("table");
+    }
+  );
 
   // Listas de filtro em ordem alfabética, para o usuário achar o item
   const sports = useMemo(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { NumeroAnimado } from "@/components/NumeroAnimado";
 import { SportBadge } from "@/components/SportBadge";
@@ -10,6 +10,7 @@ import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonKpis, SkeletonLinhas } from "@/components/Skeleton";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
+import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
@@ -17,6 +18,13 @@ import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { FiltroPeriodo } from "@/components/FiltroPeriodo";
 import { paraISO, parseDateTimestamp, rotuloDoPeriodo, timestampDoISO } from "@/lib/date";
 import { ABA_TODOS, rotuloDaAba, trechoDaAba } from "@/lib/constants";
+import {
+  abaDoEndereco,
+  abaParaEndereco,
+  comAba,
+  escolher,
+  lerData,
+} from "@/lib/endereco";
 import {
   formatarInteiro,
   formatarOdd,
@@ -88,7 +96,16 @@ export default function PainelPage() {
     return () => clearInterval(id);
   }, []);
 
+  // A aba que chegou pelo endereço, com o intervalo e a janela junto.
+  const abaDoLink = useRef<string | null>(null);
+
   useEffect(() => {
+    // Trocar de aba volta intervalo e janela ao padrão — menos quando a aba veio
+    // do endereço, que trouxe os dois junto e seriam apagados aqui.
+    if (abaDoLink.current === activeTab) {
+      abaDoLink.current = null;
+      return;
+    }
     setDe("");
     setAte("");
     setHoveredPoint(null);
@@ -145,6 +162,44 @@ export default function PainelPage() {
   useEffect(() => {
     if (diasDaAba > 0 && !availablePeriods.includes(period)) setPeriod("Tudo");
   }, [availablePeriods, period, diasDaAba]);
+
+  // A janela que a aba escolhe sozinha — e que por isso não vai ao endereço.
+  // Não é sempre 30D: num mês de 21 dias a janela de 30 não existe, a tela cai
+  // em "Tudo" por conta própria, e tratar isso como escolha da pessoa sujava o
+  // endereço com "janela=Tudo" em quem só abriu o Painel.
+  const janelaPadrao =
+    activeTab === ABA_TODOS || !availablePeriods.includes("30D") ? "Tudo" : "30D";
+
+  // Aba, intervalo e janela no endereço: o Painel de Abril26 com a janela de
+  // 7 dias vira um link que abre exatamente isso. Só escreve com os dados na
+  // tela: antes deles a aba ainda não sabe quais janelas tem, e o endereço
+  // piscaria com um padrão errado.
+  useEstadoNaUrl(
+    {
+      aba: abaParaEndereco(activeTab),
+      de,
+      ate,
+      janela: period === janelaPadrao ? "" : period,
+    },
+    (lidos) => {
+      const aba = abaDoEndereco(lidos.aba);
+      if (aba && aba !== activeTab) {
+        abaDoLink.current = aba;
+        setActiveTab(aba);
+      }
+      setDe(lerData(lidos.de));
+      setAte(lerData(lidos.ate));
+      const janela = escolher(lidos.janela, [
+        "7D",
+        "30D",
+        "90D",
+        "120D",
+        "Tudo",
+      ] as const);
+      if (janela) setPeriod(janela);
+    },
+    !loading
+  );
 
   // Extremos da aba, para o calendário não abrir em dia sem aposta nenhuma.
   const limitesDeData = useMemo(() => {
@@ -498,17 +553,20 @@ export default function PainelPage() {
       {mostrarEsqueleto ? (
         <SkeletonKpis quantidade={5} grade="cinco" />
       ) : (
+        // Duas colunas já no celular: um por linha, os cinco números custavam
+        // quase uma tela inteira de rolagem antes do gráfico. O quinto ocupa a
+        // linha toda até o `lg`, onde a grade fecha em três e depois em cinco.
         <section
           aria-label="Indicadores do período"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 animate-entrada"
+          className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 animate-entrada"
         >
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
                 {periodoAtivo ? "Lucro no Período" : "Lucro Acumulado"}
               </span>
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                className={`hidden sm:flex w-8 h-8 rounded-lg items-center justify-center ${
                   totalLucro >= 0
                     ? "bg-[var(--green-soft)] text-[var(--green)]"
                     : "bg-[var(--red-soft)] text-[var(--red)]"
@@ -523,7 +581,8 @@ export default function PainelPage() {
             </div>
             <div
               className={`font-serif ${tamanhoDoValor(
-                formatarReaisComSinal(totalLucro)
+                formatarReaisComSinal(totalLucro),
+                true
               )} tracking-tight leading-none ${
                 totalLucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
               }`}
@@ -547,16 +606,17 @@ export default function PainelPage() {
             </div>
           </div>
 
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">ROI</span>
-              <div className="w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center">
+              <div className="hidden sm:flex w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] items-center justify-center">
                 <Percent className="w-4 h-4" />
               </div>
             </div>
             <div
               className={`font-serif ${tamanhoDoValor(
-                `${roi.toFixed(2)}%`
+                `${roi.toFixed(2)}%`,
+                true
               )} tracking-tight leading-none ${
                 roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
               }`}
@@ -573,18 +633,19 @@ export default function PainelPage() {
             </div>
           </div>
 
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
                 Total de Apostas
               </span>
-              <div className="w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] flex items-center justify-center">
+              <div className="hidden sm:flex w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] items-center justify-center">
                 <Layers className="w-4 h-4" />
               </div>
             </div>
             <div
               className={`font-serif ${tamanhoDoValor(
-                String(totalBets)
+                String(totalBets),
+                true
               )} text-[var(--text)] tracking-tight leading-none`}
             >
               <NumeroAnimado value={totalBets} locales="pt-BR" />
@@ -595,16 +656,16 @@ export default function PainelPage() {
             </div>
           </div>
 
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
                 Taxa de Acerto
               </span>
-              <div className="w-8 h-8 rounded-lg bg-[var(--green-soft)] text-[var(--green)] flex items-center justify-center">
+              <div className="hidden sm:flex w-8 h-8 rounded-lg bg-[var(--green-soft)] text-[var(--green)] items-center justify-center">
                 <Activity className="w-4 h-4" />
               </div>
             </div>
-            <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
+            <div className="font-serif text-2xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
               <NumeroAnimado value={taxaAcerto} locales="pt-BR" suffix="%" />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
@@ -612,13 +673,13 @@ export default function PainelPage() {
             </div>
           </div>
 
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm transition-all space-y-3">
+          <div className="bg-white border border-black/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0 col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
                 Apostas Pendentes
               </span>
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                className={`hidden sm:flex w-8 h-8 rounded-lg items-center justify-center ${
                   pendentes > 0
                     ? "bg-[var(--amber-soft)] text-[var(--amber)]"
                     : "bg-[var(--text-soft)] text-[var(--text-3)]"
@@ -628,7 +689,7 @@ export default function PainelPage() {
               </div>
             </div>
             <div
-              className={`font-serif text-3xl sm:text-4xl tracking-tight leading-none ${
+              className={`font-serif text-2xl sm:text-4xl tracking-tight leading-none ${
                 pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text)]"
               }`}
             >
@@ -1009,7 +1070,7 @@ export default function PainelPage() {
                 Top Esportes
               </h2>
               <Link
-                href="/estatisticas"
+                href={comAba("/estatisticas", activeTab)}
                 className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0 py-[5px] -my-[5px]"
               >
                 <span>Detalhes</span>
@@ -1090,7 +1151,7 @@ export default function PainelPage() {
               Top Casas
             </h2>
             <Link
-              href="/estatisticas"
+              href={comAba("/estatisticas", activeTab)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0 py-[5px] -my-[5px]"
             >
               <span>Ver todas</span>
@@ -1160,7 +1221,7 @@ export default function PainelPage() {
             </div>
 
             <Link
-              href="/apostas"
+              href={comAba("/apostas", activeTab)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
               <span>Ver todas</span>
@@ -1275,7 +1336,7 @@ export default function PainelPage() {
             </div>
 
             <Link
-              href="/adms"
+              href={comAba("/adms", activeTab)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
               <span>Detalhes</span>

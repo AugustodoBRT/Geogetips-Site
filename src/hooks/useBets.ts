@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { BetItem } from "@/lib/types";
 import type { BetStats } from "@/lib/stats";
 import { abaDoMesAtual, abasRecentes } from "@/lib/constants";
+import { useReleituraAutomatica } from "@/hooks/useReleituraAutomatica";
 
 interface UseBetsOptions {
   /** Não baixa o array de apostas — para telas que só mostram agregados. */
@@ -76,7 +77,21 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
 
   const recarregar = useCallback(() => setNonce((n) => n + 1), []);
 
+  // Releitura de fundo: sem barra de progresso e sem apagar a tela se falhar.
+  // A próxima leitura consome a marca e volta ao normal.
+  const silenciosaRef = useRef(false);
+  const releituraSilenciosa = useCallback(() => {
+    silenciosaRef.current = true;
+    setNonce((n) => n + 1);
+  }, []);
+  useReleituraAutomatica(releituraSilenciosa);
+
   useEffect(() => {
+    // Consumida logo na entrada: se o efeito saísse cedo sem lê-la, a marca
+    // ficaria de pé e a próxima leitura pedida à mão sairia sem barra.
+    const silenciosa = silenciosaRef.current;
+    silenciosaRef.current = false;
+
     if (abaJaCarregada.current === activeTab) {
       abaJaCarregada.current = null;
       return;
@@ -94,8 +109,10 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
     abortRef.current = controller;
 
     async function carregar() {
-      setLoading(true);
-      setErro(null);
+      if (!silenciosa) {
+        setLoading(true);
+        setErro(null);
+      }
 
       try {
         const params = new URLSearchParams({ tab: activeTab });
@@ -112,6 +129,9 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
         if (controller.signal.aborted) return;
 
         if (!res.ok || !json.success) {
+          // Uma releitura de fundo que falha não derruba o que já está na tela:
+          // os números de um minuto atrás continuam certos até a próxima.
+          if (silenciosa) return;
           setErro(json?.error || `A planilha não respondeu (HTTP ${res.status}).`);
           setBets([]);
           setStats(null);
@@ -136,6 +156,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
         }
       } catch (err) {
         if ((err as Error)?.name === "AbortError") return;
+        if (silenciosa) return;
         setErro("Não foi possível falar com o servidor. Verifique sua conexão.");
         setBets([]);
         setStats(null);
