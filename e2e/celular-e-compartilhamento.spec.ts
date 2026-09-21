@@ -49,7 +49,8 @@ test("no celular as funcionalidades da home são uma lista, sem carrossel preso"
   await expect(titulo).toBeVisible();
 
   // O carrossel de profundidade prende a área na tela com `sticky`; a lista não.
-  await expect(page.locator("main .sticky")).toHaveCount(0);
+  // Ele segue no HTML, escondido pelo CSS — o que conta é não aparecer.
+  await expect(page.locator("main .sticky:visible")).toHaveCount(0);
   // Os cinco cartões estão lá, todos legíveis.
   for (const nome of [
     "Registro automático",
@@ -60,6 +61,30 @@ test("no celular as funcionalidades da home são uma lista, sem carrossel preso"
   ]) {
     await expect(page.getByRole("heading", { name: nome })).toBeVisible();
   }
+});
+
+test("a home já chega no celular com a lista, antes de qualquer script rodar", async ({
+  browser,
+}) => {
+  // Decidido no navegador, o celular abria com o carrossel e trocava pela
+  // lista logo depois: a página pulava. Sem JavaScript sobra só o HTML do
+  // servidor — se a lista aparece aqui, não há troca nenhuma para acontecer.
+  const contexto = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: CELULAR,
+  });
+  const page = await contexto.newPage();
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "Registro automático" })).toBeVisible();
+  await expect(page.locator("main .sticky:visible")).toHaveCount(0);
+  await contexto.close();
+});
+
+test("na tela larga o carrossel de profundidade continua", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  await expect(page.locator("main .sticky:visible")).toHaveCount(1);
 });
 
 test("a imagem de compartilhamento sai", async ({ request }) => {
