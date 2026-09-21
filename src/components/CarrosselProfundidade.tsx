@@ -37,6 +37,31 @@ function faixaSegura(pontos: number[]): number[] {
   return saida;
 }
 
+/**
+ * Faixa segura que cobre a rolagem inteira, com os valores que casam com ela.
+ *
+ * Na animação WAAPI, a faixa não segura o valor das pontas: sem keyframe no 0
+ * ou no 1, o navegador cria um e o preenche com o valor de base do elemento —
+ * o estilo que o framer escreveu na primeira pintura, com a rolagem no topo.
+ * O primeiro card abre nítido, então o valor de base dele é opacidade 1: a
+ * faixa dele acabava em 0,3 e, dali até o fim, ele voltava apagado atrás dos
+ * outros (#59). Repetir o valor da ponta até 0 e até 1 tira a decisão do
+ * navegador; dentro da faixa nada muda.
+ */
+function trilha<T>(pontos: number[], valores: T[]): [number[], T[]] {
+  const faixa = faixaSegura(pontos);
+  const saida = [...valores];
+  if (faixa[0] > 0) {
+    faixa.unshift(0);
+    saida.unshift(saida[0]);
+  }
+  if (faixa[faixa.length - 1] < 1) {
+    faixa.push(1);
+    saida.push(saida[saida.length - 1]);
+  }
+  return [faixa, saida];
+}
+
 /** Quanto de rolagem cada card ocupa. Menos que isso fica atropelado. */
 const ALTURA_POR_CARD_VH = 85;
 
@@ -65,13 +90,13 @@ function Card({ item, indice, total, progresso }: CardProps) {
   const inicio = primeiro ? 0 : centro - janela;
   const fim = ultimo ? 1 : centro + janela;
 
-  const faixa = faixaSegura([
+  const pontos = [
     inicio,
     primeiro ? 0 : inicio + transicao,
     centro,
     ultimo ? 1 : fim - transicao,
     fim,
-  ]);
+  ];
 
   const nasBordas = <T,>(fora: T, dentro: T): T[] => [
     primeiro ? dentro : fora,
@@ -81,18 +106,15 @@ function Card({ item, indice, total, progresso }: CardProps) {
     ultimo ? dentro : fora,
   ];
 
-  const escala = useTransform(progresso, faixa, nasBordas(0.45, 1));
-  const opacidade = useTransform(progresso, faixa, nasBordas(0, 1));
-  const desfoqueRaw = useTransform(progresso, faixa, nasBordas(14, 0));
+  const escala = useTransform(progresso, ...trilha(pontos, nasBordas(0.45, 1)));
+  const opacidade = useTransform(progresso, ...trilha(pontos, nasBordas(0, 1)));
+  const desfoqueRaw = useTransform(progresso, ...trilha(pontos, nasBordas(14, 0)));
   const desfoque = useMotionTemplate`blur(${desfoqueRaw}px)`;
   // Leve deslocamento vertical reforça a sensação de profundidade
-  const y = useTransform(progresso, faixa, [
-    primeiro ? 0 : 40,
-    0,
-    0,
-    0,
-    ultimo ? 0 : -40,
-  ]);
+  const y = useTransform(
+    progresso,
+    ...trilha(pontos, [primeiro ? 0 : 40, 0, 0, 0, ultimo ? 0 : -40])
+  );
 
   return (
     <motion.article
@@ -128,9 +150,9 @@ function Marcador({
 }) {
   const centro = (indice + 0.5) / total;
   const janela = 1 / total;
-  const faixa = faixaSegura([centro - janela / 2, centro, centro + janela / 2]);
-  const escala = useTransform(progresso, faixa, [1, 2.2, 1]);
-  const opacidade = useTransform(progresso, faixa, [0.25, 1, 0.25]);
+  const pontos = [centro - janela / 2, centro, centro + janela / 2];
+  const escala = useTransform(progresso, ...trilha(pontos, [1, 2.2, 1]));
+  const opacidade = useTransform(progresso, ...trilha(pontos, [0.25, 1, 0.25]));
 
   return (
     <motion.span
