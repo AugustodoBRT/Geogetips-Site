@@ -33,33 +33,6 @@ export function formatarInteiro(valor: number): string {
   return INTEIRO.format(valor);
 }
 
-/**
- * Reparte 100% entre os valores sem sobrar nem faltar ponto.
- *
- * Arredondar cada fatia por conta própria não fecha a conta: 305, 623, 107 e 64
- * de 1.099 apostas viravam 28 + 57 + 10 + 6 = **101%** na legenda da rosca.
- * Aqui cada fatia leva a parte inteira, e os pontos que sobram vão para quem
- * tem a maior fração descartada — o método do maior resto, que é o jeito
- * clássico de repartir cadeira em eleição pelo mesmo motivo.
- */
-export function percentuaisRedondos(valores: readonly number[]): number[] {
-  const total = valores.reduce((acc, v) => acc + v, 0);
-  if (total <= 0) return valores.map(() => 0);
-
-  const exatos = valores.map((v) => (v / total) * 100);
-  const inteiros = exatos.map(Math.floor);
-  let sobra = 100 - inteiros.reduce((acc, v) => acc + v, 0);
-
-  const porResto = exatos
-    .map((exato, i) => ({ i, resto: exato - Math.floor(exato) }))
-    .sort((a, b) => b.resto - a.resto);
-
-  for (let k = 0; sobra > 0 && k < porResto.length; k++, sobra--) {
-    inteiros[porResto[k].i] += 1;
-  }
-  return inteiros;
-}
-
 /** 1.72 -> "1,72" */
 export function formatarOdd(odd: number): string {
   return odd.toFixed(2).replace(".", ",");
@@ -102,4 +75,31 @@ export function tempoRelativo(iso: string, agora: Date = new Date()): string {
   const horas = Math.floor(min / 60);
   if (horas < 24) return `há ${horas} h`;
   return `há ${Math.floor(horas / 24)} d`;
+}
+
+/**
+ * Reparte 100% entre os valores sem sobrar nem faltar ponto.
+ *
+ * Arredondar cada fatia por conta própria não fecha a conta: 305, 623, 107 e 64
+ * de 1.099 apostas viravam 28 + 57 + 10 + 6 = **101%** na legenda da rosca.
+ * Aqui cada fatia leva a parte inteira, e os pontos que sobram vão para quem
+ * tem a maior fração descartada — o método do maior resto, que é o jeito
+ * clássico de repartir cadeira em eleição pelo mesmo motivo.
+ */
+export function percentuaisRedondos(valores: readonly number[]): number[] {
+  const total = valores.reduce((acc, v) => acc + v, 0);
+  if (total <= 0) return valores.map(() => 0);
+
+  const exatos = valores.map((v) => (v / total) * 100);
+  const inteiros = exatos.map(Math.floor);
+  let sobra = 100 - inteiros.reduce((acc, v) => acc + v, 0);
+
+  const porResto = exatos
+    .map((exato, i) => ({ i, resto: exato - Math.floor(exato) }))
+    .sort((a, b) => b.resto - a.resto);
+
+  for (let k = 0; sobra > 0 && k < porResto.length; k++, sobra--) {
+    inteiros[porResto[k].i] += 1;
+  }
+  return inteiros;
 }
