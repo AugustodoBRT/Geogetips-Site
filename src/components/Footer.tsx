@@ -13,7 +13,7 @@ const LINKS = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-black/[0.07] bg-[var(--bg-alt)] mt-auto">
+    <footer className="border-t border-tinta/[0.07] bg-[var(--bg-alt)] mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-7">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="flex items-center gap-2.5">
@@ -74,7 +74,7 @@ export function Footer() {
         </div>
 
         {/* Jogo responsável — exigência prática para site público de apostas no Brasil */}
-        <div className="border-t border-black/[0.07] pt-6 flex flex-col sm:flex-row gap-4 sm:items-start">
+        <div className="border-t border-tinta/[0.07] pt-6 flex flex-col sm:flex-row gap-4 sm:items-start">
           <span className="inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-[var(--red)] text-[var(--red)] text-[11px] font-black shrink-0">
             18+
           </span>

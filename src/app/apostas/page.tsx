@@ -458,7 +458,7 @@ export default function ApostasPage() {
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que traz borda, margem e padding do navegador e existe para agrupar campo de formulário — não uma barra de botões. */}
           <div
-            className="flex items-center bg-white border border-black/[0.12] rounded-full p-0.5 shadow-sm"
+            className="flex items-center bg-[var(--bg-card)] border border-tinta/[0.12] rounded-full p-0.5 shadow-sm"
             role="group"
             aria-label="Modo de visualização"
           >
@@ -469,7 +469,7 @@ export default function ApostasPage() {
               aria-label="Visualizar em cartões"
               className={`p-1.5 rounded-full transition-all ${
                 viewMode === "cards"
-                  ? "bg-[var(--accent)] text-white"
+                  ? "bg-[var(--accent)] text-[var(--sobre-cor)]"
                   : "text-[var(--text-2)] hover:text-[var(--accent)]"
               }`}
             >
@@ -482,7 +482,7 @@ export default function ApostasPage() {
               aria-label="Visualizar em tabela"
               className={`p-1.5 rounded-full transition-all ${
                 viewMode === "table"
-                  ? "bg-[var(--accent)] text-white"
+                  ? "bg-[var(--accent)] text-[var(--sobre-cor)]"
                   : "text-[var(--text-2)] hover:text-[var(--accent)]"
               }`}
             >
@@ -514,7 +514,7 @@ export default function ApostasPage() {
 
       {/* Resumo do filtro atual */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-sm">
+        <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
             Lucro do Filtro
           </div>
@@ -531,7 +531,7 @@ export default function ApostasPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-sm">
+        <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
             Green / Red
           </div>
@@ -548,7 +548,7 @@ export default function ApostasPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-sm">
+        <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
             Taxa de Acerto
           </div>
@@ -561,7 +561,7 @@ export default function ApostasPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-black/[0.07] rounded-xl p-4 shadow-sm">
+        <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
             ROI do Filtro
           </div>
@@ -589,7 +589,7 @@ export default function ApostasPage() {
 
       <div className="space-y-6">
         {/* Filtros */}
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-4 shadow-sm space-y-3">
+        <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 shadow-sm space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative flex-1 min-w-[200px]">
               <Search
@@ -605,7 +605,7 @@ export default function ApostasPage() {
                 placeholder="Buscar partida, mercado, casa, adm..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-[var(--bg)] border border-black/[0.06] rounded-full pl-9 pr-3.5 py-1.5 text-xs text-[var(--text)] placeholder:text-[var(--text-3)] outline-none focus:border-[var(--accent)] transition-colors"
+                className="w-full bg-[var(--bg)] border border-tinta/[0.06] rounded-full pl-9 pr-3.5 py-1.5 text-xs text-[var(--text)] placeholder:text-[var(--text-3)] outline-none focus:border-[var(--accent)] transition-colors"
               />
             </div>
 
@@ -636,8 +636,8 @@ export default function ApostasPage() {
                     aria-pressed={isActive}
                     className={`px-3 py-1.5 text-[11px] font-semibold rounded-full border transition-all ${
                       isActive
-                        ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                        : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                        ? "bg-[var(--accent)] text-[var(--sobre-cor)] border-[var(--accent)]"
+                        : "bg-[var(--bg-card)] text-[var(--text-2)] border-tinta/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
                     }`}
                   >
                     {rotulos[status]}
@@ -647,7 +647,7 @@ export default function ApostasPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-black/[0.05]">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-tinta/[0.05]">
             <div className="flex items-center gap-2 flex-wrap">
               <FiltroPeriodo
                 de={de}
@@ -717,8 +717,8 @@ export default function ApostasPage() {
                     aria-pressed={oddRangeFilter === range.val}
                     className={`px-2 py-0.5 min-h-[24px] text-[10.5px] font-semibold rounded-full border transition-all ${
                       oddRangeFilter === range.val
-                        ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                        : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                        ? "bg-[var(--accent)] text-[var(--sobre-cor)] border-[var(--accent)]"
+                        : "bg-[var(--bg-card)] text-[var(--text-2)] border-tinta/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
                     }`}
                   >
                     {range.label}
@@ -734,7 +734,7 @@ export default function ApostasPage() {
                 <button
                   type="button"
                   onClick={() => abrirTodos(expandirEhAProxima)}
-                  className="flex items-center gap-1 px-2 py-0.5 min-h-[24px] text-[10.5px] font-semibold rounded-full border bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+                  className="flex items-center gap-1 px-2 py-0.5 min-h-[24px] text-[10.5px] font-semibold rounded-full border bg-[var(--bg-card)] text-[var(--text-2)] border-tinta/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
                 >
                   {expandirEhAProxima ? (
                     <ChevronsUpDown className="w-3 h-3" aria-hidden="true" />
@@ -752,7 +752,7 @@ export default function ApostasPage() {
         {mostrarEsqueleto ? (
           <SkeletonLinhas quantidade={6} altura="h-20" />
         ) : erro ? null : filteredBets.length === 0 ? (
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center">
+          <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-16 text-center">
             <p className="text-sm font-medium text-[var(--text-3)]">
               {bets.length === 0
                 ? `Nenhuma aposta registrada ${trecho.prefixo} ${trecho.nome}.`
@@ -806,7 +806,7 @@ export default function ApostasPage() {
                         ({formatarInteiro(dia.apostas.length)}{" "}
                         {dia.apostas.length === 1 ? "aposta" : "apostas"})
                       </span>
-                      <span className="flex-1 h-px bg-black/[0.06]" aria-hidden="true" />
+                      <span className="flex-1 h-px bg-tinta/[0.06]" aria-hidden="true" />
                       <span
                         className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full ${
                           dia.lucro >= 0
@@ -850,7 +850,7 @@ export default function ApostasPage() {
                             type="button"
                             onClick={() => setSelectedBet(bet)}
                             aria-label={`Ver detalhes: ${bet.partida}, ${bet.tip}`}
-                            className="w-full text-left bg-white border border-black/[0.07] rounded-xl overflow-hidden shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:-translate-y-0.5 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150 grid grid-cols-[5px_1fr] group animate-aparecer [content-visibility:auto] [contain-intrinsic-size:auto_5.8rem] max-sm:[contain-intrinsic-size:auto_8.5rem]"
+                            className="w-full text-left bg-[var(--bg-card)] border border-tinta/[0.07] rounded-xl overflow-hidden shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:-translate-y-0.5 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150 grid grid-cols-[5px_1fr] group animate-aparecer [content-visibility:auto] [contain-intrinsic-size:auto_5.8rem] max-sm:[contain-intrinsic-size:auto_8.5rem]"
                           >
                             <div
                               className={
@@ -875,7 +875,7 @@ export default function ApostasPage() {
                               </div>
 
                               {/* Linha 2 — odd, valor, status e lucro sempre visíveis */}
-                              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1.5 border-t border-black/[0.04]">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1.5 border-t border-tinta/[0.04]">
                                 {/* No mobile a tip ocupa a linha inteira; a
                                         partir de sm divide espaço com o resto. */}
                                 <span className="text-xs text-[var(--text-2)] font-medium w-full sm:w-auto sm:min-w-0 sm:flex-1 truncate">
@@ -888,7 +888,7 @@ export default function ApostasPage() {
                                   </span>
                                 )}
 
-                                <span className="text-xs font-mono font-bold text-[var(--text)] bg-[var(--bg)] px-2 py-0.5 rounded border border-black/[0.04] shrink-0">
+                                <span className="text-xs font-mono font-bold text-[var(--text)] bg-[var(--bg)] px-2 py-0.5 rounded border border-tinta/[0.04] shrink-0">
                                   @{formatarOdd(bet.odd)}
                                 </span>
 
@@ -935,13 +935,13 @@ export default function ApostasPage() {
             })}
           </div>
         ) : (
-          <div className="bg-white border border-black/[0.07] rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto animate-entrada">
               <table className="w-full text-left text-xs">
                 <caption className="sr-only">
                   Apostas registradas {trecho.prefixo} {trecho.nome}
                 </caption>
-                <thead className="bg-[var(--bg-soft)] border-b border-black/[0.06] text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
+                <thead className="bg-[var(--bg-soft)] border-b border-tinta/[0.06] text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                   <tr>
                     <th scope="col" className="py-3 px-4">
                       Data
@@ -969,7 +969,7 @@ export default function ApostasPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-black/[0.05]">
+                <tbody className="divide-y divide-tinta/[0.05]">
                   {betsVisiveis.map((bet) => {
                     const isGreen = bet.resultado === "GREEN";
                     const isRed = bet.resultado === "RED";
@@ -1055,7 +1055,7 @@ export default function ApostasPage() {
             <button
               type="button"
               onClick={() => setVisiveis((v) => v + APOSTAS_POR_BLOCO)}
-              className="px-6 py-2.5 bg-[var(--accent)] text-white text-sm font-bold rounded-full hover:bg-[var(--accent-hover)] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all"
+              className="px-6 py-2.5 bg-[var(--accent)] text-[var(--sobre-cor)] text-sm font-bold rounded-full hover:bg-[var(--accent-hover)] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all"
             >
               Mostrar mais {Math.min(restantes, APOSTAS_POR_BLOCO)}
             </button>

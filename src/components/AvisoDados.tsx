@@ -30,7 +30,7 @@ export function AvisoErro({
         <button
           type="button"
           onClick={onTentarNovamente}
-          className="px-4 py-2 bg-[var(--red)] text-white text-xs font-bold rounded-full hover:opacity-90 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--red)] focus-visible:ring-offset-2 transition-all shrink-0"
+          className="px-4 py-2 bg-[var(--red)] text-[var(--sobre-cor)] text-xs font-bold rounded-full hover:opacity-90 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--red)] focus-visible:ring-offset-2 transition-all shrink-0"
         >
           Tentar novamente
         </button>

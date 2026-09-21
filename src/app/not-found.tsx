@@ -26,7 +26,7 @@ const ATALHOS = [
 export default function NaoEncontrada() {
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-      <div className="bg-white border border-black/[0.07] rounded-2xl p-8 sm:p-10 shadow-sm animate-entrada">
+      <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-8 sm:p-10 shadow-sm animate-entrada">
         <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--accent-soft)] text-[var(--accent)] text-[11px] font-bold uppercase tracking-wider">
           <Compass className="w-3.5 h-3.5" aria-hidden="true" />
           Erro 404
@@ -45,7 +45,7 @@ export default function NaoEncontrada() {
             <Link
               key={a.href}
               href={a.href}
-              className="group/atalho block p-3 rounded-xl border border-black/[0.07] bg-[var(--bg-soft)] hover:border-[color:color-mix(in_srgb,var(--accent)_45%,transparent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+              className="group/atalho block p-3 rounded-xl border border-tinta/[0.07] bg-[var(--bg-soft)] hover:border-[color:color-mix(in_srgb,var(--accent)_45%,transparent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
             >
               <span className="block text-sm font-bold text-[var(--text)] group-hover/atalho:text-[var(--accent)] transition-colors">
                 {a.nome}

@@ -138,7 +138,7 @@ export function Dialogo({
         initial={ENTRADA_SOBREPOSICAO.initial}
         animate={ENTRADA_SOBREPOSICAO.animate}
         transition={MOLA_CURTA}
-        className={`bg-white border border-black/[0.1] rounded-2xl ${largura} w-full p-6 shadow-2xl space-y-5 outline-none max-h-[90vh] overflow-y-auto`}
+        className={`bg-[var(--bg-elevado)] border border-tinta/[0.1] rounded-2xl ${largura} w-full p-6 shadow-2xl space-y-5 outline-none max-h-[90vh] overflow-y-auto`}
       >
         {children}
       </motion.div>

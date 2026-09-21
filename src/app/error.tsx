@@ -32,7 +32,7 @@ export default function Erro({
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
       <div
         role="alert"
-        className="bg-white border border-black/[0.07] rounded-2xl p-8 sm:p-10 shadow-sm"
+        className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-8 sm:p-10 shadow-sm"
       >
         <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--amber-soft)] text-[var(--amber)] text-[11px] font-bold uppercase tracking-wider">
           <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
@@ -51,14 +51,14 @@ export default function Erro({
           <button
             type="button"
             onClick={reset}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--accent)] text-white text-xs font-bold hover:bg-[var(--accent-hover)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--accent)] text-[var(--sobre-cor)] text-xs font-bold hover:bg-[var(--accent-hover)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
             Tentar de novo
           </button>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-black/[0.1] bg-white text-[var(--text)] text-xs font-bold hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-tinta/[0.1] bg-[var(--bg-card)] text-[var(--text)] text-xs font-bold hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
             Voltar para o início

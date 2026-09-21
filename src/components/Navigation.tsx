@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { DURACAO, MOLA_CURTA, VEU } from "@/lib/movimento";
 import { Menu, X } from "lucide-react";
 import { BotaoTelegram, IconeTelegram } from "@/components/Telegram";
+import { BotaoTema } from "@/components/BotaoTema";
 import { TELEGRAM_URL } from "@/lib/constants";
 
 const navItems = [
@@ -91,7 +92,7 @@ function Navigation() {
     <>
       <nav
         aria-label="Navegação principal"
-        className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between bg-[color:color-mix(in_srgb,var(--bg)_90%,transparent)] backdrop-blur-md border-b border-black/[0.07]"
+        className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between bg-[color:color-mix(in_srgb,var(--bg)_90%,transparent)] backdrop-blur-md border-b border-tinta/[0.07]"
       >
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -104,7 +105,7 @@ function Navigation() {
           </Link>
 
           {/* Desktop */}
-          <div className="hidden md:flex items-center gap-1.5 bg-[var(--bg-soft)] p-1 rounded-full border border-black/[0.05]">
+          <div className="hidden md:flex items-center gap-1.5 bg-[var(--bg-soft)] p-1 rounded-full border border-tinta/[0.05]">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -121,7 +122,7 @@ function Navigation() {
                   {isActive && (
                     <motion.span
                       layoutId="nav-pill"
-                      className="absolute inset-0 bg-white rounded-full shadow-sm"
+                      className="absolute inset-0 bg-[var(--pilula)] rounded-full shadow-sm"
                       transition={{ type: "spring", stiffness: 420, damping: 34 }}
                     />
                   )}
@@ -133,6 +134,9 @@ function Navigation() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Fora do menu do celular de propósito: trocar de tema é coisa de
+                um toque, e esconder atrás do menu dobraria o caminho. */}
+            <BotaoTema />
             <BotaoTelegram
               variante="compacto"
               rotulo="Grupo grátis"
@@ -147,7 +151,7 @@ function Navigation() {
               aria-expanded={aberto}
               aria-controls="menu-mobile"
               aria-label={aberto ? "Fechar menu" : "Abrir menu"}
-              className="md:hidden p-2.5 -mr-1 rounded-full text-[var(--text)] hover:bg-black/[0.05] active:scale-95 transition-all"
+              className="md:hidden p-2.5 -mr-1 rounded-full text-[var(--text)] hover:bg-tinta/[0.05] active:scale-95 transition-all"
             >
               {aberto ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -181,7 +185,7 @@ function Navigation() {
           <motion.div
             key="painel-menu"
             id="menu-mobile"
-            className="fixed top-16 left-0 right-0 z-40 md:hidden bg-[var(--bg)] border-b border-black/[0.08] shadow-subtle px-4 py-3"
+            className="fixed top-16 left-0 right-0 z-40 md:hidden bg-[var(--bg)] border-b border-tinta/[0.08] shadow-subtle px-4 py-3"
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             // Sai mais curto do que entrou: quem fechou já foi embora.
@@ -202,8 +206,8 @@ function Navigation() {
                         aria-current={isActive ? "page" : undefined}
                         className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
                           isActive
-                            ? "bg-white text-[var(--text)] shadow-sm"
-                            : "text-[var(--text-2)] hover:bg-white/60 hover:text-[var(--accent)]"
+                            ? "bg-[var(--pilula)] text-[var(--text)] shadow-sm"
+                            : "text-[var(--text-2)] hover:bg-[color:color-mix(in_srgb,var(--pilula)_60%,transparent)] hover:text-[var(--accent)]"
                         }`}
                       >
                         {item.label}
@@ -219,7 +223,7 @@ function Navigation() {
               href={TELEGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent)] text-white rounded-xl text-sm font-bold hover:bg-[var(--accent-hover)] active:scale-[0.98] transition-all"
+              className="mt-2 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent)] text-[var(--sobre-cor)] rounded-xl text-sm font-bold hover:bg-[var(--accent-hover)] active:scale-[0.98] transition-all"
             >
               <IconeTelegram className="w-4 h-4" />
               <span>Entrar no grupo grátis</span>

@@ -41,12 +41,103 @@
    * 6% e não 10%: é o máximo em que o texto verde e o âmbar dos selos ainda
    * passam de 4,5:1 sobre a própria tinta (4,53 e 4,55). A 10% caíam para 4,29.
    */
-  --accent-soft: color-mix(in srgb, var(--accent) 6%, transparent);
-  --green-soft: color-mix(in srgb, var(--green) 6%, transparent);
-  --red-soft: color-mix(in srgb, var(--red) 6%, transparent);
-  --amber-soft: color-mix(in srgb, var(--amber) 6%, transparent);
+  --forca-tinta: 6%;
+  --forca-contorno: 15%;
+  --accent-soft: color-mix(in srgb, var(--accent) var(--forca-tinta), transparent);
+  --green-soft: color-mix(in srgb, var(--green) var(--forca-tinta), transparent);
+  --red-soft: color-mix(in srgb, var(--red) var(--forca-tinta), transparent);
+  --amber-soft: color-mix(in srgb, var(--amber) var(--forca-tinta), transparent);
   --text-soft: color-mix(in srgb, var(--text) 5%, transparent);
   --text-2-soft: color-mix(in srgb, var(--text-2) 10%, transparent);
+
+  /* Tinta das bordas, divisórias e hovers, em canais: o Tailwind aplica a
+     opacidade por cima (`border-tinta/[0.07]`). Preto no claro, branco no
+     escuro — a mesma sombra de linha nos dois. */
+  --tinta-rgb: 0 0 0;
+
+  /* Texto sobre preenchimento de cor (botão accent, aviso vermelho). No
+     escuro o accent clareia para passar de 4,5:1 como texto, e branco sobre
+     ele cairia para 2,9:1; o texto do botão escurece no lugar. */
+  --sobre-cor: #ffffff;
+
+  /* A faixa da marca é escura nos dois temas. Texto dela não pode sair do
+     --bg, que no escuro também é escuro. */
+  --sobre-marca: #f6f4f8;
+  --marca-borda: transparent;
+
+  /* Superfície do item escolhido (aba do menu, opção marcada). No claro é o
+     branco sobre o cinza do trilho; no escuro precisa clarear, ou o item
+     escolhido afundaria em vez de saltar. */
+  --pilula: #ffffff;
+
+  /* O que flutua por cima do resto: diálogo e lista suspensa. No escuro a
+     sombra não aparece, e é o fundo um pouco mais claro que separa a lista do
+     card de baixo. */
+  --bg-elevado: #ffffff;
+
+  --selecao: color-mix(in srgb, var(--accent) 16%, transparent);
+
+  color-scheme: light;
+}
+
+/*
+ * Tema escuro. Só os tokens mudam: tudo que já lê `var(--token)` acompanha
+ * sozinho. O atributo sai do script no <head> (ver lib/tema.ts) antes da
+ * primeira pintura, então a página não pisca branco.
+ *
+ * Violeta escuro em vez de preto puro, da mesma família do claro. Contrastes
+ * medidos sobre o card (#17141F): texto 15,4:1; --text-2 8,3; --text-3 6,0;
+ * accent 5,7; verde 9,1; vermelho 6,6; âmbar 9,6. Selos, texto sobre a própria
+ * tinta a 14%: de 4,7 a 7,3.
+ */
+:root[data-tema="escuro"] {
+  --bg: #0e0c14;
+  --bg-card: #17141f;
+  --bg-tinted: #221e2c;
+  --bg-alt: #121019;
+  --bg-soft: #1c1926;
+  --bg-shimmer: #2a2536;
+
+  --marca: #07050d;
+  --marca-borda: rgba(255, 255, 255, 0.08);
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  --text: #eeebf5;
+  --text-2: #b3acc4;
+  --text-3: #9891a9;
+
+  --accent: #9b7cf6;
+  --accent-hover: #ad92f8;
+
+  --green: #3fcf8e;
+  --red: #ff6b7f;
+  --amber: #e6b54a;
+
+  /* A 6% a tinta some sobre fundo escuro; a 14% o selo ainda passa de
+     4,5:1 (o accent, o mais apertado, fica em 4,71). */
+  --forca-tinta: 14%;
+  --forca-contorno: 28%;
+  --text-soft: color-mix(in srgb, var(--text) 8%, transparent);
+  --text-2-soft: color-mix(in srgb, var(--text-2) 14%, transparent);
+
+  --tinta-rgb: 255 255 255;
+  --sobre-cor: #120d22;
+  --pilula: #2a2536;
+  --bg-elevado: #1f1b29;
+  --selecao: color-mix(in srgb, var(--accent) 32%, transparent);
+
+  color-scheme: dark;
+}
+
+/* Na troca de tema, nada anima: com `transition-colors` espalhado pelo site,
+   cada elemento mudaria de cor no seu tempo e a tela passaria por um meio
+   termo manchado. O atributo dura um quadro (ver BotaoTema). */
+[data-trocando-tema] *,
+[data-trocando-tema] *::before,
+[data-trocando-tema] *::after {
+  transition: none !important;
 }
 
 html {
@@ -120,7 +211,7 @@ button[disabled]:active {
 }
 
 ::selection {
-  background: rgba(107, 63, 228, 0.16);
+  background: var(--selecao);
   color: var(--text);
 }
 
@@ -132,9 +223,9 @@ button[disabled]:active {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgb(var(--tinta-rgb) / 0.1);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.18);
+  background: rgb(var(--tinta-rgb) / 0.18);
 }

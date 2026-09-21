@@ -128,7 +128,7 @@ export default async function HomePage() {
             <BotaoTelegram />
             <Link
               href="/painel"
-              className="px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-black/15 rounded-full hover:border-[var(--accent)] hover:text-[var(--accent)] active:scale-[0.98] transition-all inline-flex items-center gap-2"
+              className="px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-tinta/15 rounded-full hover:border-[var(--accent)] hover:text-[var(--accent)] active:scale-[0.98] transition-all inline-flex items-center gap-2"
             >
               <span>Ver os resultados</span>
               <ArrowRight className="w-4 h-4" />
@@ -156,14 +156,14 @@ export default async function HomePage() {
             </span>
             apostas registradas
           </div>
-          <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
+          <div className="w-1 h-1 rounded-full bg-tinta/15 hidden sm:block" />
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-[var(--text-2)] text-sm">
               {stats.taxaAcerto.toFixed(1).replace(".", ",")}%
             </span>
             taxa de acerto
           </div>
-          <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
+          <div className="w-1 h-1 rounded-full bg-tinta/15 hidden sm:block" />
           <div className="flex items-center gap-2">
             <span
               className={`font-mono font-bold text-sm ${
@@ -175,7 +175,7 @@ export default async function HomePage() {
             </span>
             de ROI
           </div>
-          <div className="w-1 h-1 rounded-full bg-black/15 hidden sm:block" />
+          <div className="w-1 h-1 rounded-full bg-tinta/15 hidden sm:block" />
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-[var(--text-2)] text-sm">24/7</span>
             bot automático
@@ -185,17 +185,17 @@ export default async function HomePage() {
 
       {/* Prévia do painel */}
       <Revelar className="max-w-5xl mx-auto px-6 mb-20">
-        <div className="bg-white border border-black/[0.07] rounded-2xl overflow-hidden shadow-subtle">
-          <div className="h-10 bg-[var(--bg-alt)] border-b border-black/[0.07] flex items-center px-4 gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
-            <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
-            <div className="w-2.5 h-2.5 rounded-full bg-black/20" />
-            <div className="ml-4 px-3 py-1 bg-white/70 rounded-md text-[11px] font-mono text-[var(--text-2)] border border-black/[0.04]">
+        <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl overflow-hidden shadow-subtle">
+          <div className="h-10 bg-[var(--bg-alt)] border-b border-tinta/[0.07] flex items-center px-4 gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-tinta/20" />
+            <div className="w-2.5 h-2.5 rounded-full bg-tinta/20" />
+            <div className="w-2.5 h-2.5 rounded-full bg-tinta/20" />
+            <div className="ml-4 px-3 py-1 bg-[color:color-mix(in_srgb,var(--bg-card)_70%,transparent)] rounded-md text-[11px] font-mono text-[var(--text-2)] border border-tinta/[0.04]">
               /painel
             </div>
           </div>
           <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--bg-soft)]">
-            <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-sm">
+            <div className="p-5 bg-[var(--bg-card)] rounded-xl border border-tinta/[0.06] shadow-sm">
               <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
                 Lucro Acumulado
               </div>
@@ -222,7 +222,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-sm">
+            <div className="p-5 bg-[var(--bg-card)] rounded-xl border border-tinta/[0.06] shadow-sm">
               <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
                 Taxa de Acerto
               </div>
@@ -238,7 +238,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="p-5 bg-white rounded-xl border border-black/[0.06] shadow-sm">
+            <div className="p-5 bg-[var(--bg-card)] rounded-xl border border-tinta/[0.06] shadow-sm">
               <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
                 ROI
               </div>
@@ -287,7 +287,7 @@ export default async function HomePage() {
       </Revelar>
 
       {/* Como funciona */}
-      <section className="bg-white border-y border-black/[0.07] py-20 px-6">
+      <section className="bg-[var(--bg-card)] border-y border-tinta/[0.07] py-20 px-6">
         <div className="max-w-5xl mx-auto">
           <Revelar>
             <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-3)] mb-3">

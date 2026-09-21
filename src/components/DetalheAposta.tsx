@@ -41,7 +41,7 @@ export function DetalheAposta({
 }: DetalheApostaProps) {
   return (
     <Dialogo rotulo={`Detalhe da aposta: ${bet.partida}`} onFechar={onFechar}>
-      <div className="flex items-center justify-between pb-3 border-b border-black/[0.06]">
+      <div className="flex items-center justify-between pb-3 border-b border-tinta/[0.06]">
         <div className="flex items-center gap-2 min-w-0">
           <span
             className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${
@@ -88,7 +88,7 @@ export function DetalheAposta({
           <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
             Mercado / Tip
           </div>
-          <p className="text-sm font-medium text-[var(--text-2)] mt-0.5 bg-[var(--bg-soft)] p-3 rounded-xl border border-black/[0.04]">
+          <p className="text-sm font-medium text-[var(--text-2)] mt-0.5 bg-[var(--bg-soft)] p-3 rounded-xl border border-tinta/[0.04]">
             {bet.tip}
           </p>
         </div>
@@ -156,7 +156,7 @@ export function DetalheAposta({
         </div>
       </div>
 
-      <div className="pt-3 border-t border-black/[0.06] flex items-center justify-between">
+      <div className="pt-3 border-t border-tinta/[0.06] flex items-center justify-between">
         <button
           type="button"
           onClick={() => onCopiar(bet)}
@@ -173,7 +173,7 @@ export function DetalheAposta({
         <button
           type="button"
           onClick={onFechar}
-          className="px-5 py-2 bg-[var(--text)] text-white text-xs font-semibold rounded-full hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all"
+          className="px-5 py-2 bg-[var(--text)] text-[var(--bg-card)] text-xs font-semibold rounded-full hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all"
         >
           Fechar
         </button>

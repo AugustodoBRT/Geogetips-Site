@@ -1,5 +1,6 @@
-import { CORES } from "@/lib/cores";
+import { CORES, CORES_ESCURO } from "@/lib/cores";
 import { SITE_URL } from "@/lib/constants";
+import { SCRIPT_TEMA_INICIAL } from "@/lib/tema";
 import type { Metadata, Viewport } from "next";
 import { DM_Serif_Display, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -74,7 +75,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: CORES.bg,
+  // Pelo aparelho, para a primeira pintura. Quando a pessoa escolhe o
+  // contrário do aparelho, o BotaoTema reescreve as duas tags.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: CORES.bg },
+    { media: "(prefers-color-scheme: dark)", color: CORES_ESCURO.bg },
+  ],
   width: "device-width",
   initialScale: 1,
 };
@@ -88,7 +94,15 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       className={`${dmSerif.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      // O script abaixo põe `data-tema` antes de o React chegar, e o servidor
+      // não tem como saber o valor. A diferença é esperada; o aviso só vale
+      // para os atributos deste elemento, não para os filhos.
+      suppressHydrationWarning
     >
+      <head>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: texto fixo, montado no código a partir de uma constante; não passa nada vindo de fora. */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA_INICIAL }} />
+      </head>
       <body className="antialiased min-h-screen flex flex-col bg-[var(--bg)] text-[var(--text)]">
         {/* Os elementos animados saem do servidor com opacity 0, e só o JS os
             revela. Sem JS o título da home ficaria invisível — isto garante

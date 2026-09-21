@@ -46,7 +46,7 @@ function Cartao({
 }) {
   return (
     <div
-      className={`bg-white border border-black/[0.07] rounded-2xl shadow-sm ${className}`}
+      className={`bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl shadow-sm ${className}`}
     >
       {children}
     </div>

@@ -90,9 +90,14 @@ export default function EstatisticasPage() {
    * funciona com cor literal. Com "var(--green)" saía "var(--green)0F", CSS
    * inválido que o navegador descarta: as linhas perdiam o fundo e a borda
    * caía para a cor do texto, um contorno quase preto.
+   *
+   * A força vem do tema (--forca-tinta, --forca-contorno): 6% some sobre o
+   * fundo escuro.
    */
-  const tinta = (cor: string) => `color-mix(in srgb, ${cor} 6%, transparent)`;
-  const contorno = (cor: string) => `color-mix(in srgb, ${cor} 15%, transparent)`;
+  const tinta = (cor: string) =>
+    `color-mix(in srgb, ${cor} var(--forca-tinta), transparent)`;
+  const contorno = (cor: string) =>
+    `color-mix(in srgb, ${cor} var(--forca-contorno), transparent)`;
 
   // Escala pelo maior |lucro| do conjunto, em vez de um teto fixo de 600
   const maiorLucroAbs = Math.max(...sports.map((s) => Math.abs(s.lucro)), 1);
@@ -153,7 +158,7 @@ export default function EstatisticasPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-entrada">
             {/* Donut de distribuição */}
-            <div className="lg:col-span-7 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-6">
+            <div className="lg:col-span-7 bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
@@ -272,7 +277,7 @@ export default function EstatisticasPage() {
             </div>
 
             {/* Médias de odd — agora calculadas, não digitadas */}
-            <div className="lg:col-span-5 bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4">
+            <div className="lg:col-span-5 bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
@@ -361,7 +366,7 @@ export default function EstatisticasPage() {
               onClick={() => setDetalhe("esportes")}
               aria-label="Ver todos os esportes em detalhe"
               className={
-                "w-full h-full flex flex-col items-stretch text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
+                "w-full h-full flex flex-col items-stretch text-left bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
               }
             >
               <div className="flex items-center justify-between">
@@ -423,7 +428,7 @@ export default function EstatisticasPage() {
               onClick={() => setDetalhe("casas")}
               aria-label="Ver todas as casas em detalhe"
               className={
-                "w-full h-full flex flex-col items-stretch text-left bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
+                "w-full h-full flex flex-col items-stretch text-left bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
               }
             >
               <div className="flex items-center justify-between">
@@ -468,7 +473,7 @@ export default function EstatisticasPage() {
                       </div>
                       <div className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-[var(--text)] origin-left animate-surgir-x"
+                          className="h-full rounded-full bg-[var(--text)] dark:bg-[var(--text-2)] origin-left animate-surgir-x"
                           style={{ width: `${b.percentual}%` }}
                         />
                       </div>
@@ -487,7 +492,7 @@ export default function EstatisticasPage() {
           onFechar={() => setDetalhe(null)}
           largura="max-w-2xl"
         >
-          <div className="pb-3 border-b border-black/[0.06]">
+          <div className="pb-3 border-b border-tinta/[0.06]">
             <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
               Todos os esportes
             </h2>
@@ -532,7 +537,7 @@ export default function EstatisticasPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-black/[0.05]">
+              <tbody className="divide-y divide-tinta/[0.05]">
                 {sports.map((s) => (
                   <tr key={s.esporte}>
                     <td className="py-2.5 pr-1.5 sm:pr-3">
@@ -582,7 +587,7 @@ export default function EstatisticasPage() {
           onFechar={() => setDetalhe(null)}
           largura="max-w-2xl"
         >
-          <div className="pb-3 border-b border-black/[0.06]">
+          <div className="pb-3 border-b border-tinta/[0.06]">
             <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
               Todas as casas
             </h2>
@@ -621,7 +626,7 @@ export default function EstatisticasPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-black/[0.05]">
+              <tbody className="divide-y divide-tinta/[0.05]">
                 {casas.map((b) => (
                   <tr key={b.casa}>
                     <td className="py-2.5 pr-1.5 sm:pr-3">

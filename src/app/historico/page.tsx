@@ -78,7 +78,7 @@ export default function HistoricoPage() {
           disabled={loading}
           aria-label="Recarregar dados"
           title="Recarregar dados"
-          className="p-2 bg-white border border-black/[0.12] rounded-full text-[var(--text-2)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all disabled:opacity-50 shrink-0 self-start sm:self-auto"
+          className="p-2 bg-[var(--bg-card)] border border-tinta/[0.12] rounded-full text-[var(--text-2)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all disabled:opacity-50 shrink-0 self-start sm:self-auto"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
@@ -92,7 +92,7 @@ export default function HistoricoPage() {
       {mostrarEsqueleto ? (
         <SkeletonCorpoHistorico />
       ) : erro ? null : meses.length === 0 ? (
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-16 text-center text-[var(--text-3)]">
+        <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-16 text-center text-[var(--text-3)]">
           <p className="text-sm font-medium">Nenhum mês encontrado na planilha.</p>
         </div>
       ) : (
@@ -100,7 +100,7 @@ export default function HistoricoPage() {
           {/* Consolidado */}
           {consolidado && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-entrada">
-              <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
+              <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     Resultado Consolidado
@@ -136,7 +136,7 @@ export default function HistoricoPage() {
                     }}
                   />
                 </div>
-                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
                   {formatarUnidades(consolidado.unidades)} em {meses.length}{" "}
                   {meses.length === 1 ? "mês" : "meses"}
                   {emAndamento && (
@@ -148,7 +148,7 @@ export default function HistoricoPage() {
                 </div>
               </div>
 
-              <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
+              <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     ROI do Período
@@ -171,12 +171,12 @@ export default function HistoricoPage() {
                     suffix="%"
                   />
                 </div>
-                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
                   Sobre a soma de tudo que foi apostado
                 </div>
               </div>
 
-              <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
+              <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     Apostas
@@ -192,7 +192,7 @@ export default function HistoricoPage() {
                 >
                   <NumeroAnimado value={consolidado.apostas} locales="pt-BR" />
                 </div>
-                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
                   {formatarInteiro(consolidado.greens)} Green ·{" "}
                   {formatarInteiro(consolidado.reds)} Red
                   {consolidado.voids > 0 &&
@@ -200,7 +200,7 @@ export default function HistoricoPage() {
                 </div>
               </div>
 
-              <div className="bg-white border border-black/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
+              <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
                     Taxa de Acerto
@@ -216,7 +216,7 @@ export default function HistoricoPage() {
                     suffix="%"
                   />
                 </div>
-                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
+                <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
                   {mesesNegativos === 0
                     ? "Nenhum mês negativo"
                     : `${mesesNegativos} ${
@@ -228,7 +228,7 @@ export default function HistoricoPage() {
           )}
 
           {/* Barras mensais */}
-          <div className="bg-white border border-black/[0.07] rounded-2xl p-6 shadow-sm">
+          <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm">
             <div className="mb-6">
               <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
                 Resultado por mês
@@ -279,7 +279,7 @@ export default function HistoricoPage() {
                         )}
                       </div>
 
-                      <div className="w-full h-px bg-black/[0.12]" />
+                      <div className="w-full h-px bg-tinta/[0.12]" />
 
                       {/* metade de baixo: prejuízo */}
                       <div className="h-[90px] w-full">
@@ -319,13 +319,13 @@ export default function HistoricoPage() {
           </div>
 
           {/* Tabela */}
-          <div className="bg-white border border-black/[0.07] rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">
                   Resultados por mês: apostas, greens, reds, resultado e ROI
                 </caption>
-                <thead className="bg-[var(--bg-soft)] border-b border-black/[0.06] text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
+                <thead className="bg-[var(--bg-soft)] border-b border-tinta/[0.06] text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                   <tr>
                     <th scope="col" className="py-3 px-4">
                       Mês
@@ -353,7 +353,7 @@ export default function HistoricoPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-black/[0.05]">
+                <tbody className="divide-y divide-tinta/[0.05]">
                   {meses.map((m) => (
                     <tr
                       key={m.aba}
@@ -414,7 +414,7 @@ export default function HistoricoPage() {
                   ))}
                 </tbody>
                 {consolidado && (
-                  <tfoot className="bg-[var(--bg-soft)] border-t-2 border-black/[0.1]">
+                  <tfoot className="bg-[var(--bg-soft)] border-t-2 border-tinta/[0.1]">
                     <tr>
                       <th scope="row" className="py-3 px-4 font-bold text-[var(--text)]">
                         Total
