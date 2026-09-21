@@ -145,3 +145,18 @@ describe("lerNumeroBR", () => {
     expect(lerNumeroBR("1.000.001")).toBeNull();
   });
 });
+
+describe("tamanhoDoValor compacto", () => {
+  it("desce um degrau na base e mantém o tamanho de sempre a partir de sm", () => {
+    // O cartão de meia largura do celular tem ~130 px de miolo: "+R$ 12.212,95"
+    // em text-2xl passava da borda.
+    expect(tamanhoDoValor("+R$ 12.212,95", true)).toBe("text-xl sm:text-3xl");
+    expect(tamanhoDoValor("1.099", true)).toBe("text-2xl sm:text-4xl");
+    expect(tamanhoDoValor("+R$ 1.234.567,89", true)).toBe("text-lg sm:text-2xl");
+    expect(tamanhoDoValor("+R$ 123.456.789,00", true)).toBe("text-base sm:text-xl");
+  });
+
+  it("sem o modo compacto, nada muda", () => {
+    expect(tamanhoDoValor("+R$ 12.212,95")).toBe("text-2xl sm:text-3xl");
+  });
+});

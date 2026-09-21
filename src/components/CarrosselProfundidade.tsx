@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   motion,
   useReducedMotion,
@@ -35,6 +35,25 @@ function faixaSegura(pontos: number[]): number[] {
   const excesso = saida[saida.length - 1] - 1;
   if (excesso > 0) return saida.map((n) => Math.max(0, n - excesso));
   return saida;
+}
+
+/**
+ * Tela estreita, a partir do tamanho de um celular deitado para baixo.
+ *
+ * Começa em `false` para servidor e cliente desenharem igual na hidratação; a
+ * troca acontece logo depois, e o carrossel fica a uma tela e meia do topo —
+ * ninguém chega lá antes dela.
+ */
+function useTelaEstreita(): boolean {
+  const [estreita, setEstreita] = useState(false);
+  useEffect(() => {
+    const consulta = window.matchMedia("(max-width: 767px)");
+    const atualizar = () => setEstreita(consulta.matches);
+    atualizar();
+    consulta.addEventListener("change", atualizar);
+    return () => consulta.removeEventListener("change", atualizar);
+  }, []);
+  return estreita;
 }
 
 /** Quanto de rolagem cada card ocupa. Menos que isso fica atropelado. */
@@ -150,6 +169,7 @@ export function CarrosselProfundidade({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const semMovimento = useReducedMotion();
+  const telaEstreita = useTelaEstreita();
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -158,7 +178,12 @@ export function CarrosselProfundidade({
 
   // Sem movimento, o carrossel vira uma grade normal: mesmo conteúdo, sem
   // depender de rolagem para revelar informação.
-  if (semMovimento) {
+  //
+  // No celular também. Cada card pede 85% da altura da tela em rolagem, e
+  // no celular isso dava ~2.800 px — umas quatro telas — para cinco cartões
+  // de duas linhas. A grade mostra o mesmo com a rolagem nativa e um terço
+  // da altura; o efeito de profundidade fica para a tela larga, onde ele cabe.
+  if (semMovimento || telaEstreita) {
     return (
       <div className="max-w-5xl mx-auto px-6">
         {/* Na versão animada o gap da área fixa separa os dois; aqui não havia

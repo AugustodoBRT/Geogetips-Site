@@ -96,8 +96,16 @@ export function formatarUnidades(unidades: number): string {
  * valores bem maiores. Encolher a fonte conforme o texto cresce evita estouro
  * sem precisar quebrar linha no meio de um valor monetário.
  */
-export function tamanhoDoValor(texto: string): string {
+export function tamanhoDoValor(texto: string, compacto = false): string {
   const n = texto.length;
+  // Compacto é o cartão de meia largura do celular (~130 px de miolo): um
+  // degrau abaixo na base, e o mesmo tamanho de sempre a partir de `sm`.
+  if (compacto) {
+    if (n <= 10) return "text-2xl sm:text-4xl";
+    if (n <= 13) return "text-xl sm:text-3xl";
+    if (n <= 16) return "text-lg sm:text-2xl";
+    return "text-base sm:text-xl";
+  }
   if (n <= 10) return "text-3xl sm:text-4xl";
   if (n <= 13) return "text-2xl sm:text-3xl";
   if (n <= 16) return "text-xl sm:text-2xl";
