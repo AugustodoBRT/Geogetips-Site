@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Table2 } from "lucide-react";
+import { MarcaG } from "@/components/MarcaG";
 import { IconeTelegram, IconeX } from "@/components/Telegram";
 import { TELEGRAM_URL, PLANILHA_URL, X_URL } from "@/lib/constants";
 
@@ -17,9 +18,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-7">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-[var(--text)] rounded-lg flex items-center justify-center text-[var(--bg)] font-bold text-xs">
-              G
-            </div>
+            <MarcaG className="w-7 h-7 text-[var(--text)]" fundo="var(--bg-alt)" />
             <span className="font-serif text-lg tracking-tight text-[var(--text)]">
               Geoge<span className="text-[var(--accent)]">Tips</span>
             </span>
