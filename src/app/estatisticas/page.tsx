@@ -12,6 +12,7 @@ import { SkeletonCorpoEstatisticas } from "@/components/Skeleton";
 import { Dialogo } from "@/components/Dialogo";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
+import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
@@ -23,6 +24,7 @@ import {
   percentuaisRedondos,
 } from "@/lib/format";
 import { rotuloDaAba, trechoDaAba } from "@/lib/constants";
+import { abaDoEndereco, abaParaEndereco } from "@/lib/endereco";
 
 const RAIO = 48;
 const CIRCUNFERENCIA = 2 * Math.PI * RAIO;
@@ -39,6 +41,13 @@ export default function EstatisticasPage() {
     isMock,
     recarregar,
   } = useBets({ onlyStats: true });
+
+  // A aba no endereço: o link de Abril26 abre Abril26, e o Painel chega aqui
+  // levando a aba que estava olhando.
+  useEstadoNaUrl({ aba: abaParaEndereco(activeTab) }, (lidos) => {
+    const aba = abaDoEndereco(lidos.aba);
+    if (aba && aba !== activeTab) setActiveTab(aba);
+  });
 
   const { converter } = useUnidade();
 

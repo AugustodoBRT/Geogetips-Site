@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { NumeroAnimado } from "@/components/NumeroAnimado";
 import { SportBadge } from "@/components/SportBadge";
@@ -10,6 +10,7 @@ import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonKpis, SkeletonLinhas } from "@/components/Skeleton";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
+import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
@@ -17,6 +18,13 @@ import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { FiltroPeriodo } from "@/components/FiltroPeriodo";
 import { paraISO, parseDateTimestamp, rotuloDoPeriodo, timestampDoISO } from "@/lib/date";
 import { ABA_TODOS, rotuloDaAba, trechoDaAba } from "@/lib/constants";
+import {
+  abaDoEndereco,
+  abaParaEndereco,
+  comAba,
+  escolher,
+  lerData,
+} from "@/lib/endereco";
 import {
   formatarInteiro,
   formatarOdd,
@@ -88,12 +96,50 @@ export default function PainelPage() {
     return () => clearInterval(id);
   }, []);
 
+  // A aba que chegou pelo endereço, com o intervalo e a janela junto.
+  const abaDoLink = useRef<string | null>(null);
+  const janelaPadrao = activeTab === ABA_TODOS ? "Tudo" : "30D";
+
   useEffect(() => {
+    // Trocar de aba volta intervalo e janela ao padrão — menos quando a aba veio
+    // do endereço, que trouxe os dois junto e seriam apagados aqui.
+    if (abaDoLink.current === activeTab) {
+      abaDoLink.current = null;
+      return;
+    }
     setDe("");
     setAte("");
     setHoveredPoint(null);
     setPeriod(activeTab === ABA_TODOS ? "Tudo" : "30D");
   }, [activeTab]);
+
+  // Aba, intervalo e janela no endereço: o Painel de Abril26 com a janela de
+  // 7 dias vira um link que abre exatamente isso.
+  useEstadoNaUrl(
+    {
+      aba: abaParaEndereco(activeTab),
+      de,
+      ate,
+      janela: period === janelaPadrao ? "" : period,
+    },
+    (lidos) => {
+      const aba = abaDoEndereco(lidos.aba);
+      if (aba && aba !== activeTab) {
+        abaDoLink.current = aba;
+        setActiveTab(aba);
+      }
+      setDe(lerData(lidos.de));
+      setAte(lerData(lidos.ate));
+      const janela = escolher(lidos.janela, [
+        "7D",
+        "30D",
+        "90D",
+        "120D",
+        "Tudo",
+      ] as const);
+      if (janela) setPeriod(janela);
+    }
+  );
 
   const periodoAtivo = de !== "" || ate !== "";
   const periodo = rotuloDoPeriodo(de, ate);
@@ -1009,7 +1055,7 @@ export default function PainelPage() {
                 Top Esportes
               </h2>
               <Link
-                href="/estatisticas"
+                href={comAba("/estatisticas", activeTab)}
                 className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0 py-[5px] -my-[5px]"
               >
                 <span>Detalhes</span>
@@ -1090,7 +1136,7 @@ export default function PainelPage() {
               Top Casas
             </h2>
             <Link
-              href="/estatisticas"
+              href={comAba("/estatisticas", activeTab)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0 py-[5px] -my-[5px]"
             >
               <span>Ver todas</span>
@@ -1160,7 +1206,7 @@ export default function PainelPage() {
             </div>
 
             <Link
-              href="/apostas"
+              href={comAba("/apostas", activeTab)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
               <span>Ver todas</span>
@@ -1275,7 +1321,7 @@ export default function PainelPage() {
             </div>
 
             <Link
-              href="/adms"
+              href={comAba("/adms", activeTab)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
               <span>Detalhes</span>
