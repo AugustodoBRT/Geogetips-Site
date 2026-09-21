@@ -58,11 +58,63 @@ describe("agruparPorDia", () => {
     );
 
     // Ordenar os dias por data poria o 30/09 primeiro. Não pode.
-    expect(agruparPorDia(ordenadas).map((d) => d.data)).toEqual([
+    expect(agruparPorDia(ordenadas, hoje).map((d) => d.data)).toEqual([
       "17/09/2026",
       "16/09/2026",
       "30/09/2026",
     ]);
+  });
+
+  it("não deixa uma resolvida puxar o dia de amanhã para o topo", () => {
+    // O caso real de 19/09/2026: 32 pendentes de amanhã, que o servidor manda
+    // para o fim, e uma VOID do mesmo dia, que volta para a posição da data —
+    // a mais recente de todas. Pelo primeiro elemento, o dia inteiro subia.
+    const hoje = new Date("2026-09-19T12:00:00-03:00");
+    const ordenadas = ordenarApostas(
+      [
+        aposta("20/09/2026", "PENDENTE"),
+        aposta("20/09/2026", "PENDENTE"),
+        aposta("20/09/2026", "VOID"),
+        aposta("19/09/2026", "GREEN", 90),
+        aposta("18/09/2026", "RED", -100),
+      ],
+      hoje
+    );
+
+    const dias = agruparPorDia(ordenadas, hoje);
+    expect(dias.map((d) => d.data)).toEqual(["19/09/2026", "18/09/2026", "20/09/2026"]);
+    // E o dia de amanhã continua inteiro: as três apostas num grupo só.
+    expect(dias.at(-1)?.apostas).toHaveLength(3);
+  });
+
+  it("ordena os dias futuros por quem resolve antes", () => {
+    const hoje = new Date("2026-09-19T12:00:00-03:00");
+    const dias = agruparPorDia(
+      [
+        aposta("30/09/2026", "PENDENTE"),
+        aposta("20/09/2026", "PENDENTE"),
+        aposta("25/09/2026", "PENDENTE"),
+        aposta("19/09/2026", "GREEN", 10),
+      ],
+      hoje
+    );
+
+    expect(dias.map((d) => d.data)).toEqual([
+      "19/09/2026",
+      "20/09/2026",
+      "25/09/2026",
+      "30/09/2026",
+    ]);
+  });
+
+  it("deixa data ilegível onde está, e não no fim", () => {
+    const hoje = new Date("2026-09-19T12:00:00-03:00");
+    const dias = agruparPorDia(
+      [aposta("—", "PENDENTE"), aposta("19/09/2026", "GREEN", 10)],
+      hoje
+    );
+
+    expect(dias.map((d) => d.data)).toEqual(["—", "19/09/2026"]);
   });
 
   it("não inventa dia quando não há aposta", () => {

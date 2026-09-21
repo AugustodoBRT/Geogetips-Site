@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  UNIDADE_MAXIMA,
   formatarInteiro,
   formatarOdd,
   formatarReais,
   formatarReaisComSinal,
   formatarUnidades,
+  lerNumeroBR,
   tamanhoDoValor,
   tempoRelativo,
 } from "./format";
@@ -105,5 +107,41 @@ describe("tempoRelativo", () => {
     // O carimbo vem do servidor e o relógio é o do visitante: os dois podem
     // divergir. "há -2 min" seria absurdo na tela.
     expect(tempoRelativo("2026-09-14T12:05:00Z", agora)).toBe("agora");
+  });
+});
+
+describe("lerNumeroBR", () => {
+  /**
+   * O campo de unidade lia "1.000" como 1 — mil reais viravam um real, e todo
+   * valor do site aparecia cem vezes menor para quem digitou. Estes casos são
+   * os que uma pessoa digita de verdade, em teclado de celular e de computador.
+   */
+  it.each([
+    ["1.000", 1000],
+    ["1.500,50", 1500.5],
+    // 12.345.678 é milhar legítimo, mas passa do teto: recusado.
+    ["12.345.678", null],
+    ["1000,50", 1000.5],
+    ["250", 250],
+    ["1,5", 1.5],
+    ["1.5", 1.5],
+    ["12.34", 12.34],
+    ["R$ 1.000", 1000],
+    [" 80 ", 80],
+    ["0,01", 0.01],
+  ])("lê %s como %s", (texto, esperado) => {
+    expect(lerNumeroBR(texto as string)).toBe(esperado);
+  });
+
+  it.each([["0"], ["-5"], ["abc"], [""], ["99999999999"], ["1e9"], ["0,001"]])(
+    "recusa %s",
+    (texto) => {
+      expect(lerNumeroBR(texto)).toBeNull();
+    }
+  );
+
+  it("recusa acima do teto e aceita o teto exato", () => {
+    expect(lerNumeroBR("1.000.000")).toBe(UNIDADE_MAXIMA);
+    expect(lerNumeroBR("1.000.001")).toBeNull();
   });
 });

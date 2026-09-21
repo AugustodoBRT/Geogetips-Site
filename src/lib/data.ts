@@ -65,8 +65,10 @@ export const MOCK_BETS: BetItem[] = [
     data: "25/08/2026",
     esporte: "Futebol",
     tipster: "MarceloTips",
-    partida: "Inter Milan x Napoli",
-    tip: "ML Inter Milan",
+    // Nome acentuado de propósito: é o que o teste de busca sem acento usa, e
+    // a planilha real grafa o mesmo time das duas formas.
+    partida: "Inter de Milão x Napoli",
+    tip: "ML Inter de Milão",
     casa: "Bet365",
     odd: 1.95,
     valor: 200.0,

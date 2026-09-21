@@ -4,9 +4,21 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, Coins, RotateCcw } from "lucide-react";
 import { useUnidade } from "@/hooks/useUnidade";
 import { VALOR_UNIDADE } from "@/lib/constants";
-import { formatarReais } from "@/lib/format";
+import { UNIDADE_MAXIMA, UNIDADE_MINIMA, formatarReais, lerNumeroBR } from "@/lib/format";
 
 const SUGESTOES = [5, 10, 25, 50, 100];
+
+/**
+ * Escreve a unidade como se escreve dinheiro, sem o "R$" que já está no campo:
+ * 1000 vira "1.000" e 1500.5 vira "1.500,50" — e não "1.500,5", que parece
+ * valor pela metade.
+ */
+function escreverUnidade(valor: number): string {
+  return valor.toLocaleString("pt-BR", {
+    minimumFractionDigits: Number.isInteger(valor) ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 /**
  * Deixa o visitante ver o histórico do grupo na banca dele.
@@ -14,17 +26,34 @@ const SUGESTOES = [5, 10, 25, 50, 100];
  */
 export function SeletorUnidade() {
   const { unidade, definirUnidade, restaurarPadrao, personalizada } = useUnidade();
-  const [rascunho, setRascunho] = useState(String(unidade));
+  const [rascunho, setRascunho] = useState(() => escreverUnidade(unidade));
+  const [recusado, setRecusado] = useState(false);
 
   // Mantém o campo em sincronia quando a unidade muda por fora (chips, reset)
   useEffect(() => {
-    setRascunho(String(unidade));
+    setRascunho(escreverUnidade(unidade));
+    setRecusado(false);
   }, [unidade]);
 
+  /**
+   * O que a pessoa digitou vira unidade — ou volta atrás, dizendo por quê.
+   *
+   * Aqui morava o defeito mais caro da tela: `parseFloat("1.000")` é 1, então
+   * quem digitava mil reais passava a ver o site inteiro cem vezes menor, sem
+   * nenhum aviso. Quem lê número agora é `lerNumeroBR`, que entende o ponto de
+   * milhar brasileiro e tem teto e piso.
+   */
   function aplicar(texto: string) {
-    const n = parseFloat(texto.replace(",", "."));
-    if (Number.isFinite(n) && n > 0) definirUnidade(n);
-    else setRascunho(String(unidade));
+    const n = lerNumeroBR(texto);
+    if (n === null) {
+      setRecusado(true);
+      setRascunho(escreverUnidade(unidade));
+      return;
+    }
+    setRecusado(false);
+    // Devolve o valor escrito como o site escreve: 1000 vira "1.000".
+    setRascunho(escreverUnidade(n));
+    definirUnidade(n);
   }
 
   return (
@@ -96,7 +125,12 @@ export function SeletorUnidade() {
                 inputMode="decimal"
                 autoComplete="off"
                 value={rascunho}
-                onChange={(e) => setRascunho(e.target.value)}
+                aria-describedby={recusado ? "aviso-unidade" : undefined}
+                aria-invalid={recusado || undefined}
+                onChange={(e) => {
+                  setRascunho(e.target.value);
+                  setRecusado(false);
+                }}
                 onBlur={(e) => aplicar(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -122,6 +156,19 @@ export function SeletorUnidade() {
           </div>
         </div>
       </div>
+
+      {/* O aviso fala sozinho para quem ouve a tela: `role="status"` anuncia a
+          recusa no momento em que ela aparece, sem roubar o foco do campo. */}
+      {recusado && (
+        <p
+          id="aviso-unidade"
+          role="status"
+          className="mt-3 text-[11.5px] font-medium text-[var(--amber)]"
+        >
+          Valor não aceito. Use algo entre {formatarReais(UNIDADE_MINIMA)} e{" "}
+          {formatarReais(UNIDADE_MAXIMA)} — o ponto pode separar o milhar, como em 1.000.
+        </p>
+      )}
 
       {personalizada && (
         <div className="mt-3 pt-3 border-t border-black/[0.05] flex items-start gap-2.5">
