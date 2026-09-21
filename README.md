@@ -144,7 +144,7 @@ npm run checar:cores  # paleta em sincronia
 O CI roda todas em cada pull request. Detalhes e o porquê de cada escolha em
 [AGENTS.md](AGENTS.md).
 
-Duas notas que economizam tempo:
+Três notas que economizam tempo:
 
 - `npm run e2e` faz o **próprio** build, numa pasta separada e em modo
   demonstração, e sobe na porta 3100. Não encosta na `.next` nem derruba o
@@ -152,6 +152,13 @@ Duas notas que economizam tempo:
 - O teste de tela roda contra o build de produção de propósito. O `next dev`
   se comporta diferente no Suspense e na divisão dos pedaços de JavaScript, e
   já escondeu defeito que só aparecia em produção.
+- **Não há `loading.tsx`, de propósito** (#17). As telas são estáticas e o
+  esqueleto já vem no HTML; com `loading.tsx`, o React 19.2 segura a troca do
+  fallback pelo conteúdo até 300 ms depois da primeira pintura, e a primeira
+  visita fica ~250 ms mais lenta. Essa troca também depende de
+  `requestAnimationFrame`: numa aba escondida, que não pinta quadro nenhum, o
+  fallback parece travado — não está, entra assim que a aba aparece. O retorno
+  ao clique em rede lenta vem do `useLinkStatus` no menu.
 
 ### 4. Build de Produção
 O build escreve na mesma pasta `.next` que o `npm run dev` usa, e derruba o

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { DURACAO, MOLA_CURTA, VEU } from "@/lib/movimento";
@@ -17,6 +17,39 @@ const navItems = [
   { label: "Adms", href: "/adms" },
   { label: "Estatísticas", href: "/estatisticas" },
 ];
+
+/**
+ * Ponto que acende no link do menu enquanto a tela dele não chega.
+ *
+ * As telas são estáticas e o Next as busca antes do clique, então quase sempre
+ * a troca é instantânea. Mas em rede lenta, clicando antes dessa busca
+ * terminar, a tela antiga ficava uns 2 s parada sem sinal de que o clique
+ * tinha pegado. Um `loading.tsx` daria esse retorno, só que atrasa em ~250 ms
+ * a primeira visita de todo mundo (#17); `useLinkStatus` só age depois do
+ * clique, no link clicado.
+ *
+ * Os 150 ms de espera para acender evitam piscar quando a troca é imediata. A
+ * pulsação fica num elemento de dentro: a animação também mexe na opacidade e,
+ * no mesmo elemento, passaria por cima da espera.
+ */
+function Pendente({ className = "" }: { className?: string }) {
+  const { pending } = useLinkStatus();
+  return (
+    <span
+      aria-hidden="true"
+      data-indicador="navegacao"
+      className={`pointer-events-none transition-opacity ${
+        pending ? "opacity-100 duration-200 delay-150" : "opacity-0 duration-100"
+      } ${className}`}
+    >
+      <span
+        className={`block w-1.5 h-1.5 rounded-full bg-[var(--accent)] ${
+          pending ? "motion-safe:animate-pulse" : ""
+        }`}
+      />
+    </span>
+  );
+}
 
 function Navigation() {
   const pathname = usePathname();
@@ -93,6 +126,7 @@ function Navigation() {
                     />
                   )}
                   <span className="relative z-10">{item.label}</span>
+                  <Pendente className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10" />
                 </Link>
               );
             })}
@@ -166,13 +200,14 @@ function Navigation() {
                         ref={i === 0 ? primeiroLink : undefined}
                         href={item.href}
                         aria-current={isActive ? "page" : undefined}
-                        className={`block px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+                        className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
                           isActive
                             ? "bg-white text-[var(--text)] shadow-sm"
                             : "text-[var(--text-2)] hover:bg-white/60 hover:text-[var(--accent)]"
                         }`}
                       >
                         {item.label}
+                        <Pendente />
                       </Link>
                     </li>
                   );
