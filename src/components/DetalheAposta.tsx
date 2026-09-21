@@ -65,7 +65,7 @@ export function DetalheAposta({
           type="button"
           onClick={onFechar}
           aria-label="Fechar detalhes"
-          className="p-1 rounded-full text-[var(--text-2)] hover:bg-[var(--bg-tinted)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors shrink-0"
+          className="p-[5px] rounded-full text-[var(--text-2)] hover:bg-[var(--bg-tinted)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors shrink-0"
         >
           <X className="w-4 h-4" />
         </button>
