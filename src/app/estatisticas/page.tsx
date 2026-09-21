@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import NumberFlow from "@number-flow/react";
+import { NumeroAnimado } from "@/components/NumeroAnimado";
 import { PieChart, BarChart2, Hash, Layers } from "lucide-react";
 import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
@@ -184,7 +184,7 @@ export default function EstatisticasPage() {
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="font-serif text-3xl text-[var(--text)] tracking-tight leading-none">
-                      <NumberFlow value={totalBets} locales="pt-BR" />
+                      <NumeroAnimado value={totalBets} locales="pt-BR" />
                     </span>
                     <span className="text-[10.5px] uppercase tracking-wider text-[var(--text-3)] font-bold mt-1">
                       Apostas
@@ -286,7 +286,7 @@ export default function EstatisticasPage() {
                       style={{ color: bloco.cor }}
                     >
                       {bloco.valor > 0 ? (
-                        <NumberFlow
+                        <NumeroAnimado
                           value={bloco.valor}
                           locales="pt-BR"
                           format={{

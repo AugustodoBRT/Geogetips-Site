@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import NumberFlow from "@number-flow/react";
+import { NumeroAnimado } from "@/components/NumeroAnimado";
 import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
 import { SeletorAba } from "@/components/SeletorAba";
@@ -498,7 +498,7 @@ export default function PainelPage() {
                 totalLucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
               }`}
             >
-              <NumberFlow
+              <NumeroAnimado
                 value={totalLucro}
                 locales="pt-BR"
                 format={{
@@ -531,7 +531,7 @@ export default function PainelPage() {
                 roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
               }`}
             >
-              <NumberFlow
+              <NumeroAnimado
                 value={roi}
                 locales="pt-BR"
                 format={{ signDisplay: "always", maximumFractionDigits: 2 }}
@@ -557,7 +557,7 @@ export default function PainelPage() {
                 String(totalBets)
               )} text-[var(--text)] tracking-tight leading-none`}
             >
-              <NumberFlow value={totalBets} locales="pt-BR" />
+              <NumeroAnimado value={totalBets} locales="pt-BR" />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
               {formatarInteiro(greens)} Green · {formatarInteiro(reds)} Red
@@ -575,7 +575,7 @@ export default function PainelPage() {
               </div>
             </div>
             <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
-              <NumberFlow value={taxaAcerto} locales="pt-BR" suffix="%" />
+              <NumeroAnimado value={taxaAcerto} locales="pt-BR" suffix="%" />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
               Das apostas finalizadas
@@ -602,7 +602,7 @@ export default function PainelPage() {
                 pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text)]"
               }`}
             >
-              <NumberFlow value={pendentes} locales="pt-BR" />
+              <NumeroAnimado value={pendentes} locales="pt-BR" />
             </div>
             {/* Zero pendência é a situação boa, não um alerta — âmbar só quando há. */}
             <div
@@ -642,7 +642,7 @@ export default function PainelPage() {
                         : "bg-[var(--red-soft)] text-[var(--red)]"
                     }`}
                   >
-                    <NumberFlow
+                    <NumeroAnimado
                       value={chartData.periodGain}
                       locales="pt-BR"
                       format={{
@@ -706,7 +706,7 @@ export default function PainelPage() {
                       setPeriod(p);
                       setHoveredPoint(null);
                     }}
-                    className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
+                    className={`px-3 py-1 min-h-[24px] text-xs font-semibold rounded-full transition-all ${
                       period === p
                         ? "bg-[var(--accent)] text-white shadow-sm font-bold"
                         : "text-[var(--text-2)] hover:text-[var(--accent)]"
@@ -980,7 +980,7 @@ export default function PainelPage() {
               </h2>
               <Link
                 href="/estatisticas"
-                className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0"
+                className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0 py-[5px] -my-[5px]"
               >
                 <span>Detalhes</span>
                 <ArrowUpRight className="w-3 h-3" aria-hidden="true" />
@@ -1061,7 +1061,7 @@ export default function PainelPage() {
             </h2>
             <Link
               href="/estatisticas"
-              className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0"
+              className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0 py-[5px] -my-[5px]"
             >
               <span>Ver todas</span>
               <ArrowUpRight className="w-3 h-3" aria-hidden="true" />
@@ -1131,7 +1131,7 @@ export default function PainelPage() {
 
             <Link
               href="/apostas"
-              className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
               <span>Ver todas</span>
               <ArrowUpRight className="w-3 h-3" />
@@ -1241,7 +1241,7 @@ export default function PainelPage() {
 
             <Link
               href="/adms"
-              className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
               <span>Detalhes</span>
               <ArrowUpRight className="w-3 h-3" />

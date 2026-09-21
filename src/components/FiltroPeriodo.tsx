@@ -70,7 +70,7 @@ export function FiltroPeriodo({
           onClick={() => onChange("", "")}
           aria-label="Limpar intervalo de datas"
           title="Limpar intervalo de datas"
-          className="w-5 h-5 rounded-full border border-black/[0.1] text-[var(--text-2)] hover:text-[var(--red)] hover:border-[color:color-mix(in_srgb,var(--red)_40%,transparent)] flex items-center justify-center transition-colors"
+          className="w-[24px] h-[24px] rounded-full border border-black/[0.1] text-[var(--text-2)] hover:text-[var(--red)] hover:border-[color:color-mix(in_srgb,var(--red)_40%,transparent)] flex items-center justify-center transition-colors"
         >
           <X className="w-3 h-3" aria-hidden="true" />
         </button>

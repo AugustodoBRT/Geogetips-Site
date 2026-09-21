@@ -43,8 +43,14 @@ export function TextoQueCai({
   // Orquestração explícita em vez de staggerChildren + whileInView: aquela
   // combinação calcula atrasos negativos ao sair da tela e o WAAPI rejeita
   // ("offsets must be monotonically non-decreasing"), derrubando a página.
+  // A frase inteira vai como texto para quem usa leitor de tela, e as palavras
+  // animadas ficam escondidas da leitura. Antes era `aria-label` no próprio
+  // elemento — que é um <span> sem papel, e rótulo em elemento genérico o
+  // VoiceOver ignora: no iPhone o título podia sair mudo. O espaço no fim
+  // separa esta linha da seguinte quando o título tem duas.
   return (
-    <Tag ref={ref} className={className} aria-label={texto}>
+    <Tag ref={ref} className={className}>
+      <span className="sr-only">{`${texto} `}</span>
       {palavras.map((p, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: a mesma palavra pode aparecer duas vezes no título e a lista nunca é reordenada — o índice é justamente o que garante chave única aqui.
         <span key={`${p}-${i}`} aria-hidden="true">

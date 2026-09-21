@@ -64,7 +64,7 @@ export function SeletorUnidade() {
                 type="button"
                 onClick={() => definirUnidade(v)}
                 aria-pressed={unidade === v}
-                className={`px-2.5 py-1 text-[11px] font-bold rounded-full border transition-all ${
+                className={`px-2.5 py-1 min-h-[24px] min-w-[24px] text-[11px] font-bold rounded-full border transition-all ${
                   unidade === v
                     ? "bg-[var(--accent)] text-white border-[var(--accent)]"
                     : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
@@ -114,7 +114,7 @@ export function SeletorUnidade() {
                 onClick={restaurarPadrao}
                 title="Voltar para a unidade do grupo"
                 aria-label="Voltar para a unidade do grupo"
-                className="p-1.5 rounded-full text-[var(--text-2)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+                className="p-1.5 min-h-[24px] min-w-[24px] rounded-full text-[var(--text-2)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>

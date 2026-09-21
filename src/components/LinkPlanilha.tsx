@@ -11,7 +11,7 @@ export function LinkPlanilha({ className = "" }: { className?: string }) {
       href={PLANILHA_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded transition-colors ${className}`}
+      className={`inline-flex items-center gap-1.5 py-[5px] -my-[5px] text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded transition-colors ${className}`}
     >
       <Table2 className="w-3.5 h-3.5" aria-hidden="true" />
       <span>Conferir linha a linha na planilha</span>

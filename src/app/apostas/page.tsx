@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import NumberFlow from "@number-flow/react";
+import { NumeroAnimado } from "@/components/NumeroAnimado";
 import {
   ChevronDown,
   ChevronsDownUp,
@@ -446,7 +446,7 @@ export default function ApostasPage() {
               resumo.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
             }`}
           >
-            <NumberFlow
+            <NumeroAnimado
               value={resumo.lucro}
               locales="pt-BR"
               format={{ style: "currency", currency: "BRL", signDisplay: "always" }}
@@ -477,7 +477,7 @@ export default function ApostasPage() {
           </div>
           <div className="font-mono text-xl sm:text-2xl font-bold text-[var(--text)] mt-1 tracking-tight">
             {resumo.greens + resumo.reds > 0 ? (
-              <NumberFlow value={resumo.taxa} locales="pt-BR" suffix="%" />
+              <NumeroAnimado value={resumo.taxa} locales="pt-BR" suffix="%" />
             ) : (
               "—"
             )}
@@ -494,7 +494,7 @@ export default function ApostasPage() {
             }`}
           >
             {resumo.greens + resumo.reds > 0 ? (
-              <NumberFlow
+              <NumeroAnimado
                 value={resumo.roi}
                 locales="pt-BR"
                 format={{ signDisplay: "always", maximumFractionDigits: 2 }}
@@ -638,7 +638,7 @@ export default function ApostasPage() {
                     type="button"
                     onClick={() => setOddRangeFilter(range.val)}
                     aria-pressed={oddRangeFilter === range.val}
-                    className={`px-2 py-0.5 text-[10.5px] font-semibold rounded-full border transition-all ${
+                    className={`px-2 py-0.5 min-h-[24px] text-[10.5px] font-semibold rounded-full border transition-all ${
                       oddRangeFilter === range.val
                         ? "bg-[var(--accent)] text-white border-[var(--accent)]"
                         : "bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
@@ -657,7 +657,7 @@ export default function ApostasPage() {
                 <button
                   type="button"
                   onClick={() => abrirTodos(expandirEhAProxima)}
-                  className="flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold rounded-full border bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
+                  className="flex items-center gap-1 px-2 py-0.5 min-h-[24px] text-[10.5px] font-semibold rounded-full border bg-white text-[var(--text-2)] border-black/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
                 >
                   {expandirEhAProxima ? (
                     <ChevronsUpDown className="w-3 h-3" aria-hidden="true" />

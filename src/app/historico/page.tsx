@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import NumberFlow from "@number-flow/react";
+import { NumeroAnimado } from "@/components/NumeroAnimado";
 import {
   RefreshCw,
   TrendingUp,
@@ -118,7 +118,7 @@ export default function HistoricoPage() {
                     consolidado.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                   }`}
                 >
-                  <NumberFlow
+                  <NumeroAnimado
                     value={converter(consolidado.lucro)}
                     locales="pt-BR"
                     format={{
@@ -150,7 +150,7 @@ export default function HistoricoPage() {
                     consolidado.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
                   }`}
                 >
-                  <NumberFlow
+                  <NumeroAnimado
                     value={consolidado.roi}
                     locales="pt-BR"
                     format={{ signDisplay: "always", maximumFractionDigits: 2 }}
@@ -176,7 +176,7 @@ export default function HistoricoPage() {
                     String(consolidado.apostas)
                   )} text-[var(--text)] tracking-tight leading-none`}
                 >
-                  <NumberFlow value={consolidado.apostas} locales="pt-BR" />
+                  <NumeroAnimado value={consolidado.apostas} locales="pt-BR" />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
                   {formatarInteiro(consolidado.greens)} Green ·{" "}
@@ -196,7 +196,11 @@ export default function HistoricoPage() {
                   </div>
                 </div>
                 <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
-                  <NumberFlow value={consolidado.taxaAcerto} locales="pt-BR" suffix="%" />
+                  <NumeroAnimado
+                    value={consolidado.taxaAcerto}
+                    locales="pt-BR"
+                    suffix="%"
+                  />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-black/[0.04]">
                   {mesesNegativos === 0
