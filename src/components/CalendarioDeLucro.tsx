@@ -6,6 +6,7 @@ import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { SkeletonLinhas } from "@/components/Skeleton";
 import { timestampDoISO } from "@/lib/date";
 import { abaParaEndereco, escreverConsulta } from "@/lib/endereco";
+import { grupoParaEndereco, type IdGrupo } from "@/lib/grupos";
 import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
 import {
   compacto,
@@ -58,6 +59,7 @@ function tomDoDia(dia: DiaDoCalendario, fora: boolean): string {
 export function CalendarioDeLucro({
   bets,
   aba,
+  grupo,
   de,
   ate,
   converter,
@@ -65,6 +67,8 @@ export function CalendarioDeLucro({
 }: {
   bets: readonly BetItem[];
   aba: string;
+  /** O grupo na tela: o dia do Sigma abre o feed do Sigma. */
+  grupo: IdGrupo;
   de: string;
   ate: string;
   converter: (reais: number) => number;
@@ -226,6 +230,7 @@ export function CalendarioDeLucro({
                           <Link
                             href={`/apostas${escreverConsulta({
                               aba: abaParaEndereco(aba),
+                              grupo: grupoParaEndereco(grupo),
                               de: dia.iso,
                               ate: dia.iso,
                             })}`}

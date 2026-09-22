@@ -7,6 +7,7 @@ import { SkeletonLinhas } from "@/components/Skeleton";
 import { reaisParaUnidades } from "@/lib/constants";
 import { paraISO } from "@/lib/date";
 import { abaParaEndereco, escreverConsulta } from "@/lib/endereco";
+import { grupoParaEndereco, type IdGrupo } from "@/lib/grupos";
 import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
 import { calcularRisco, type DiaFechado } from "@/lib/risco";
 import type { BetItem } from "@/lib/types";
@@ -58,12 +59,25 @@ function Medida({
   );
 }
 
-/** A data de um dia, levando ao feed de Apostas filtrado nele. */
-function LinkDoDia({ dia, aba }: { dia: DiaFechado; aba: string }) {
+/** A data de um dia, levando ao feed de Apostas filtrado nele, no mesmo grupo. */
+function LinkDoDia({
+  dia,
+  aba,
+  grupo,
+}: {
+  dia: DiaFechado;
+  aba: string;
+  grupo: IdGrupo;
+}) {
   const iso = paraISO(dia.data);
   return (
     <Link
-      href={`/apostas${escreverConsulta({ aba: abaParaEndereco(aba), de: iso, ate: iso })}`}
+      href={`/apostas${escreverConsulta({
+        aba: abaParaEndereco(aba),
+        grupo: grupoParaEndereco(grupo),
+        de: iso,
+        ate: iso,
+      })}`}
       className="inline-block py-[5px] -my-[5px] font-semibold underline decoration-dotted decoration-tinta/30 underline-offset-2 hover:text-[var(--accent)] hover:decoration-[var(--accent)] transition-colors"
     >
       {dia.data}
@@ -86,6 +100,7 @@ export function BlocoDeRisco({
   bets,
   converter,
   aba,
+  grupo,
   recorte,
   carregando,
 }: {
@@ -93,6 +108,8 @@ export function BlocoDeRisco({
   converter: (reais: number) => number;
   /** A aba ativa, para o link de um dia abrir o feed na mesma aba. */
   aba: string;
+  /** O grupo na tela, pelo mesmo motivo: do Sigma, o dia abre o feed do Sigma. */
+  grupo: IdGrupo;
   /** Como o subtítulo chama o recorte: "em Setembro26", "no período 01/09 a 15/09". */
   recorte: string;
   carregando: boolean;
@@ -162,7 +179,7 @@ export function BlocoDeRisco({
               valor={formatarReaisComSinal(converter(risco.piorDia.lucro))}
               tom={risco.piorDia.lucro < 0 ? "vermelho" : "verde"}
             >
-              <LinkDoDia dia={risco.piorDia} aba={aba} /> ·{" "}
+              <LinkDoDia dia={risco.piorDia} aba={aba} grupo={grupo} /> ·{" "}
               {formatarInteiro(risco.piorDia.apostas)}{" "}
               {risco.piorDia.apostas === 1 ? "aposta" : "apostas"}
             </Medida>
@@ -174,7 +191,7 @@ export function BlocoDeRisco({
               valor={formatarReaisComSinal(converter(risco.melhorDia.lucro))}
               tom={risco.melhorDia.lucro > 0 ? "verde" : "vermelho"}
             >
-              <LinkDoDia dia={risco.melhorDia} aba={aba} /> ·{" "}
+              <LinkDoDia dia={risco.melhorDia} aba={aba} grupo={grupo} /> ·{" "}
               {formatarInteiro(risco.melhorDia.apostas)}{" "}
               {risco.melhorDia.apostas === 1 ? "aposta" : "apostas"}
             </Medida>

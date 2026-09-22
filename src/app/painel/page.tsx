@@ -1159,6 +1159,7 @@ export default function PainelPage() {
         bets={scopedBets}
         converter={converter}
         aba={activeTab}
+        grupo={grupo}
         recorte={`${trecho.prefixo} ${trecho.nome}${periodo ? ` (${periodo})` : ""}`}
         carregando={loading}
       />
@@ -1238,11 +1239,12 @@ export default function PainelPage() {
       {/* Lucro por dia: o mês inteiro, com os dias ruins à vista. Recebe a aba
           inteira, e não o recorte: o calendário é sempre o mês cheio, e o
           intervalo aparece como dias sem cor. A key zera o mês escolhido nas
-          setas quando a aba muda. */}
+          setas quando a aba ou o grupo mudam. */}
       <CalendarioDeLucro
-        key={activeTab}
+        key={`${grupo}|${activeTab}`}
         bets={allBets}
         aba={activeTab}
+        grupo={grupo}
         de={de}
         ate={ate}
         converter={converter}

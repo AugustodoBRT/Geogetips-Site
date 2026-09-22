@@ -84,6 +84,30 @@ test("escolher o Sigma no Painel põe o grupo no endereço e avisa do atraso", a
   await expect(page.getByText("Nenhuma aposta corresponde aos filtros.")).toBeVisible();
 });
 
+test("no Sigma, os dias do calendário e do risco e o CSV levam o grupo", async ({
+  page,
+}) => {
+  await page.goto("/painel?grupo=sigma");
+  const dia = page
+    .getByRole("region", { name: "Lucro por dia" })
+    .getByRole("link")
+    .first();
+  await expect(dia).toHaveAttribute("href", /[?&]grupo=sigma/, { timeout: 15_000 });
+  const pior = page
+    .getByRole("region", { name: "Risco" })
+    .locator("div")
+    .filter({ has: page.locator("dt", { hasText: "Pior dia" }) })
+    .getByRole("link");
+  await expect(pior).toHaveAttribute("href", /[?&]grupo=sigma/);
+
+  await pior.click();
+  await expect(page).toHaveURL(/\/apostas\?.*grupo=sigma/);
+  const botao = page.getByRole("button", { name: "Baixar CSV" });
+  await expect(botao).toBeEnabled();
+  const [download] = await Promise.all([page.waitForEvent("download"), botao.click()]);
+  expect(download.suggestedFilename()).toMatch(/^geogetips-sigma-/);
+});
+
 test("o link do Histórico do Sigma abre o Histórico do Sigma", async ({ page }) => {
   await page.goto("/historico?grupo=sigma");
   await expect(seletor(page).getByRole("button", { name: "Sigma" })).toHaveAttribute(
