@@ -636,7 +636,13 @@ export default function ApostasPage() {
           </div>
           <div
             className={`font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight ${
-              resumo.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+              // Sem aposta decidida o cartão mostra um traço, que não é ganho:
+              // saía verde.
+              resumo.greens + resumo.reds === 0
+                ? "text-[var(--text)]"
+                : resumo.roi >= 0
+                  ? "text-[var(--green)]"
+                  : "text-[var(--red)]"
             }`}
           >
             {resumo.greens + resumo.reds > 0 ? (
