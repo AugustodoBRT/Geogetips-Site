@@ -11,7 +11,9 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "GeogeTips — análise e resultados de apostas esportivas";
 
-// Regenera junto com a home, para o preview do link não ficar preso em números velhos.
+// Cinco minutos, e não o minuto da home: cada geração busca quatro fontes no
+// Google, e o app de mensagem guarda o preview do link por conta própria. O
+// número velho aqui dura no máximo esse tempo.
 export const revalidate = 300;
 
 const TITULO_1 = "Suas apostas merecem";

@@ -127,6 +127,10 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
     const controller = new AbortController();
     abortRef.current = controller;
 
+    // Voltou ao gratuito no meio da leitura: a próxima já está a caminho, e a
+    // tela segue no esqueleto até ela chegar.
+    let trocouDeGrupo = false;
+
     async function carregar() {
       if (!silenciosa) {
         setLoading(true);
@@ -152,6 +156,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
           // Link do Sigma aberto antes de o grupo existir: volta ao gratuito
           // em vez de uma tela de erro por um grupo que ainda não tem dado.
           if (json?.grupoIndisponivel && grupo !== GRUPO_PADRAO) {
+            trocouDeGrupo = true;
             setGrupo(GRUPO_PADRAO);
             return;
           }
@@ -192,7 +197,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
         setLidoEm(null);
         registrarAba(null);
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controller.signal.aborted && !trocouDeGrupo) setLoading(false);
       }
     }
 

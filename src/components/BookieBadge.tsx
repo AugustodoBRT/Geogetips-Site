@@ -985,20 +985,27 @@ export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
     >
       {casa.logo ? (
         /* Logo negativa da casa: já traz o nome escrito, então substitui
-           monograma e texto. alt vazio porque o title do elemento pai já
-           anuncia a casa — repetir daria leitura dupla no leitor de tela. */
-        // biome-ignore lint/performance/noImgElement: next/image não otimiza SVG sem `dangerouslyAllowSVG`, e estas são 99 logos estáticas de poucos KB, já com loading lazy e decoding async — o componente só acrescentaria um servidor de imagem no caminho.
-        <img
-          src={`/casas/${casa.logo}`}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="block object-contain mx-auto"
-          style={dimensoesDaLogo(casa.logoRatio ?? 3)}
-        />
+           monograma e texto na tela. O nome vai escrito para o leitor de tela
+           ao lado: o `title` do elemento pai não é lido por ele, e o detalhe
+           da aposta saía "Casa:" e mais nada. Por isso o alt é vazio: com os
+           dois, o nome seria lido duas vezes. */
+        <>
+          {/* biome-ignore lint/performance/noImgElement: next/image não otimiza SVG sem `dangerouslyAllowSVG`, e estas são 99 logos estáticas de poucos KB, já com loading lazy e decoding async — o componente só acrescentaria um servidor de imagem no caminho. */}
+          <img
+            src={`/casas/${casa.logo}`}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="block object-contain mx-auto"
+            style={dimensoesDaLogo(casa.logoRatio ?? 3)}
+          />
+          <span className="sr-only">{casa.nome}</span>
+        </>
       ) : (
         <>
+          {/* As iniciais são desenho: o nome vem logo depois, por extenso. */}
           <span
+            aria-hidden="true"
             className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8.5px] font-black shrink-0"
             style={{ backgroundColor: "rgba(255,255,255,0.22)" }}
           >

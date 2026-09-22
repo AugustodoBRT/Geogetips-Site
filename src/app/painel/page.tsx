@@ -27,6 +27,7 @@ import {
   abaParaEndereco,
   comAba,
   escolher,
+  escreverConsulta,
   lerData,
 } from "@/lib/endereco";
 import {
@@ -808,7 +809,8 @@ export default function PainelPage() {
                       {formatarReaisComSinal(hoveredPoint.cumProfit)}
                     </strong>{" "}
                     ({formatarReaisComSinal(hoveredPoint.dayProfit)} no dia ·{" "}
-                    {hoveredPoint.total} tips)
+                    {formatarInteiro(hoveredPoint.total)}{" "}
+                    {hoveredPoint.total === 1 ? "aposta" : "apostas"})
                   </span>
                 ) : (
                   "Curva real calculada a partir de cada aposta registrada"
@@ -1285,12 +1287,20 @@ export default function PainelPage() {
               </p>
             </div>
 
+            {/* Leva o intervalo junto: com o Painel em 01/09 a 15/09, o feed
+                abria o mês inteiro. Os dias do calendário e do bloco Atenção
+                já levavam a data. */}
             <Link
-              href={comAba("/apostas", activeTab, grupo)}
+              href={`/apostas${escreverConsulta({
+                aba: abaParaEndereco(activeTab),
+                grupo: grupoParaEndereco(grupo),
+                de,
+                ate,
+              })}`}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
               <span>Ver todas</span>
-              <ArrowUpRight className="w-3 h-3" />
+              <ArrowUpRight className="w-3 h-3" aria-hidden="true" />
             </Link>
           </div>
 

@@ -149,11 +149,15 @@ export default function AdmsPage() {
                         <span className="text-base font-bold text-[var(--text)] tracking-tight">
                           {adm.nome}
                         </span>
-                        {index === 0 && adm.totalApostas >= 3 && (
-                          <span className="px-2 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-[10.5px] font-bold rounded-full flex items-center gap-1">
-                            <Award className="w-3 h-3" /> Top #1
-                          </span>
-                        )}
+                        {/* Primeiro da lista não basta: num mês em que todos
+                            perderam, o selo verde ia para quem perdeu menos. */}
+                        {index === 0 &&
+                          adm.totalApostas >= 3 &&
+                          adm.lucroUnidades > 0 && (
+                            <span className="px-2 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-[10.5px] font-bold rounded-full flex items-center gap-1">
+                              <Award className="w-3 h-3" /> Top #1
+                            </span>
+                          )}
                       </div>
                       <div className="flex items-center gap-1.5 flex-wrap mt-1">
                         {adm.esportes.map((sp) => (
