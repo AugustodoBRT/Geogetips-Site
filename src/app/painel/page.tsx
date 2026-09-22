@@ -9,6 +9,7 @@ import { SeletorAba } from "@/components/SeletorAba";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonKpis, SkeletonLinhas } from "@/components/Skeleton";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
+import { BlocoDeRisco } from "@/components/BlocoDeRisco";
 import { useBets } from "@/hooks/useBets";
 import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
 import { SecaoTelegram } from "@/components/Telegram";
@@ -35,6 +36,7 @@ import {
   tempoRelativo,
 } from "@/lib/format";
 import { calcularRoi, computeStatsFromBets, taxaDeAcerto } from "@/lib/stats";
+import { maiorQueda } from "@/lib/risco";
 import {
   TrendingUp,
   TrendingDown,
@@ -356,13 +358,14 @@ export default function PainelPage() {
     // Maior queda de um pico até o vale seguinte. É a métrica de risco que
     // falta quando só se olha lucro e ROI: diz quanto a banca chegou a
     // devolver antes de recuperar.
-    let pico = -Infinity;
-    let drawdown = 0;
-    for (const ponto of points) {
-      if (ponto.cumProfit > pico) pico = ponto.cumProfit;
-      const queda = pico - ponto.cumProfit;
-      if (queda > drawdown) drawdown = queda;
-    }
+    //
+    // A conta é a mesma do bloco de risco (lib/risco.ts), partindo de onde a
+    // curva estava na véspera da janela. Antes o pico começava no primeiro
+    // ponto, e um primeiro dia negativo não contava como queda.
+    const drawdown = maiorQueda(
+      points.map((p) => p.cumProfit),
+      firstPoint.cumProfit - firstPoint.dayProfit
+    ).valor;
 
     return {
       width,
@@ -1133,6 +1136,16 @@ export default function PainelPage() {
           </div>
         </section>
       </div>
+
+      {/* Risco: o tamanho das fases ruins, logo abaixo da curva que as mostra.
+          Segue o recorte da tela, como os blocos ao redor. */}
+      <BlocoDeRisco
+        bets={scopedBets}
+        converter={converter}
+        aba={activeTab}
+        recorte={`${trecho.prefixo} ${trecho.nome}${periodo ? ` (${periodo})` : ""}`}
+        carregando={loading}
+      />
 
       {/* Top Casas.
           Pergunta gêmea da de esporte, e por um motivo que esporte não tem:
