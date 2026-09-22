@@ -628,8 +628,16 @@ export default function PainelPage() {
                 suffix="%"
               />
             </div>
+            {/* O ROI daqui conta anuladas e pendentes no investido, como a
+                planilha. Quem compara com outro grupo precisa saber disso, e a
+                explicação mora em /perguntas. */}
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
-              Lucro sobre o total apostado
+              <Link
+                href="/perguntas#roi"
+                className="inline-block py-[5px] -my-[5px] underline decoration-dotted decoration-tinta/30 underline-offset-2 hover:text-[var(--accent)] hover:decoration-[var(--accent)] transition-colors"
+              >
+                Lucro sobre o total apostado
+              </Link>
             </div>
           </div>
 
