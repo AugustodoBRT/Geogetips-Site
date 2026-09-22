@@ -8,7 +8,7 @@ const BRL = new Intl.NumberFormat("pt-BR", {
 const BRL_SINAL = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
-  signDisplay: "always",
+  signDisplay: "exceptZero",
 });
 
 /** 9.22 -> "R$ 9,22" */
@@ -16,9 +16,49 @@ export function formatarReais(valor: number): string {
   return BRL.format(valor);
 }
 
-/** 9.22 -> "+R$ 9,22"  ·  -9.22 -> "-R$ 9,22" */
+/**
+ * 9.22 -> "+R$ 9,22"  ·  -9.22 -> "-R$ 9,22"  ·  0 -> "R$ 0,00"
+ *
+ * Zero sai sem sinal. Com `signDisplay: "always"`, o dia só com apostas
+ * pendentes aparecia no feed como "+R$ 0,00", que se lê como lucro, e um zero
+ * negativo de soma de ponto flutuante sairia "-R$ 0,00". `exceptZero` decide
+ * depois de arredondar: -0,001 também vira "R$ 0,00".
+ */
 export function formatarReaisComSinal(valor: number): string {
   return BRL_SINAL.format(valor);
+}
+
+/**
+ * Os mesmos formatos, para os números animados (`NumeroAnimado`), que recebem
+ * as opções do `Intl` em vez de texto pronto.
+ *
+ * ROI com duas casas e taxa de acerto com uma, sempre: sem o mínimo, um ROI de
+ * 5,10% aparecia "+5,1%" no cartão e "+5,10%" na tabela logo abaixo.
+ */
+export const FORMATO_REAIS_COM_SINAL = {
+  style: "currency",
+  currency: "BRL",
+  signDisplay: "exceptZero",
+} as const satisfies Intl.NumberFormatOptions;
+
+export const FORMATO_ROI = {
+  signDisplay: "exceptZero",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+} as const satisfies Intl.NumberFormatOptions;
+
+export const FORMATO_TAXA = {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+} as const satisfies Intl.NumberFormatOptions;
+
+/**
+ * O valor em reais é zero depois de arredondar ao centavo?
+ *
+ * Para a cor: zero não é ganho nem perda. O dia só com pendentes saía verde.
+ */
+export function ehZero(valor: number): boolean {
+  return Math.abs(valor) < 0.005;
 }
 
 const INTEIRO = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
@@ -104,10 +144,11 @@ export function formatarOddJusta(odd: number): string {
   return odd.toFixed(3).replace(".", ",");
 }
 
-/** 2.5 -> "+2,50u" */
+/** 2.5 -> "+2,50u"  ·  -1.25 -> "-1,25u"  ·  0 -> "0,00u", sem sinal, como nos reais. */
 export function formatarUnidades(unidades: number): string {
-  const sinal = unidades >= 0 ? "+" : "";
-  return `${sinal}${unidades.toFixed(2).replace(".", ",")}u`;
+  const tamanho = Math.abs(unidades).toFixed(2).replace(".", ",");
+  if (tamanho === "0,00") return "0,00u";
+  return `${unidades > 0 ? "+" : "-"}${tamanho}u`;
 }
 
 /**

@@ -43,8 +43,13 @@ import {
   lerLista,
 } from "@/lib/endereco";
 import {
+  ehZero,
+  FORMATO_REAIS_COM_SINAL,
+  FORMATO_ROI,
+  FORMATO_TAXA,
   formatarInteiro,
   formatarOdd,
+  formatarOddExata,
   formatarReais,
   formatarReaisComSinal,
 } from "@/lib/format";
@@ -459,7 +464,7 @@ export default function ApostasPage() {
   }
 
   async function handleCopyBet(bet: BetItem) {
-    const texto = `${bet.partida} - ${bet.tip} @${formatarOdd(bet.odd)} (${bet.casa})`;
+    const texto = `${bet.partida} - ${bet.tip} @${formatarOddExata(bet.odd)} (${bet.casa})`;
     try {
       await navigator.clipboard.writeText(texto);
       setCopied(true);
@@ -575,13 +580,17 @@ export default function ApostasPage() {
           </div>
           <div
             className={`font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight ${
-              resumo.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+              ehZero(resumo.lucro)
+                ? "text-[var(--text)]"
+                : resumo.lucro > 0
+                  ? "text-[var(--green)]"
+                  : "text-[var(--red)]"
             }`}
           >
             <NumeroAnimado
               value={resumo.lucro}
               locales="pt-BR"
-              format={{ style: "currency", currency: "BRL", signDisplay: "always" }}
+              format={FORMATO_REAIS_COM_SINAL}
             />
           </div>
         </div>
@@ -609,7 +618,12 @@ export default function ApostasPage() {
           </div>
           <div className="font-mono text-xl sm:text-2xl font-bold text-[var(--text)] mt-1 tracking-tight">
             {resumo.greens + resumo.reds > 0 ? (
-              <NumeroAnimado value={resumo.taxa} locales="pt-BR" suffix="%" />
+              <NumeroAnimado
+                value={resumo.taxa}
+                locales="pt-BR"
+                format={FORMATO_TAXA}
+                suffix="%"
+              />
             ) : (
               "—"
             )}
@@ -622,14 +636,20 @@ export default function ApostasPage() {
           </div>
           <div
             className={`font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight ${
-              resumo.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+              // Sem aposta decidida o cartão mostra um traço, que não é ganho:
+              // saía verde.
+              resumo.greens + resumo.reds === 0
+                ? "text-[var(--text)]"
+                : resumo.roi >= 0
+                  ? "text-[var(--green)]"
+                  : "text-[var(--red)]"
             }`}
           >
             {resumo.greens + resumo.reds > 0 ? (
               <NumeroAnimado
                 value={resumo.roi}
                 locales="pt-BR"
-                format={{ signDisplay: "always", maximumFractionDigits: 2 }}
+                format={FORMATO_ROI}
                 suffix="%"
               />
             ) : (
@@ -862,11 +882,15 @@ export default function ApostasPage() {
                         {dia.apostas.length === 1 ? "aposta" : "apostas"})
                       </span>
                       <span className="flex-1 h-px bg-tinta/[0.06]" aria-hidden="true" />
+                      {/* Zero é neutro: o dia de hoje, só com pendentes, saía
+                          verde, com "+R$ 0,00", como se tivesse dado lucro. */}
                       <span
                         className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                          dia.lucro >= 0
-                            ? "bg-[var(--green-soft)] text-[var(--green)]"
-                            : "bg-[var(--red-soft)] text-[var(--red)]"
+                          ehZero(dia.lucro)
+                            ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
+                            : dia.lucro > 0
+                              ? "bg-[var(--green-soft)] text-[var(--green)]"
+                              : "bg-[var(--red-soft)] text-[var(--red)]"
                         }`}
                       >
                         {formatarReaisComSinal(converter(dia.lucro))}
@@ -944,7 +968,7 @@ export default function ApostasPage() {
                                 )}
 
                                 <span className="text-xs font-mono font-bold text-[var(--text)] bg-[var(--bg)] px-2 py-0.5 rounded border border-tinta/[0.04] shrink-0">
-                                  @{formatarOdd(bet.odd)}
+                                  @{formatarOddExata(bet.odd)}
                                 </span>
 
                                 <span className="text-xs font-mono text-[var(--text-2)] shrink-0">
@@ -1063,7 +1087,7 @@ export default function ApostasPage() {
                           <BookieBadge bookie={bet.casa} />
                         </td>
                         <td className="py-2.5 px-3 font-mono font-bold text-right text-[var(--text)]">
-                          {formatarOdd(bet.odd)}
+                          {formatarOddExata(bet.odd)}
                         </td>
                         <td className="py-2.5 px-3 font-mono text-right text-[var(--text-2)] whitespace-nowrap">
                           {formatarReais(converter(bet.valor))}
