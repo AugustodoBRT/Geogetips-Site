@@ -218,13 +218,17 @@ function Navigation() {
                   const isActive = pathname === item.href;
                   return (
                     <li key={item.href}>
-                      {/* Fecha no toque, e não só quando o caminho muda: tocar
-                          na página atual deixava o menu aberto por cima dela. */}
+                      {/* Na página atual o caminho não muda, e o menu ficava
+                          aberto por cima dela: fecha no toque. Nas outras ele
+                          espera a tela chegar, porque é nele que o ponto de
+                          `Pendente` avisa, em rede lenta, que o toque pegou. */}
                       <LinkInterno
                         ref={i === 0 ? primeiroLink : undefined}
                         href={item.href}
                         aria-current={isActive ? "page" : undefined}
-                        onClick={() => setAberto(false)}
+                        onClick={() => {
+                          if (isActive) setAberto(false);
+                        }}
                         className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
                           isActive
                             ? "bg-[var(--pilula)] text-[var(--text)] shadow-sm"

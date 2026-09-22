@@ -16,10 +16,7 @@ import type { ComponentProps, MouseEvent } from "react";
  * Clique com tecla (nova aba, nova janela) e botão do meio seguem o caminho de
  * sempre.
  */
-function recomecarSeForAMesmaPagina(
-  e: MouseEvent<HTMLAnchorElement>,
-  href: string
-) {
+function recomecarSeForAMesmaPagina(e: MouseEvent<HTMLAnchorElement>, href: string) {
   if (e.defaultPrevented || e.button !== 0) return;
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   const { pathname, search } = window.location;
