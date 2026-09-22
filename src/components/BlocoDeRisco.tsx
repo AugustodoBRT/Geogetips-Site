@@ -8,7 +8,11 @@ import { reaisParaUnidades } from "@/lib/constants";
 import { paraISO } from "@/lib/date";
 import { abaParaEndereco, escreverConsulta } from "@/lib/endereco";
 import { grupoParaEndereco, type IdGrupo } from "@/lib/grupos";
-import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
+import {
+  formatarInteiro,
+  formatarReaisComSinal,
+  formatarUnidadesSemSinal,
+} from "@/lib/format";
 import { calcularRisco, type DiaFechado } from "@/lib/risco";
 import type { BetItem } from "@/lib/types";
 
@@ -18,7 +22,7 @@ function curta(data: string): string {
 }
 
 function unidades(reais: number): string {
-  return `${reaisParaUnidades(Math.abs(reais)).toFixed(2).replace(".", ",")}u`;
+  return formatarUnidadesSemSinal(reaisParaUnidades(reais));
 }
 
 type Tom = "verde" | "vermelho" | "neutro";
@@ -33,15 +37,19 @@ function Medida({
   rotulo,
   valor,
   tom = "neutro",
+  className = "",
   children,
 }: {
   rotulo: string;
   valor: string;
   tom?: Tom;
+  className?: string;
   children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-[var(--bg-soft)] rounded-xl border border-tinta/[0.04] p-3.5 sm:p-4 min-w-0">
+    <div
+      className={`bg-[var(--bg-soft)] rounded-xl border border-tinta/[0.04] p-3.5 sm:p-4 min-w-0 ${className}`}
+    >
       <dt className="text-[10.5px] font-bold uppercase tracking-wider text-[var(--text-3)]">
         {rotulo}
       </dt>
@@ -86,11 +94,12 @@ function LinkDoDia({
 }
 
 /**
- * O bloco de risco do Painel (#68).
+ * O bloco "Atenção" do Painel (#68, #80).
  *
- * Lucro e ROI dizem aonde o grupo chegou; isto diz quanto se sofreu no
- * caminho. Segue o recorte da tela (aba e intervalo de datas), como os outros
- * blocos, e não a janela do gráfico: a janela é só do desenho.
+ * Lucro e ROI dizem aonde o grupo chegou; isto diz como a banca se comportou
+ * no caminho, nas fases boas e nas ruins. Segue o recorte da tela (aba e
+ * intervalo de datas), como os outros blocos, e não a janela do gráfico: a
+ * janela é só do desenho.
  *
  * As contas estão em lib/risco.ts, em reais da planilha; aqui os valores
  * passam para a unidade do visitante com `converter`. Unidades e contagens não
@@ -110,7 +119,7 @@ export function BlocoDeRisco({
   aba: string;
   /** O grupo na tela, pelo mesmo motivo: do Sigma, o dia abre o feed do Sigma. */
   grupo: IdGrupo;
-  /** Como o subtítulo chama o recorte: "em Setembro26", "no período 01/09 a 15/09". */
+  /** Como o subtítulo chama o recorte: "Setembro26", "Setembro26 (01/09 a 15/09)". */
   recorte: string;
   carregando: boolean;
 }) {
@@ -131,11 +140,11 @@ export function BlocoDeRisco({
             id="titulo-risco"
             className="text-base font-bold text-[var(--text)] tracking-tight"
           >
-            Risco
+            Atenção
           </h2>
           <p className="text-xs text-[var(--text-3)]">
-            Quanto a banca sofreu no caminho {recorte}: o tamanho das fases ruins, e não
-            só aonde o grupo chegou.
+            Como a banca se comportou durante {recorte}: o tamanho das fases boas e ruins;
+            não só aonde o grupo chegou.
           </p>
         </div>
       </div>
@@ -149,6 +158,9 @@ export function BlocoDeRisco({
           </p>
         )
       ) : (
+        // Ruim à esquerda e bom à direita, em pares: pior e melhor dia, maior
+        // red e maior green. Com sete cartões, o último ocupa duas colunas para
+        // a grade não terminar com um buraco, no celular e no computador.
         <dl className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
           <Medida
             rotulo="Maior queda"
@@ -165,12 +177,15 @@ export function BlocoDeRisco({
           </Medida>
 
           <Medida
-            rotulo="Reds seguidos"
-            valor={formatarInteiro(risco.maiorSequenciaDeReds)}
-            tom={risco.maiorSequenciaDeReds > 0 ? "vermelho" : "neutro"}
+            rotulo="Dias no verde"
+            valor={`${formatarInteiro(risco.diasNoVerde)} de ${formatarInteiro(risco.diasComAposta)}`}
+            tom="verde"
           >
-            maior sequência; a de greens foi de{" "}
-            {formatarInteiro(risco.maiorSequenciaDeGreens)}
+            {formatarInteiro(risco.diasNoVermelho)} no vermelho
+            {risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho > 0 &&
+              `, ${formatarInteiro(
+                risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho
+              )} no zero`}
           </Medida>
 
           {risco.piorDia && (
@@ -198,14 +213,6 @@ export function BlocoDeRisco({
           )}
 
           <Medida
-            rotulo="Maior green"
-            valor={formatarReaisComSinal(converter(risco.maiorGreen))}
-            tom={risco.maiorGreen > 0 ? "verde" : "neutro"}
-          >
-            numa aposta só
-          </Medida>
-
-          <Medida
             rotulo="Maior red"
             valor={formatarReaisComSinal(converter(risco.maiorRed))}
             tom={risco.maiorRed < 0 ? "vermelho" : "neutro"}
@@ -214,20 +221,17 @@ export function BlocoDeRisco({
           </Medida>
 
           <Medida
-            rotulo="Dias no verde"
-            valor={`${formatarInteiro(risco.diasNoVerde)} de ${formatarInteiro(risco.diasComAposta)}`}
-            tom="verde"
+            rotulo="Maior green"
+            valor={formatarReaisComSinal(converter(risco.maiorGreen))}
+            tom={risco.maiorGreen > 0 ? "verde" : "neutro"}
           >
-            {formatarInteiro(risco.diasNoVermelho)} no vermelho
-            {risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho > 0 &&
-              `, ${formatarInteiro(
-                risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho
-              )} no zero`}
+            numa aposta só
           </Medida>
 
           <Medida
             rotulo="Apostas por dia"
             valor={risco.mediaDeApostasPorDia.toFixed(1).replace(".", ",")}
+            className="col-span-2"
           >
             média em {formatarInteiro(risco.diasComAposta)}{" "}
             {risco.diasComAposta === 1 ? "dia" : "dias"} com aposta

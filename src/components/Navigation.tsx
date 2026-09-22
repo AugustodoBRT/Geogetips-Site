@@ -18,6 +18,7 @@ const navItems = [
   { label: "Histórico", href: "/historico" },
   { label: "Adms", href: "/adms" },
   { label: "Estatísticas", href: "/estatisticas" },
+  { label: "FAQ", href: "/perguntas" },
 ];
 
 /**
@@ -137,10 +138,12 @@ function Navigation() {
             {/* Fora do menu do celular de propósito: trocar de tema é coisa de
                 um toque, e esconder atrás do menu dobraria o caminho. */}
             <BotaoTema />
+            {/* Some de 768 a 1023 px: ali o menu do computador já aparece, e
+                com os sete itens dele o botão passava da borda da tela. */}
             <BotaoTelegram
               variante="compacto"
               rotulo="Grupo grátis"
-              className="hidden sm:inline-flex"
+              className="hidden sm:inline-flex md:hidden lg:inline-flex"
             />
 
             {/* Botão do menu mobile */}

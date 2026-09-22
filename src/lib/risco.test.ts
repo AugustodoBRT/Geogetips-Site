@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcularRisco, diasFechados, maiorQueda, maiorSequencia } from "./risco";
+import { calcularRisco, diasFechados, maiorQueda } from "./risco";
 import type { BetItem, BetResult } from "./types";
 
 /**
@@ -80,30 +80,6 @@ describe("diasFechados", () => {
   });
 });
 
-describe("maiorSequencia", () => {
-  const cronologica = [
-    aposta("18/09/2026", "RED", -100),
-    aposta("18/09/2026", "RED", -100),
-    aposta("19/09/2026", "VOID"),
-    aposta("19/09/2026", "RED", -100),
-    aposta("19/09/2026", "GREEN", 100),
-    aposta("20/09/2026", "PENDENTE"),
-    aposta("20/09/2026", "RED", -100),
-    aposta("20/09/2026", "RED", -100),
-    aposta("30/12/2026", "RED", -100),
-  ];
-
-  // A void no meio não salvou ninguém: a sequência de reds continua.
-  it("atravessa void e pendente, na ordem em que as apostas foram lançadas", () => {
-    expect(maiorSequencia(comoOServidorManda(cronologica), "RED", REF)).toBe(3);
-    expect(maiorSequencia(comoOServidorManda(cronologica), "GREEN", REF)).toBe(1);
-  });
-
-  it("é zero sem apostas decididas", () => {
-    expect(maiorSequencia([aposta("20/09/2026", "PENDENTE")], "RED", REF)).toBe(0);
-  });
-});
-
 describe("calcularRisco", () => {
   it("junta tudo num recorte", () => {
     const risco = calcularRisco(
@@ -125,8 +101,6 @@ describe("calcularRisco", () => {
       pico: "17/09/2026",
       vale: "19/09/2026",
     });
-    expect(risco.maiorSequenciaDeReds).toBe(2);
-    expect(risco.maiorSequenciaDeGreens).toBe(1);
     expect(risco.melhorDia).toEqual({ data: "17/09/2026", lucro: 300, apostas: 1 });
     expect(risco.piorDia).toEqual({ data: "18/09/2026", lucro: -250, apostas: 2 });
     expect(risco.maiorGreen).toBe(300);
@@ -145,8 +119,6 @@ describe("calcularRisco", () => {
   it("recorte vazio não inventa número", () => {
     expect(calcularRisco([], REF)).toEqual({
       maiorQueda: { valor: 0, pico: null, vale: null },
-      maiorSequenciaDeReds: 0,
-      maiorSequenciaDeGreens: 0,
       melhorDia: null,
       piorDia: null,
       maiorGreen: 0,

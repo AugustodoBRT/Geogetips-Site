@@ -845,7 +845,7 @@ export default function PainelPage() {
                   <SkeletonLinhas quantidade={1} altura="h-48" />
                 ) : (
                   <p className="text-xs text-[var(--text-3)]">
-                    Sem apostas com data nesta aba.
+                    Sem apostas com data neste período.
                   </p>
                 )}
               </div>
@@ -1121,7 +1121,7 @@ export default function PainelPage() {
                     <SkeletonLinhas quantidade={3} altura="h-9" />
                   ) : (
                     <p className="text-center text-xs text-[var(--text-3)]">
-                      Sem modalidades nesta aba.
+                      Sem modalidades neste período.
                     </p>
                   )}
                 </div>
@@ -1153,14 +1153,29 @@ export default function PainelPage() {
         </section>
       </div>
 
-      {/* Risco: o tamanho das fases ruins, logo abaixo da curva que as mostra.
-          Segue o recorte da tela, como os blocos ao redor. */}
+      {/* Atenção: o tamanho das fases boas e ruins, logo abaixo da curva que as
+          mostra. Segue o recorte da tela, como os blocos ao redor. */}
       <BlocoDeRisco
         bets={scopedBets}
         converter={converter}
         aba={activeTab}
         grupo={grupo}
-        recorte={`${trecho.prefixo} ${trecho.nome}${periodo ? ` (${periodo})` : ""}`}
+        recorte={`${trecho.nome}${periodo ? ` (${periodo})` : ""}`}
+        carregando={loading}
+      />
+
+      {/* Lucro por dia: o mês inteiro, com os dias ruins à vista. Recebe a aba
+          inteira, e não o recorte: o calendário é sempre o mês cheio, e o
+          intervalo aparece como dias sem cor. A key zera o mês escolhido nas
+          setas quando a aba ou o grupo mudam. */}
+      <CalendarioDeLucro
+        key={`${grupo}|${activeTab}`}
+        bets={allBets}
+        aba={activeTab}
+        grupo={grupo}
+        de={de}
+        ate={ate}
+        converter={converter}
         carregando={loading}
       />
 
@@ -1169,9 +1184,8 @@ export default function PainelPage() {
           casa limita conta boa. Quando isso acontece, o resultado do grupo muda
           sem nada mudar na estratégia — e o Painel é onde se olha primeiro.
 
-          Fica logo abaixo do gráfico, ao lado da irmã: as duas respondem "de
-          onde veio o resultado", e separá-las obrigava a rolar a tela inteira
-          para comparar.
+          Fica depois do calendário: primeiro como foi cada dia, depois de onde
+          veio o resultado.
 
           Largura inteira com a lista em duas colunas: são oito casas, e numa
           coluna só a linha ficaria com meio metro de espaço vazio entre o nome
@@ -1197,7 +1211,9 @@ export default function PainelPage() {
             </Link>
           </div>
           <p className="text-xs text-[var(--text-3)]">
-            {periodoAtivo ? `As mais usadas ${periodo}` : "As mais usadas na aba ativa"}
+            {periodoAtivo
+              ? `As mais usadas ${periodo}`
+              : `As mais usadas em ${trecho.nome}`}
           </p>
         </div>
 
@@ -1206,7 +1222,7 @@ export default function PainelPage() {
             <SkeletonLinhas quantidade={4} altura="h-9" />
           ) : (
             <p className="text-center text-xs text-[var(--text-3)] py-6">
-              Sem casas nesta aba.
+              Sem casas neste período.
             </p>
           )
         ) : (
@@ -1236,21 +1252,6 @@ export default function PainelPage() {
         )}
       </section>
 
-      {/* Lucro por dia: o mês inteiro, com os dias ruins à vista. Recebe a aba
-          inteira, e não o recorte: o calendário é sempre o mês cheio, e o
-          intervalo aparece como dias sem cor. A key zera o mês escolhido nas
-          setas quando a aba ou o grupo mudam. */}
-      <CalendarioDeLucro
-        key={`${grupo}|${activeTab}`}
-        bets={allBets}
-        aba={activeTab}
-        grupo={grupo}
-        de={de}
-        ate={ate}
-        converter={converter}
-        carregando={loading}
-      />
-
       {/* Bottom Section: Recent Activity Stream (6 cols) + Top Adms Leaderboard (6 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Bets Stream */}
@@ -1269,7 +1270,7 @@ export default function PainelPage() {
               <p className="text-xs text-[var(--text-3)]">
                 {periodoAtivo
                   ? `Apostas registradas ${periodo}`
-                  : "As entradas mais recentes da aba"}
+                  : `As entradas mais recentes ${trecho.prefixo} ${trecho.nome}`}
               </p>
             </div>
 
@@ -1288,7 +1289,9 @@ export default function PainelPage() {
                 <SkeletonLinhas quantidade={4} altura="h-14" />
               ) : (
                 <p className="text-center text-xs text-[var(--text-3)] py-6">
-                  {periodoAtivo ? `Sem apostas ${periodo}.` : "Sem apostas nesta aba."}
+                  {periodoAtivo
+                    ? `Sem apostas ${periodo}.`
+                    : "Sem apostas neste período."}
                 </p>
               )
             ) : (
@@ -1384,7 +1387,7 @@ export default function PainelPage() {
               <p className="text-xs text-[var(--text-3)]">
                 {periodoAtivo
                   ? `Quem mais gerou retorno ${periodo}`
-                  : "Quem mais gerou retorno na aba ativa"}
+                  : `Quem mais gerou retorno em ${trecho.nome}`}
               </p>
             </div>
 
@@ -1403,7 +1406,7 @@ export default function PainelPage() {
                 <SkeletonLinhas quantidade={3} altura="h-14" />
               ) : (
                 <p className="text-center text-xs text-[var(--text-3)] py-6">
-                  Sem adms nesta aba.
+                  Sem adms neste período.
                 </p>
               )
             ) : (

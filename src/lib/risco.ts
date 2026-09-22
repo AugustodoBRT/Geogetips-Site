@@ -80,42 +80,8 @@ export function diasFechados(
     .map(({ data, lucro, apostas }) => ({ data, lucro: arredondar(lucro), apostas }));
 }
 
-/**
- * A maior sequência de um resultado, aposta a aposta, na ordem da planilha.
- *
- * As apostas chegam do servidor da mais nova para a mais antiga, com a posição
- * na planilha desempatando dentro do dia (`ordenarApostas`). Virar a lista e
- * reordenar por data, de forma estável, devolve a ordem em que foram lançadas.
- * Void e pendente não entram e não quebram a sequência: uma anulada no meio de
- * cinco reds não fez ninguém ganhar nada.
- */
-export function maiorSequencia(
-  bets: readonly BetItem[],
-  resultado: "GREEN" | "RED",
-  ref: Date = new Date()
-): number {
-  const hoje = inicioDeHoje(ref);
-  const cronologica = [...bets]
-    .reverse()
-    .map((b) => ({ b, ts: parseDateTimestamp(b.data) }))
-    .filter(({ ts }) => ts > 0 && ts <= hoje)
-    .sort((x, y) => x.ts - y.ts)
-    .map(({ b }) => b)
-    .filter((b) => b.resultado === "GREEN" || b.resultado === "RED");
-
-  let atual = 0;
-  let maior = 0;
-  for (const b of cronologica) {
-    atual = b.resultado === resultado ? atual + 1 : 0;
-    if (atual > maior) maior = atual;
-  }
-  return maior;
-}
-
 export interface Risco {
   maiorQueda: { valor: number; pico: string | null; vale: string | null };
-  maiorSequenciaDeReds: number;
-  maiorSequenciaDeGreens: number;
   melhorDia: DiaFechado | null;
   piorDia: DiaFechado | null;
   /** Lucro da melhor e da pior aposta sozinha. */
@@ -158,8 +124,6 @@ export function calcularRisco(bets: readonly BetItem[], ref: Date = new Date()):
       pico: queda.inicio >= 0 ? dias[queda.inicio].data : null,
       vale: queda.fim >= 0 ? dias[queda.fim].data : null,
     },
-    maiorSequenciaDeReds: maiorSequencia(bets, "RED", ref),
-    maiorSequenciaDeGreens: maiorSequencia(bets, "GREEN", ref),
     melhorDia,
     piorDia,
     maiorGreen: lucros.length > 0 ? Math.max(...lucros, 0) : 0,

@@ -111,13 +111,14 @@ export function abaValida(nome: string): boolean {
 }
 
 /**
- * A aba dentro de uma frase. O agregado não é uma aba: sem isto a tela dizia
- * "atividades da aba TODOS" e "Ranking de Adms (TODOS)".
+ * A aba dentro de uma frase: "atividades de Setembro26". O agregado não é um
+ * mês: sem isto a tela dizia "atividades de TODOS". A palavra "aba" fica de
+ * fora; é o nome na planilha, e quem visita escolhe um mês.
  */
 export function trechoDaAba(nome: string): { prefixo: string; nome: string } {
   return nome === ABA_TODOS
     ? { prefixo: "de", nome: "todos os meses" }
-    : { prefixo: "da aba", nome };
+    : { prefixo: "de", nome };
 }
 
 /** Rótulo curto, para títulos entre parênteses: "Geral" ou "Agosto26". */

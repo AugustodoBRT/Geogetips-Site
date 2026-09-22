@@ -94,7 +94,7 @@ test("no Sigma, os dias do calendário e do risco e o CSV levam o grupo", async 
     .first();
   await expect(dia).toHaveAttribute("href", /[?&]grupo=sigma/, { timeout: 15_000 });
   const pior = page
-    .getByRole("region", { name: "Risco" })
+    .getByRole("region", { name: "Atenção" })
     .locator("div")
     .filter({ has: page.locator("dt", { hasText: "Pior dia" }) })
     .getByRole("link");

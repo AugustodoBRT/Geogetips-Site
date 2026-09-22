@@ -15,7 +15,7 @@ test("a maior queda do bloco é a mesma do gráfico quando a janela cobre a aba"
   page,
 }) => {
   await page.goto("/painel?janela=Tudo");
-  const bloco = page.getByRole("region", { name: "Risco" });
+  const bloco = page.getByRole("region", { name: "Atenção" });
   await expect(bloco.getByText("Maior queda")).toBeVisible({ timeout: 15_000 });
 
   const valorDoBloco = bloco
@@ -37,7 +37,7 @@ test("a maior queda do bloco é a mesma do gráfico quando a janela cobre a aba"
 
 test("a data do pior dia abre o feed daquele dia", async ({ page }) => {
   await page.goto("/painel");
-  const bloco = page.getByRole("region", { name: "Risco" });
+  const bloco = page.getByRole("region", { name: "Atenção" });
   const pior = bloco
     .locator("div")
     .filter({ has: page.locator("dt", { hasText: "Pior dia" }) })

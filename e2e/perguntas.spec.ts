@@ -63,14 +63,26 @@ test("o ROI do Painel leva à explicação dele", async ({ page }) => {
   await expect(page.locator("#roi")).toBeInViewport();
 });
 
-test("rodapé e home apontam para a página", async ({ page }) => {
+test("menu, rodapé e home apontam para a página", async ({ page }) => {
   await page.goto("/");
+  await expect(
+    page.getByRole("navigation", { name: "Navegação principal" }).getByRole("link", {
+      name: "FAQ",
+    })
+  ).toHaveAttribute("href", "/perguntas");
   await expect(
     page.getByRole("contentinfo").getByRole("link", { name: "Perguntas frequentes" })
   ).toHaveAttribute("href", "/perguntas");
   await expect(
-    page.getByRole("link", { name: /Como cada número é calculado/ })
+    page.getByRole("link", { name: "Outras dúvidas frequentes" })
   ).toHaveAttribute("href", "/perguntas");
+
+  await page.goto("/perguntas");
+  await expect(
+    page.getByRole("navigation", { name: "Navegação principal" }).getByRole("link", {
+      name: "FAQ",
+    })
+  ).toHaveAttribute("aria-current", "page");
 });
 
 for (const tema of ["claro", "escuro"] as const) {

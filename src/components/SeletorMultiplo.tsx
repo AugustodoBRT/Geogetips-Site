@@ -145,7 +145,7 @@ export function SeletorMultiplo({
           >
             {opcoes.length === 0 ? (
               <p className="text-xs text-[var(--text-3)] px-3 py-2">
-                Nada para filtrar nesta aba.
+                Nada para filtrar neste período.
               </p>
             ) : (
               opcoes.map((op) => {

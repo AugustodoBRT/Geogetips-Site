@@ -99,7 +99,7 @@ describe("rótulos de aba", () => {
       nome: "todos os meses",
     });
     expect(trechoDaAba("Setembro26")).toEqual({
-      prefixo: "da aba",
+      prefixo: "de",
       nome: "Setembro26",
     });
   });
