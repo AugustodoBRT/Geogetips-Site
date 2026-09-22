@@ -16,6 +16,7 @@ import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { FiltroPeriodo } from "@/components/FiltroPeriodo";
+import { CalendarioDeLucro } from "@/components/CalendarioDeLucro";
 import { paraISO, parseDateTimestamp, rotuloDoPeriodo, timestampDoISO } from "@/lib/date";
 import { ABA_TODOS, rotuloDaAba, trechoDaAba } from "@/lib/constants";
 import {
@@ -1197,6 +1198,20 @@ export default function PainelPage() {
           </div>
         )}
       </section>
+
+      {/* Lucro por dia: o mês inteiro, com os dias ruins à vista. Recebe a aba
+          inteira, e não o recorte: o calendário é sempre o mês cheio, e o
+          intervalo aparece como dias sem cor. A key zera o mês escolhido nas
+          setas quando a aba muda. */}
+      <CalendarioDeLucro
+        key={activeTab}
+        bets={allBets}
+        aba={activeTab}
+        de={de}
+        ate={ate}
+        converter={converter}
+        carregando={loading}
+      />
 
       {/* Bottom Section: Recent Activity Stream (6 cols) + Top Adms Leaderboard (6 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
