@@ -25,6 +25,9 @@ import Link from "next/link";
 import { abaCurta, abaDoMesAtual } from "@/lib/constants";
 import { comAba } from "@/lib/endereco";
 import {
+  FORMATO_REAIS_COM_SINAL,
+  FORMATO_ROI,
+  FORMATO_TAXA,
   formatarInteiro,
   formatarOdd,
   formatarReaisComSinal,
@@ -154,11 +157,7 @@ export default function HistoricoPage() {
                   <NumeroAnimado
                     value={converter(consolidado.lucro)}
                     locales="pt-BR"
-                    format={{
-                      style: "currency",
-                      currency: "BRL",
-                      signDisplay: "always",
-                    }}
+                    format={FORMATO_REAIS_COM_SINAL}
                   />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
@@ -192,7 +191,7 @@ export default function HistoricoPage() {
                   <NumeroAnimado
                     value={consolidado.roi}
                     locales="pt-BR"
-                    format={{ signDisplay: "always", maximumFractionDigits: 2 }}
+                    format={FORMATO_ROI}
                     suffix="%"
                   />
                 </div>
@@ -238,6 +237,7 @@ export default function HistoricoPage() {
                   <NumeroAnimado
                     value={consolidado.taxaAcerto}
                     locales="pt-BR"
+                    format={FORMATO_TAXA}
                     suffix="%"
                   />
                 </div>

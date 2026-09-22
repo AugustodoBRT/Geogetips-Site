@@ -5,7 +5,7 @@ import { Dialogo } from "@/components/Dialogo";
 import type { BetItem } from "@/lib/types";
 import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
-import { formatarOdd, formatarReais, formatarReaisComSinal } from "@/lib/format";
+import { formatarOddExata, formatarReais, formatarReaisComSinal } from "@/lib/format";
 
 interface DetalheApostaProps {
   bet: BetItem;
@@ -22,15 +22,13 @@ interface DetalheApostaProps {
  * aposta: são cerca de 230 linhas que a maioria das visitas nunca abre, e que
  * antes viajavam no primeiro pacote da página.
  *
- * **Monta só quando há aposta escolhida.** Quem controla entrada e saída é o
- * `AnimatePresence` do pai; aqui dentro não há estado de aberto/fechado, o que
- * simplifica os efeitos: o que roda na montagem é exatamente o que precisa ser
- * desfeito na desmontagem.
+ * **Monta só quando há aposta escolhida**, e desmonta direto ao fechar, sem
+ * animação de saída (o porquê está em `Dialogo`). Aqui dentro não há estado de
+ * aberto/fechado, o que simplifica os efeitos: o que roda na montagem é
+ * exatamente o que precisa ser desfeito na desmontagem.
  *
- * O invólucro — véu, trava de rolagem, foco preso, Esc e saída — mora em
- * `Dialogo`, que três telas usam. O `AnimatePresence` do pai continua recebendo
- * **um** filho com `key`: a versão antiga passava dois elementos soltos dentro
- * de um fragmento, e era isso que deixava o véu preso no DOM engolindo clique.
+ * O invólucro — véu, trava de rolagem, foco preso e Esc — mora em `Dialogo`,
+ * que três telas usam.
  */
 export function DetalheAposta({
   bet,
@@ -99,7 +97,7 @@ export function DetalheAposta({
               Odd
             </div>
             <div className="font-mono text-base font-bold text-[var(--text)] mt-0.5">
-              {formatarOdd(bet.odd)}
+              {formatarOddExata(bet.odd)}
             </div>
           </div>
 

@@ -38,6 +38,13 @@ describe("celula", () => {
     expect(celula("-1 handicap")).toBe("'-1 handicap");
     expect(celula("@x")).toBe("'@x");
   });
+
+  // Parte das planilhas pula a tabulação e o retorno de carro do começo e lê o
+  // resto como fórmula. É a lista da OWASP.
+  it("desarma também a tabulação e o retorno de carro no começo", () => {
+    expect(celula("\t=1+1")).toBe("'\t=1+1");
+    expect(celula("\r=1+1")).toBe('"\'\r=1+1"');
+  });
 });
 
 describe("numero", () => {
@@ -48,6 +55,17 @@ describe("numero", () => {
 });
 
 describe("apostasParaCsv", () => {
+  it("escreve a odd como a planilha, com a terceira casa quando existe", () => {
+    const csv = apostasParaCsv(
+      [aposta({ odd: 2.625 }), aposta({ odd: 1.9 })],
+      (r) => r,
+      100
+    );
+    const [, primeira, segunda] = csv.slice(1).split("\r\n");
+    expect(primeira.split(";")[6]).toBe("2,625");
+    expect(segunda.split(";")[6]).toBe("1,90");
+  });
+
   it("abre com BOM e cabeçalho, uma linha por aposta, fim de linha do Windows", () => {
     const csv = apostasParaCsv([aposta({})], (r) => r, 100);
     expect(csv.startsWith("﻿Data;Esporte;Adm;")).toBe(true);

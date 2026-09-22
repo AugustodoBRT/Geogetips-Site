@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link, { useLinkStatus } from "next/link";
+import { LinkInterno } from "@/components/LinkInterno";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { DURACAO, MOLA_CURTA, VEU } from "@/lib/movimento";
@@ -65,6 +66,20 @@ function Navigation() {
     setAberto(false);
   }, [pathname]);
 
+  // Fecha quando a tela passa para o menu do computador. O painel é
+  // `md:hidden` e some sozinho, mas a trava de rolagem do `body` ficava: girar
+  // o tablet com o menu aberto deixava a página sem rolar.
+  useEffect(() => {
+    if (!aberto) return;
+    const computador = window.matchMedia("(min-width: 768px)");
+    const fechar = () => {
+      if (computador.matches) setAberto(false);
+    };
+    fechar();
+    computador.addEventListener("change", fechar);
+    return () => computador.removeEventListener("change", fechar);
+  }, [aberto]);
+
   // Esc fecha, e o fundo não rola enquanto o menu está aberto
   useEffect(() => {
     if (!aberto) return;
@@ -110,7 +125,7 @@ function Navigation() {
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link
+                <LinkInterno
                   key={item.href}
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
@@ -129,7 +144,7 @@ function Navigation() {
                   )}
                   <span className="relative z-10">{item.label}</span>
                   <Pendente className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10" />
-                </Link>
+                </LinkInterno>
               );
             })}
           </div>
@@ -203,10 +218,17 @@ function Navigation() {
                   const isActive = pathname === item.href;
                   return (
                     <li key={item.href}>
-                      <Link
+                      {/* Na página atual o caminho não muda, e o menu ficava
+                          aberto por cima dela: fecha no toque. Nas outras ele
+                          espera a tela chegar, porque é nele que o ponto de
+                          `Pendente` avisa, em rede lenta, que o toque pegou. */}
+                      <LinkInterno
                         ref={i === 0 ? primeiroLink : undefined}
                         href={item.href}
                         aria-current={isActive ? "page" : undefined}
+                        onClick={() => {
+                          if (isActive) setAberto(false);
+                        }}
                         className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
                           isActive
                             ? "bg-[var(--pilula)] text-[var(--text)] shadow-sm"
@@ -215,7 +237,7 @@ function Navigation() {
                       >
                         {item.label}
                         <Pendente />
-                      </Link>
+                      </LinkInterno>
                     </li>
                   );
                 })}

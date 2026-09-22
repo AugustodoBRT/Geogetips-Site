@@ -27,11 +27,16 @@ import {
   abaParaEndereco,
   comAba,
   escolher,
+  escreverConsulta,
   lerData,
 } from "@/lib/endereco";
 import {
+  ehZero,
+  FORMATO_REAIS_COM_SINAL,
+  FORMATO_ROI,
+  FORMATO_TAXA,
   formatarInteiro,
-  formatarOdd,
+  formatarOddExata,
   formatarReais,
   formatarReaisComSinal,
   formatarUnidades,
@@ -133,13 +138,21 @@ export default function PainelPage() {
   }, [allBets]);
 
   /**
-   * Quantos dias de calendário a aba cobre, da primeira aposta à última.
+   * Quantos dias de calendário a aba cobre, da primeira aposta até a última já
+   * vivida.
+   *
+   * Dia futuro fica de fora, como no gráfico: a aposta de longo prazo, com a
+   * data do evento lá na frente, esticava a aba. Com um campeão em dezembro, a
+   * aba de setembro ganhava os botões 30D e 90D, que desenham o mesmo que Tudo.
    */
   const diasDaAba = useMemo(() => {
-    if (availableDays.length === 0) return 0;
-    const maisNovo = parseDateTimestamp(availableDays[0]);
-    const maisAntigo = parseDateTimestamp(availableDays[availableDays.length - 1]);
-    return Math.round((maisNovo - maisAntigo) / 86_400_000) + 1;
+    const fimDeHoje = new Date();
+    fimDeHoje.setHours(23, 59, 59, 999);
+    const vividos = availableDays
+      .map(parseDateTimestamp)
+      .filter((ts) => ts > 0 && ts <= fimDeHoje.getTime());
+    if (vividos.length === 0) return 0;
+    return Math.round((vividos[0] - vividos[vividos.length - 1]) / 86_400_000) + 1;
   }, [availableDays]);
 
   /**
@@ -609,11 +622,7 @@ export default function PainelPage() {
               <NumeroAnimado
                 value={totalLucro}
                 locales="pt-BR"
-                format={{
-                  style: "currency",
-                  currency: "BRL",
-                  signDisplay: "always",
-                }}
+                format={FORMATO_REAIS_COM_SINAL}
               />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
@@ -643,7 +652,7 @@ export default function PainelPage() {
               <NumeroAnimado
                 value={roi}
                 locales="pt-BR"
-                format={{ signDisplay: "always", maximumFractionDigits: 2 }}
+                format={FORMATO_ROI}
                 suffix="%"
               />
             </div>
@@ -693,7 +702,12 @@ export default function PainelPage() {
               </div>
             </div>
             <div className="font-serif text-2xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
-              <NumeroAnimado value={taxaAcerto} locales="pt-BR" suffix="%" />
+              <NumeroAnimado
+                value={taxaAcerto}
+                locales="pt-BR"
+                format={FORMATO_TAXA}
+                suffix="%"
+              />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
               Das apostas finalizadas
@@ -755,19 +769,17 @@ export default function PainelPage() {
                 {chartData && (
                   <span
                     className={`font-mono text-xs font-bold px-2 py-0.5 rounded-full ${
-                      chartData.periodGain >= 0
-                        ? "bg-[var(--green-soft)] text-[var(--green)]"
-                        : "bg-[var(--red-soft)] text-[var(--red)]"
+                      ehZero(chartData.periodGain)
+                        ? "bg-[var(--text-soft)] text-[var(--text-2)]"
+                        : chartData.periodGain > 0
+                          ? "bg-[var(--green-soft)] text-[var(--green)]"
+                          : "bg-[var(--red-soft)] text-[var(--red)]"
                     }`}
                   >
                     <NumeroAnimado
                       value={chartData.periodGain}
                       locales="pt-BR"
-                      format={{
-                        style: "currency",
-                        currency: "BRL",
-                        signDisplay: "always",
-                      }}
+                      format={FORMATO_REAIS_COM_SINAL}
                     />{" "}
                     ({periodoAtivo ? periodo : period})
                   </span>
@@ -797,7 +809,8 @@ export default function PainelPage() {
                       {formatarReaisComSinal(hoveredPoint.cumProfit)}
                     </strong>{" "}
                     ({formatarReaisComSinal(hoveredPoint.dayProfit)} no dia ·{" "}
-                    {hoveredPoint.total} tips)
+                    {formatarInteiro(hoveredPoint.total)}{" "}
+                    {hoveredPoint.total === 1 ? "aposta" : "apostas"})
                   </span>
                 ) : (
                   "Curva real calculada a partir de cada aposta registrada"
@@ -1274,12 +1287,20 @@ export default function PainelPage() {
               </p>
             </div>
 
+            {/* Leva o intervalo junto: com o Painel em 01/09 a 15/09, o feed
+                abria o mês inteiro. Os dias do calendário e do bloco Atenção
+                já levavam a data. */}
             <Link
-              href={comAba("/apostas", activeTab, grupo)}
+              href={`/apostas${escreverConsulta({
+                aba: abaParaEndereco(activeTab),
+                grupo: grupoParaEndereco(grupo),
+                de,
+                ate,
+              })}`}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
               <span>Ver todas</span>
-              <ArrowUpRight className="w-3 h-3" />
+              <ArrowUpRight className="w-3 h-3" aria-hidden="true" />
             </Link>
           </div>
 
@@ -1355,7 +1376,7 @@ export default function PainelPage() {
                       <span className="truncate">{bet.tip}</span>
                       <span className="shrink-0">·</span>
                       <strong className="font-mono shrink-0">
-                        @{formatarOdd(bet.odd)}
+                        @{formatarOddExata(bet.odd)}
                       </strong>
                       {bet.casa && (
                         <BookieBadge

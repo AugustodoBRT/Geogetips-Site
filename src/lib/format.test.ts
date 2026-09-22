@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   UNIDADE_MAXIMA,
   formatarInteiro,
+  ehZero,
   formatarOdd,
   formatarOddExata,
   formatarOddJusta,
@@ -81,7 +82,30 @@ describe("formatarUnidades", () => {
   it("marca o positivo e fecha com u", () => {
     expect(formatarUnidades(2.5)).toBe("+2,50u");
     expect(formatarUnidades(-1.25)).toBe("-1,25u");
-    expect(formatarUnidades(0)).toBe("+0,00u");
+  });
+
+  it("zero sai sem sinal, como nos reais", () => {
+    expect(formatarUnidades(0)).toBe("0,00u");
+    expect(formatarUnidades(-0.001)).toBe("0,00u");
+    expect(formatarUnidades(0.004)).toBe("0,00u");
+  });
+});
+
+describe("zero em reais", () => {
+  // O dia só com pendentes aparecia "+R$ 0,00" no feed, e um zero negativo de
+  // soma de ponto flutuante sairia "-R$ 0,00".
+  it("sai sem sinal, inclusive o zero negativo e o que arredonda para zero", () => {
+    expect(formatarReaisComSinal(0)).toMatch(/^R\$\s0,00$/);
+    expect(formatarReaisComSinal(-0)).toMatch(/^R\$\s0,00$/);
+    expect(formatarReaisComSinal(-0.001)).toMatch(/^R\$\s0,00$/);
+    expect(formatarReaisComSinal(-0.01)).toMatch(/^-R\$\s0,01$/);
+  });
+
+  it("ehZero vale até meio centavo", () => {
+    expect(ehZero(0)).toBe(true);
+    expect(ehZero(-0.004)).toBe(true);
+    expect(ehZero(0.005)).toBe(false);
+    expect(ehZero(-12)).toBe(false);
   });
 });
 

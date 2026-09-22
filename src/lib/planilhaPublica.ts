@@ -76,16 +76,27 @@ function urlCsvDaAba(spreadsheetId: string, aba: string): string {
  * Confere se as linhas realmente pertencem à aba pedida, comparando o mês/ano
  * da coluna DATA com o nome da aba. É o que impede a aba-fallback do gviz de
  * entrar no lugar de um mês que não existe.
+ *
+ * Decide pelo mês da **maioria** das linhas, e não pelo da primeira. A aba
+ * guarda aposta de longo prazo com a data do evento, meses à frente; se ela
+ * fosse a primeira linha de um mês novo, a aba passaria por inexistente e o
+ * mês inteiro sumiria do site. A aba-fallback continua recusada: as linhas
+ * dela são, na maioria, do mês dela.
  */
-function pertenceAoMes(linhas: string[][], mes: number, ano2: number): boolean {
+export function pertenceAoMes(linhas: string[][], mes: number, ano2: number): boolean {
+  const porMes = new Map<string, number>();
   for (const l of linhas) {
     const data = (l[1] || "").trim();
     const m = data.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (!m) continue;
-    return parseInt(m[2], 10) === mes && m[3].slice(-2) === String(ano2).padStart(2, "0");
+    const chave = `${parseInt(m[2], 10)}/${m[3].slice(-2)}`;
+    porMes.set(chave, (porMes.get(chave) ?? 0) + 1);
   }
   // Aba sem nenhuma data legível: não dá para afirmar que é a certa
-  return false;
+  if (porMes.size === 0) return false;
+  const esperado = `${mes}/${String(ano2).padStart(2, "0")}`;
+  const doEsperado = porMes.get(esperado) ?? 0;
+  return Array.from(porMes.values()).every((n) => n <= doEsperado);
 }
 
 export interface AbaPublica {

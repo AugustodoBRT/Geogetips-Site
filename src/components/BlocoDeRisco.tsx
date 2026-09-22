@@ -9,6 +9,7 @@ import { paraISO } from "@/lib/date";
 import { abaParaEndereco, escreverConsulta } from "@/lib/endereco";
 import { grupoParaEndereco, type IdGrupo } from "@/lib/grupos";
 import {
+  ehZero,
   formatarInteiro,
   formatarReaisComSinal,
   formatarUnidadesSemSinal,
@@ -26,6 +27,12 @@ function unidades(reais: number): string {
 }
 
 type Tom = "verde" | "vermelho" | "neutro";
+
+/** Pela conta, e não pela posição do cartão: um dia zerado não é verde nem vermelho. */
+function tomDoValor(reais: number): Tom {
+  if (ehZero(reais)) return "neutro";
+  return reais > 0 ? "verde" : "vermelho";
+}
 
 const COR: Record<Tom, string> = {
   verde: "text-[var(--green)]",
@@ -190,7 +197,7 @@ export function BlocoDeRisco({
             <Medida
               rotulo="Pior dia"
               valor={formatarReaisComSinal(converter(risco.piorDia.lucro))}
-              tom={risco.piorDia.lucro < 0 ? "vermelho" : "verde"}
+              tom={tomDoValor(risco.piorDia.lucro)}
             >
               <LinkDoDia dia={risco.piorDia} aba={aba} grupo={grupo} /> ·{" "}
               {formatarInteiro(risco.piorDia.apostas)}{" "}
@@ -202,7 +209,7 @@ export function BlocoDeRisco({
             <Medida
               rotulo="Melhor dia"
               valor={formatarReaisComSinal(converter(risco.melhorDia.lucro))}
-              tom={risco.melhorDia.lucro > 0 ? "verde" : "vermelho"}
+              tom={tomDoValor(risco.melhorDia.lucro)}
             >
               <LinkDoDia dia={risco.melhorDia} aba={aba} grupo={grupo} /> ·{" "}
               {formatarInteiro(risco.melhorDia.apostas)}{" "}
@@ -210,20 +217,30 @@ export function BlocoDeRisco({
             </Medida>
           )}
 
+          {/* Sem red (ou sem green) no recorte, o cartão diz "Nenhuma", como a
+              maior queda: "+R$ 0,00" se lia como uma aposta que empatou. */}
           <Medida
             rotulo="Maior red"
-            valor={formatarReaisComSinal(converter(risco.maiorRed))}
+            valor={
+              risco.maiorRed < 0
+                ? formatarReaisComSinal(converter(risco.maiorRed))
+                : "Nenhuma"
+            }
             tom={risco.maiorRed < 0 ? "vermelho" : "neutro"}
           >
-            numa aposta só
+            {risco.maiorRed < 0 ? "numa aposta só" : "Nenhuma red neste recorte"}
           </Medida>
 
           <Medida
             rotulo="Maior green"
-            valor={formatarReaisComSinal(converter(risco.maiorGreen))}
+            valor={
+              risco.maiorGreen > 0
+                ? formatarReaisComSinal(converter(risco.maiorGreen))
+                : "Nenhuma"
+            }
             tom={risco.maiorGreen > 0 ? "verde" : "neutro"}
           >
-            numa aposta só
+            {risco.maiorGreen > 0 ? "numa aposta só" : "Nenhuma green neste recorte"}
           </Medida>
 
           <Medida

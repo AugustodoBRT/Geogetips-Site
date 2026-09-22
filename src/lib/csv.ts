@@ -1,4 +1,5 @@
 import { rotuloDaAba } from "./constants";
+import { formatarOddExata } from "./format";
 import { GRUPO_PADRAO, type IdGrupo } from "./grupos";
 import type { BetItem } from "./types";
 
@@ -19,10 +20,12 @@ const SEPARADOR = ";";
  * Aspas quando o texto tem separador, aspas ou quebra de linha, com as aspas
  * de dentro dobradas. E um apóstrofo na frente do que começa com `=`, `+`, `-`
  * ou `@`: o Excel leria como fórmula, e "+2.5 gols" viraria erro na célula, ou
- * coisa pior se alguém escrevesse uma fórmula de propósito numa tip.
+ * coisa pior se alguém escrevesse uma fórmula de propósito numa tip. Tabulação
+ * e retorno de carro no começo também: parte das planilhas os pula e lê o que
+ * vem depois como fórmula (é a lista da OWASP).
  */
 export function celula(texto: string): string {
-  const seguro = /^[=+\-@]/.test(texto) ? `'${texto}` : texto;
+  const seguro = /^[=+\-@\t\r]/.test(texto) ? `'${texto}` : texto;
   return /[";\r\n]/.test(seguro) ? `"${seguro.replace(/"/g, '""')}"` : seguro;
 }
 
@@ -66,7 +69,7 @@ export function apostasParaCsv(
       celula(b.partida),
       celula(b.tip),
       celula(b.casa),
-      numero(b.odd),
+      formatarOddExata(b.odd),
       numero(converter(b.valor)),
       b.resultado,
       numero(converter(b.lucro)),

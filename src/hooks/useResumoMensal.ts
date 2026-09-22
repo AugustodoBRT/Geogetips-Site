@@ -56,6 +56,9 @@ export function useResumoMensal(): UseResumoMensal {
     abortRef.current = controller;
     const silenciosa = silenciosaRef.current;
     silenciosaRef.current = false;
+    // Voltou ao gratuito: sem isto, a leitura seguinte saía sem esqueleto e a
+    // tela dizia "Nenhum mês encontrado na planilha" até ela chegar.
+    let trocouDeGrupo = false;
 
     async function carregar() {
       if (!silenciosa) {
@@ -77,6 +80,7 @@ export function useResumoMensal(): UseResumoMensal {
         if (!res.ok || !json.success) {
           // Link do Sigma antes de o grupo existir: volta ao gratuito.
           if (json?.grupoIndisponivel && grupo !== GRUPO_PADRAO) {
+            trocouDeGrupo = true;
             setGrupo(GRUPO_PADRAO);
             return;
           }
@@ -98,7 +102,7 @@ export function useResumoMensal(): UseResumoMensal {
         setMeses([]);
         setConsolidado(null);
       } finally {
-        if (!controller.signal.aborted) {
+        if (!controller.signal.aborted && !trocouDeGrupo) {
           setLoading(false);
           setPrimeiraCarga(false);
         }
