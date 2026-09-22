@@ -20,6 +20,8 @@ import { SkeletonLinhas } from "@/components/Skeleton";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
 import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
+import { AvisoAtraso, SeletorGrupo } from "@/components/SeletorGrupo";
+import { ehGrupo, grupoDoId, grupoParaEndereco } from "@/lib/grupos";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
@@ -87,6 +89,9 @@ export default function ApostasPage() {
     tabs,
     activeTab,
     setActiveTab,
+    grupo,
+    trocarGrupo,
+    grupos,
     loading,
     mostrarEsqueleto,
     erro,
@@ -154,6 +159,7 @@ export default function ApostasPage() {
   useEstadoNaUrl(
     {
       aba: abaParaEndereco(activeTab),
+      grupo: grupoParaEndereco(grupo),
       q: buscaAplicada,
       resultado: statusFilter === "TODAS" ? "" : statusFilter.toLowerCase(),
       esporte: sportsFilter.join(","),
@@ -165,6 +171,9 @@ export default function ApostasPage() {
       vista: viewMode === "table" ? "tabela" : "",
     },
     (lidos) => {
+      // O grupo antes da aba: trocar de grupo volta a aba ao mês, e a aba do
+      // link tem de vencer essa volta.
+      if (ehGrupo(lidos.grupo) && lidos.grupo !== grupo) trocarGrupo(lidos.grupo);
       const aba = abaDoEndereco(lidos.aba);
       if (aba && aba !== activeTab) {
         abaDoLink.current = aba;
@@ -444,6 +453,11 @@ export default function ApostasPage() {
       <BarraDeProgresso ativo={loading} />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div className="min-w-0">
+          {grupos.length > 1 && (
+            <div className="mb-3">
+              <SeletorGrupo grupos={grupos} grupo={grupo} onChange={trocarGrupo} />
+            </div>
+          )}
           <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
             Feed de Apostas
           </h1>
@@ -505,6 +519,12 @@ export default function ApostasPage() {
         <div className="space-y-4 mb-6">
           {isMock && <AvisoMock />}
           {erro && <AvisoErro mensagem={erro} onTentarNovamente={recarregar} />}
+        </div>
+      )}
+
+      {grupoDoId(grupo).atrasoDias > 0 && (
+        <div className="mb-6">
+          <AvisoAtraso grupo={grupo} />
         </div>
       )}
 

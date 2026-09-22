@@ -3,10 +3,12 @@ import {
   getAvailableTabs,
   getBetsFromTab,
   computeStatsFromBets,
+  gruposDisponiveis,
   USANDO_MOCK,
 } from "@/lib/sheets";
 import { ABA_TODOS, abaDoMesAtual, abaValida, abasRecentes } from "@/lib/constants";
-import { MOCK_BETS } from "@/lib/data";
+import { apostasDemonstracaoSigma, MOCK_BETS } from "@/lib/data";
+import { aplicarAtraso, GRUPO_PADRAO } from "@/lib/grupos";
 
 /**
  * Declarado por consistência, mas SEM efeito prático nesta rota: ela lê
@@ -26,6 +28,26 @@ export async function GET(request: NextRequest) {
   // Tipsters e Estatísticas só precisam de stats — evita mandar o array inteiro
   const onlyStats = searchParams.get("only") === "stats";
 
+  // O grupo (#72). Só entram os que têm planilha: pedir o Sigma antes de ele
+  // existir responde 404, e nunca os dados do gratuito com o nome do outro.
+  const disponiveis = gruposDisponiveis();
+  const idPedido = searchParams.get("grupo") || GRUPO_PADRAO;
+  const grupo = disponiveis.find((g) => g.id === idPedido);
+  if (!grupo) {
+    return NextResponse.json(
+      {
+        success: false,
+        isMock: false,
+        activeTab: tab,
+        error: `Grupo indisponível: "${idPedido}".`,
+        grupoIndisponivel: true,
+      },
+      { status: 404 }
+    );
+  }
+  // O que a resposta diz sobre os grupos: quais existem e qual veio.
+  const sobreGrupos = { grupo: grupo.id, grupos: disponiveis };
+
   // Só o agregado ou um mês no padrão da planilha. Sem esta checagem qualquer
   // nome chegava ao gviz, que não erra em aba inexistente — devolve a primeira
   // aba. `?tab=Xyz` respondia 200 com os dados de Setembro26 rotulados como
@@ -39,21 +61,25 @@ export async function GET(request: NextRequest) {
   }
 
   if (USANDO_MOCK) {
-    const stats = computeStatsFromBets(MOCK_BETS);
+    const bets = aplicarAtraso(
+      grupo.id === "sigma" ? apostasDemonstracaoSigma() : MOCK_BETS,
+      grupo.atrasoDias
+    );
     return NextResponse.json({
       success: true,
       isMock: true,
       activeTab: tab,
       tabs: abasRecentes(),
-      count: MOCK_BETS.length,
-      stats,
+      ...sobreGrupos,
+      count: bets.length,
+      stats: computeStatsFromBets(bets),
       lidoEm: new Date().toISOString(),
-      data: onlyStats ? [] : MOCK_BETS,
+      data: onlyStats ? [] : bets,
     });
   }
 
   try {
-    const tabs = await getAvailableTabs();
+    const tabs = await getAvailableTabs(grupo.id);
     let abaServida = tab;
 
     if (tab !== ABA_TODOS && !tabs.includes(tab)) {
@@ -75,13 +101,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const bets = await getBetsFromTab(abaServida);
+    // O atraso sai aqui, no servidor, antes de qualquer conta: nem as apostas
+    // nem os totais do grupo pago podem contar o que ainda está dentro dele.
+    const bets = aplicarAtraso(
+      await getBetsFromTab(abaServida, grupo.id),
+      grupo.atrasoDias
+    );
 
     return NextResponse.json({
       success: true,
       isMock: false,
       activeTab: abaServida,
       tabs,
+      ...sobreGrupos,
       count: bets.length,
       stats: computeStatsFromBets(bets),
       // Quando o servidor montou esta resposta. Vale até o cache expirar, então

@@ -1,5 +1,6 @@
 import { ArrowUpRight, Table2 } from "lucide-react";
 import { TELEGRAM_URL, PLANILHA_URL } from "@/lib/constants";
+import { grupoDoId, URL_LISTA_DE_ESPERA } from "@/lib/grupos";
 
 /** Logo do X. O lucide não traz ícones de marca. */
 export function IconeX({ className = "w-4 h-4" }: { className?: string }) {
@@ -132,6 +133,24 @@ export function SecaoTelegram() {
             <ArrowUpRight className="w-4 h-4" />
           </a>
         </div>
+
+        {/* A lista de espera do grupo pago (#72) leva à página dele na prop.ag,
+            e só aparece quando essa página existe. Fica como link, abaixo dos
+            botões: a chamada desta faixa continua sendo o grupo grátis. */}
+        {URL_LISTA_DE_ESPERA && (
+          <p className="mt-6 text-sm text-[color:color-mix(in_srgb,var(--sobre-marca)_85%,transparent)]">
+            O {grupoDoId("sigma").nome}, nosso grupo pago, está chegando.{" "}
+            <a
+              href={URL_LISTA_DE_ESPERA}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 py-[5px] -my-[5px] font-bold text-[var(--sobre-marca)] underline decoration-white/40 underline-offset-4 hover:decoration-white focus-visible:ring-2 focus-visible:ring-white rounded transition-colors"
+            >
+              Entrar na lista de espera
+              <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
+            </a>
+          </p>
+        )}
 
         <p className="text-[11px] text-[color:color-mix(in_srgb,var(--sobre-marca)_60%,transparent)] mt-4">
           @vemproGeogeTips · planilha aberta em modo somente leitura · 18+

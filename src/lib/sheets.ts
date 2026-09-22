@@ -11,6 +11,7 @@ import {
 import { inicioDeHoje, parseDateTimestamp } from "./date";
 import { computeStatsFromBets } from "./stats";
 import { lerAbaPublica } from "./planilhaPublica";
+import { GRUPO_PADRAO, GRUPOS, type Grupo, type IdGrupo } from "./grupos";
 
 export { computeStatsFromBets };
 
@@ -18,6 +19,33 @@ export { computeStatsFromBets };
 // que o site funcione sem nenhuma configuração.
 const SPREADSHEET_ID =
   process.env.GOOGLE_SPREADSHEET_ID || "1wIUWUDb4EjV2BfXZgIpYqOwxtjUEpkS46glw0nwdFEc";
+
+/**
+ * A planilha de cada grupo (#72).
+ *
+ * A do gratuito tem padrão, como sempre teve. A do Sigma só existe quando
+ * alguém configura `GOOGLE_SPREADSHEET_ID_SIGMA`; sem ela o grupo fica
+ * desligado, e o site segue exatamente como antes.
+ */
+function planilhaDoGrupo(grupo: IdGrupo): string | null {
+  if (grupo === "sigma") return process.env.GOOGLE_SPREADSHEET_ID_SIGMA || null;
+  return SPREADSHEET_ID;
+}
+
+/**
+ * Os grupos que o site oferece: os que têm planilha. No modo demonstração,
+ * os dois, para o seletor e o atraso poderem ser vistos e testados.
+ */
+export function gruposDisponiveis(): Grupo[] {
+  return GRUPOS.filter((g) => USANDO_MOCK || planilhaDoGrupo(g.id) !== null);
+}
+
+function planilhaObrigatoria(grupo: IdGrupo): string {
+  const planilha = planilhaDoGrupo(grupo);
+  if (!planilha)
+    throw new Error(`O grupo "${grupo}" ainda não tem planilha configurada.`);
+  return planilha;
+}
 
 /** Existe credencial configurada? Se não, caímos na leitura pública. */
 function temCredencial(): boolean {
@@ -123,7 +151,9 @@ export function parseResultado(raw: string): BetResult {
 
 // Cache em memória. Em serverless cada instância tem o seu; a rota de API
 // complementa com revalidate para o cache compartilhado do Next.
-const cacheTabs = { tabs: [] as string[], timestamp: 0 };
+// As duas chaves levam a planilha: cada grupo tem a sua, e o cache de uma não
+// pode responder pela outra.
+const cacheTabs = new Map<string, { tabs: string[]; timestamp: number }>();
 const cacheBetsPerTab = new Map<string, { data: BetItem[]; timestamp: number }>();
 
 const TTL_MES_ATUAL = 15 * 1000;
@@ -303,7 +333,7 @@ export async function descobrirAbas(
 }
 
 /** Sondagem de verdade: a aba existe e tem linha do mês que deveria conter. */
-async function existeAbaPublica(aba: string): Promise<boolean> {
+async function existeAbaPublica(planilha: string, aba: string): Promise<boolean> {
   const ordem = ordemDaAba(aba);
   if (ordem <= 0) return false;
   const mes = ordem % 100;
@@ -312,25 +342,27 @@ async function existeAbaPublica(aba: string): Promise<boolean> {
     // O mês esperado não é zelo à toa: quando a aba não existe, o gviz devolve
     // a PRIMEIRA aba da planilha em vez de erro. Sem a conferência, a varredura
     // acharia que todos os meses existem.
-    const r = await lerAbaPublica(SPREADSHEET_ID, aba, { mes, ano2 });
+    const r = await lerAbaPublica(planilha, aba, { mes, ano2 });
     return Boolean(r && r.linhas.length > 0);
   } catch {
     return false;
   }
 }
 
-function getAvailableTabsPublico(): Promise<string[]> {
-  return descobrirAbas(existeAbaPublica);
+function getAvailableTabsPublico(planilha: string): Promise<string[]> {
+  return descobrirAbas((aba) => existeAbaPublica(planilha, aba));
 }
 
-export async function getAvailableTabs(): Promise<string[]> {
+export async function getAvailableTabs(grupo: IdGrupo = GRUPO_PADRAO): Promise<string[]> {
+  const planilha = planilhaObrigatoria(grupo);
   const now = Date.now();
-  if (cacheTabs.tabs.length > 0 && now - cacheTabs.timestamp < TTL_LISTA_DE_ABAS) {
-    return cacheTabs.tabs;
+  const emCache = cacheTabs.get(planilha);
+  if (emCache && emCache.tabs.length > 0 && now - emCache.timestamp < TTL_LISTA_DE_ABAS) {
+    return emCache.tabs;
   }
 
   if (!temCredencial()) {
-    const publicas = await getAvailableTabsPublico();
+    const publicas = await getAvailableTabsPublico(planilha);
     if (publicas.length === 0) {
       throw new Error(
         "Não foi possível ler a planilha publicamente. Confirme que ela está " +
@@ -338,13 +370,12 @@ export async function getAvailableTabs(): Promise<string[]> {
       );
     }
     publicas.sort((a, b) => ordemDaAba(b) - ordemDaAba(a));
-    cacheTabs.tabs = publicas;
-    cacheTabs.timestamp = now;
+    cacheTabs.set(planilha, { tabs: publicas, timestamp: now });
     return publicas;
   }
 
   const sheets = await getSheetsClient();
-  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: planilha });
 
   const rawTabs = (meta.data.sheets || [])
     .map((s) => s.properties?.title)
@@ -354,20 +385,24 @@ export async function getAvailableTabs(): Promise<string[]> {
   // Mais recente primeiro; abas fora do padrão mês+ano vão para o fim
   validTabs.sort((a, b) => ordemDaAba(b) - ordemDaAba(a));
 
-  cacheTabs.tabs = validTabs;
-  cacheTabs.timestamp = now;
+  cacheTabs.set(planilha, { tabs: validTabs, timestamp: now });
   return validTabs;
 }
 
-export async function getBetsFromTab(tabName?: string): Promise<BetItem[]> {
+export async function getBetsFromTab(
+  tabName?: string,
+  grupo: IdGrupo = GRUPO_PADRAO
+): Promise<BetItem[]> {
   const tab = tabName || abaDoMesAtual();
+  const planilha = planilhaObrigatoria(grupo);
 
   if (tab === ABA_TODOS || tab === "TODAS" || tab === "ALL") {
-    return getAllBetsFromAllTabs();
+    return getAllBetsFromAllTabs(grupo);
   }
 
   const now = Date.now();
-  const cached = cacheBetsPerTab.get(tab);
+  const chave = `${planilha}:${tab}`;
+  const cached = cacheBetsPerTab.get(chave);
   const ttl = tab === abaDoMesAtual() ? TTL_MES_ATUAL : TTL_MES_PASSADO;
   if (cached && now - cached.timestamp < ttl) {
     return cached.data;
@@ -379,14 +414,14 @@ export async function getBetsFromTab(tabName?: string): Promise<BetItem[]> {
     const sheets = await getSheetsClient();
     // B4:L = da coluna DATA até RECORD_ID
     const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: planilha,
       range: `${tab}!B4:L`,
     });
     rows = (response.data.values || []) as string[][];
   } else {
     const ordem = ordemDaAba(tab);
     const publica = await lerAbaPublica(
-      SPREADSHEET_ID,
+      planilha,
       tab,
       ordem > 0 ? { mes: ordem % 100, ano2: Math.floor(ordem / 100) % 100 } : undefined
     );
@@ -398,17 +433,17 @@ export async function getBetsFromTab(tabName?: string): Promise<BetItem[]> {
   }
 
   const bets = linhasParaBets(tab, rows);
-  cacheBetsPerTab.set(tab, { data: bets, timestamp: now });
+  cacheBetsPerTab.set(chave, { data: bets, timestamp: now });
   return bets;
 }
 
-async function getAllBetsFromAllTabs(): Promise<BetItem[]> {
-  const tabs = await getAvailableTabs();
+async function getAllBetsFromAllTabs(grupo: IdGrupo): Promise<BetItem[]> {
+  const tabs = await getAvailableTabs(grupo);
   const monthlyTabs = tabs.filter(
     (t) => !t.toLowerCase().includes("resumo") && !t.toLowerCase().includes("config")
   );
 
-  const results = await Promise.all(monthlyTabs.map((t) => getBetsFromTab(t)));
+  const results = await Promise.all(monthlyTabs.map((t) => getBetsFromTab(t, grupo)));
   const allBets = results.flat();
 
   // Mesma regra da aba única: juntar meses não pode reintroduzir a aposta de

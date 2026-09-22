@@ -79,7 +79,18 @@ describe("abas no endereço", () => {
   });
 
   it("comAba leva a aba escolhida no link, e nada quando é a do mês", () => {
-    expect(comAba("/apostas", "Abril26", SETEMBRO)).toBe("/apostas?aba=Abril26");
-    expect(comAba("/apostas", "Setembro26", SETEMBRO)).toBe("/apostas");
+    expect(comAba("/apostas", "Abril26", "gratis", SETEMBRO)).toBe(
+      "/apostas?aba=Abril26"
+    );
+    expect(comAba("/apostas", "Setembro26", "gratis", SETEMBRO)).toBe("/apostas");
+  });
+
+  it("comAba leva o grupo junto, e nada quando é o gratuito", () => {
+    expect(comAba("/apostas", "Setembro26", "sigma", SETEMBRO)).toBe(
+      "/apostas?grupo=sigma"
+    );
+    expect(comAba("/apostas", "Abril26", "sigma", SETEMBRO)).toBe(
+      "/apostas?aba=Abril26&grupo=sigma"
+    );
   });
 });

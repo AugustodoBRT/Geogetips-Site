@@ -1,9 +1,21 @@
-import { NextResponse } from "next/server";
-import { getAvailableTabs, getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
+import { type NextRequest, NextResponse } from "next/server";
+import {
+  getAvailableTabs,
+  getBetsFromTab,
+  gruposDisponiveis,
+  USANDO_MOCK,
+} from "@/lib/sheets";
 import { computeStatsFromBets } from "@/lib/stats";
-import { MOCK_RESUMO_MESES } from "@/lib/data";
-import { ordemDaAba, reaisParaUnidades } from "@/lib/constants";
+import { apostasDemonstracaoSigma, MOCK_RESUMO_MESES } from "@/lib/data";
+import { abaDoMesAtual, ordemDaAba, reaisParaUnidades } from "@/lib/constants";
+import { aplicarAtraso, GRUPO_PADRAO } from "@/lib/grupos";
+import type { BetItem } from "@/lib/types";
 
+/**
+ * Com o grupo no endereço (#72), a rota passou a ler `request` e virou
+ * dinâmica, como a /api/bets: este valor fica pela consistência. A frescura
+ * de verdade vem da leitura da planilha, que se revalida sozinha.
+ */
 export const revalidate = 60;
 
 export interface ResumoMes {
@@ -77,11 +89,56 @@ function consolidar(meses: ResumoMes[]): ResumoMes {
   };
 }
 
+/** As apostas agrupadas pela aba do mês da data delas, para o demonstrativo do Sigma. */
+function porAbaDoMes(bets: readonly BetItem[]): Map<string, BetItem[]> {
+  const abas = new Map<string, BetItem[]>();
+  for (const b of bets) {
+    const [, mes, ano] = b.data.split("/").map(Number);
+    const aba = abaDoMesAtual(new Date(ano, mes - 1, 15));
+    abas.set(aba, [...(abas.get(aba) ?? []), b]);
+  }
+  return abas;
+}
+
 /**
  * Um resumo por aba mensal, para comparar meses lado a lado.
  * Devolve só agregados — o array de apostas fica de fora de propósito.
+ *
+ * Cada grupo tem o seu (`?grupo=sigma`), com o atraso público aplicado antes
+ * da soma: o mês corrente do grupo pago não pode contar as apostas que ainda
+ * não apareceram no resto do site.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const idPedido = new URL(request.url).searchParams.get("grupo") || GRUPO_PADRAO;
+  const grupo = gruposDisponiveis().find((g) => g.id === idPedido);
+  if (!grupo) {
+    return NextResponse.json(
+      {
+        success: false,
+        isMock: false,
+        error: `Grupo indisponível: "${idPedido}".`,
+        grupoIndisponivel: true,
+      },
+      { status: 404 }
+    );
+  }
+
+  const sobreGrupos = { grupo: grupo.id, grupos: gruposDisponiveis() };
+
+  if (USANDO_MOCK && grupo.id === "sigma") {
+    const visiveis = aplicarAtraso(apostasDemonstracaoSigma(), grupo.atrasoDias);
+    const meses = Array.from(porAbaDoMes(visiveis))
+      .map(([aba, bets]) => resumir(aba, bets))
+      .sort((a, b) => b.ordem - a.ordem);
+    return NextResponse.json({
+      success: true,
+      isMock: true,
+      ...sobreGrupos,
+      meses,
+      consolidado: consolidar(meses),
+    });
+  }
+
   if (USANDO_MOCK) {
     const meses: ResumoMes[] = MOCK_RESUMO_MESES.map((m) => {
       const finalizadas = m.greens + m.reds;
@@ -99,18 +156,21 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       isMock: true,
+      ...sobreGrupos,
       meses,
       consolidado: consolidar(meses),
     });
   }
 
   try {
-    const tabs = (await getAvailableTabs()).filter(
+    const tabs = (await getAvailableTabs(grupo.id)).filter(
       (t) => !t.toLowerCase().includes("resumo") && !t.toLowerCase().includes("config")
     );
 
     const porMes = await Promise.all(
-      tabs.map(async (aba) => resumir(aba, await getBetsFromTab(aba)))
+      tabs.map(async (aba) =>
+        resumir(aba, aplicarAtraso(await getBetsFromTab(aba, grupo.id), grupo.atrasoDias))
+      )
     );
 
     // Mais recente primeiro; abas fora do padrão mês+ano vão para o fim
@@ -119,6 +179,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       isMock: false,
+      ...sobreGrupos,
       meses: porMes,
       consolidado: consolidar(porMes),
     });

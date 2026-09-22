@@ -17,6 +17,9 @@ import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useResumoMensal } from "@/hooks/useResumoMensal";
+import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
+import { AvisoAtraso, SeletorGrupo } from "@/components/SeletorGrupo";
+import { ehGrupo, grupoParaEndereco } from "@/lib/grupos";
 import { useUnidade } from "@/hooks/useUnidade";
 import Link from "next/link";
 import { abaCurta, abaDoMesAtual } from "@/lib/constants";
@@ -30,8 +33,24 @@ import {
 } from "@/lib/format";
 
 export default function HistoricoPage() {
-  const { meses, consolidado, loading, mostrarEsqueleto, erro, isMock, recarregar } =
-    useResumoMensal();
+  const {
+    meses,
+    consolidado,
+    loading,
+    mostrarEsqueleto,
+    erro,
+    isMock,
+    recarregar,
+    grupo,
+    trocarGrupo,
+    grupos,
+  } = useResumoMensal();
+
+  // O grupo no endereço, como nas outras telas: o link do Histórico do Sigma
+  // abre o Histórico do Sigma.
+  useEstadoNaUrl({ grupo: grupoParaEndereco(grupo) }, (lidos) => {
+    if (ehGrupo(lidos.grupo) && lidos.grupo !== grupo) trocarGrupo(lidos.grupo);
+  });
   const { converter } = useUnidade();
 
   // Do mais antigo para o mais recente, que é como se lê um gráfico de evolução
@@ -55,6 +74,11 @@ export default function HistoricoPage() {
       <BarraDeProgresso ativo={loading} />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
+          {grupos.length > 1 && (
+            <div className="mb-3">
+              <SeletorGrupo grupos={grupos} grupo={grupo} onChange={trocarGrupo} />
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
               Histórico Mês a Mês
@@ -85,6 +109,7 @@ export default function HistoricoPage() {
       </div>
 
       {isMock && <AvisoMock />}
+      <AvisoAtraso grupo={grupo} />
       {erro && <AvisoErro mensagem={erro} onTentarNovamente={recarregar} />}
 
       <SeletorUnidade />
@@ -368,7 +393,7 @@ export default function HistoricoPage() {
                             daquele mês, que é a pergunta natural depois de ver
                             a linha: o que aconteceu nele? */}
                         <Link
-                          href={comAba("/painel", m.aba)}
+                          href={comAba("/painel", m.aba, grupo)}
                           className="inline-flex items-center gap-1.5 py-[5px] -my-[5px] hover:text-[var(--accent)] hover:underline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded"
                           title={`Abrir o Painel de ${abaCurta(m.aba)}`}
                         >

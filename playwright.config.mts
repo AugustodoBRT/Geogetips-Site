@@ -43,7 +43,13 @@ export default defineConfig({
     // Next reescreve os dois ao mudar a pasta de saída. O porquê está lá.
     command: `node scripts/preparar-e2e.mjs && npx next start --port ${PORTA}`,
     url: BASE,
-    env: { NEXT_DIST_DIR: ".next-e2e", NEXT_PUBLIC_USE_MOCK: "1" },
+    // O link da lista de espera do Sigma (#72) é de exemplo: com ele, o
+    // botão aparece e os testes conferem o destino e o contraste dele.
+    env: {
+      NEXT_DIST_DIR: ".next-e2e",
+      NEXT_PUBLIC_USE_MOCK: "1",
+      NEXT_PUBLIC_SIGMA_URL: "https://prop.ag/exemplo-sigma",
+    },
     reuseExistingServer: !process.env.CI,
     timeout: 5 * 60 * 1000,
     stdout: "ignore",

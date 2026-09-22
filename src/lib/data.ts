@@ -225,3 +225,56 @@ export const MOCK_RESUMO_MESES = [
     oddMedia: 2.12,
   },
 ];
+
+/**
+ * Apostas de demonstração do GeogeTips - Sigma (#72).
+ *
+ * Parte das mesmas do gratuito, com outros ids, e duas lançadas hoje e ontem.
+ * Essas duas existem para o atraso público ter o que esconder: com o grupo
+ * pago no modo demonstração, a API tem de devolvê-las fora da resposta, e os
+ * testes de tela conferem isso.
+ */
+export function apostasDemonstracaoSigma(ref: Date = new Date()): BetItem[] {
+  const dia = (atras: number) => {
+    const d = new Date(ref);
+    d.setDate(d.getDate() - atras);
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  };
+  const recentes: BetItem[] = [
+    {
+      id: "sigma-hoje",
+      data: dia(0),
+      esporte: "Futebol",
+      tipster: "MarceloTips",
+      partida: "Entrada de hoje",
+      tip: "Não pode aparecer antes do atraso",
+      casa: "Bet365",
+      odd: 2.1,
+      valor: 100.0,
+      unidades: 1.0,
+      resultado: "PENDENTE",
+      lucro: 0,
+    },
+    {
+      id: "sigma-ontem",
+      data: dia(1),
+      esporte: "Futebol",
+      tipster: "RafaBets",
+      partida: "Entrada de ontem",
+      tip: "Também dentro do atraso",
+      casa: "Betano",
+      odd: 1.9,
+      valor: 100.0,
+      unidades: 1.0,
+      resultado: "GREEN",
+      lucro: 90.0,
+    },
+  ];
+  return [
+    ...recentes,
+    ...MOCK_BETS.filter((_, i) => i % 2 === 0).map((b) => ({
+      ...b,
+      id: `sigma-${b.id}`,
+    })),
+  ];
+}

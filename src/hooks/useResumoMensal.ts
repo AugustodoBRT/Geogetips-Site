@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ResumoMes } from "@/app/api/resumo/route";
 import { useReleituraAutomatica } from "@/hooks/useReleituraAutomatica";
+import { GRUPO_PADRAO, GRUPOS, type Grupo, type IdGrupo } from "@/lib/grupos";
 
 export interface UseResumoMensal {
   meses: ResumoMes[];
@@ -14,6 +15,10 @@ export interface UseResumoMensal {
   erro: string | null;
   isMock: boolean;
   recarregar: () => void;
+  /** O grupo na tela e os que o servidor oferece. Ver `useBets`. */
+  grupo: IdGrupo;
+  trocarGrupo: (grupo: IdGrupo) => void;
+  grupos: Grupo[];
 }
 
 export function useResumoMensal(): UseResumoMensal {
@@ -25,6 +30,14 @@ export function useResumoMensal(): UseResumoMensal {
   const [isMock, setIsMock] = useState(false);
   const [nonce, setNonce] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
+  const [grupo, setGrupo] = useState<IdGrupo>(GRUPO_PADRAO);
+  const [grupos, setGrupos] = useState<Grupo[]>([GRUPOS[0]]);
+  // Outro grupo é outro histórico: o esqueleto volta até ele chegar, como na
+  // primeira carga, em vez de mostrar os meses do grupo anterior.
+  const trocarGrupo = useCallback((novo: IdGrupo) => {
+    setGrupo(novo);
+    setPrimeiraCarga(true);
+  }, []);
 
   const recarregar = useCallback(() => setNonce((n) => n + 1), []);
 
@@ -50,7 +63,9 @@ export function useResumoMensal(): UseResumoMensal {
         setErro(null);
       }
       try {
-        const res = await fetch("/api/resumo", {
+        const endereco =
+          grupo === GRUPO_PADRAO ? "/api/resumo" : `/api/resumo?grupo=${grupo}`;
+        const res = await fetch(endereco, {
           signal: controller.signal,
           // O servidor já revalida por conta própria; sem isto o navegador
           // pode segurar números velhos por minutos num painel de resultados.
@@ -60,6 +75,11 @@ export function useResumoMensal(): UseResumoMensal {
         if (controller.signal.aborted) return;
 
         if (!res.ok || !json.success) {
+          // Link do Sigma antes de o grupo existir: volta ao gratuito.
+          if (json?.grupoIndisponivel && grupo !== GRUPO_PADRAO) {
+            setGrupo(GRUPO_PADRAO);
+            return;
+          }
           if (silenciosa) return;
           setErro(json?.error || `A planilha não respondeu (HTTP ${res.status}).`);
           setMeses([]);
@@ -68,6 +88,7 @@ export function useResumoMensal(): UseResumoMensal {
         }
 
         setIsMock(Boolean(json.isMock));
+        if (Array.isArray(json.grupos) && json.grupos.length > 0) setGrupos(json.grupos);
         setMeses(Array.isArray(json.meses) ? json.meses : []);
         setConsolidado(json.consolidado ?? null);
       } catch (err) {
@@ -86,7 +107,7 @@ export function useResumoMensal(): UseResumoMensal {
 
     carregar();
     return () => controller.abort();
-  }, [nonce]);
+  }, [nonce, grupo]);
 
   return {
     meses,
@@ -96,5 +117,8 @@ export function useResumoMensal(): UseResumoMensal {
     erro,
     isMock,
     recarregar,
+    grupo,
+    trocarGrupo,
+    grupos,
   };
 }

@@ -13,6 +13,8 @@ import { Dialogo } from "@/components/Dialogo";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { useBets } from "@/hooks/useBets";
 import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
+import { AvisoAtraso, SeletorGrupo } from "@/components/SeletorGrupo";
+import { ehGrupo, grupoParaEndereco } from "@/lib/grupos";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
@@ -35,6 +37,9 @@ export default function EstatisticasPage() {
     tabs,
     activeTab,
     setActiveTab,
+    grupo,
+    trocarGrupo,
+    grupos,
     loading,
     mostrarEsqueleto,
     erro,
@@ -44,10 +49,16 @@ export default function EstatisticasPage() {
 
   // A aba no endereço: o link de Abril26 abre Abril26, e o Painel chega aqui
   // levando a aba que estava olhando.
-  useEstadoNaUrl({ aba: abaParaEndereco(activeTab) }, (lidos) => {
-    const aba = abaDoEndereco(lidos.aba);
-    if (aba && aba !== activeTab) setActiveTab(aba);
-  });
+  useEstadoNaUrl(
+    { aba: abaParaEndereco(activeTab), grupo: grupoParaEndereco(grupo) },
+    (lidos) => {
+      // O grupo antes da aba: trocar de grupo volta a aba ao mês, e a aba do
+      // link tem de vencer essa volta.
+      if (ehGrupo(lidos.grupo) && lidos.grupo !== grupo) trocarGrupo(lidos.grupo);
+      const aba = abaDoEndereco(lidos.aba);
+      if (aba && aba !== activeTab) setActiveTab(aba);
+    }
+  );
 
   const { converter } = useUnidade();
 
@@ -119,6 +130,11 @@ export default function EstatisticasPage() {
       <BarraDeProgresso ativo={loading} />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
+          {grupos.length > 1 && (
+            <div className="mb-3">
+              <SeletorGrupo grupos={grupos} grupo={grupo} onChange={trocarGrupo} />
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
               Estatísticas &amp; Padrões
@@ -148,6 +164,7 @@ export default function EstatisticasPage() {
       </div>
 
       {isMock && <AvisoMock />}
+      <AvisoAtraso grupo={grupo} />
       {erro && <AvisoErro mensagem={erro} onTentarNovamente={recarregar} />}
 
       <SeletorUnidade />

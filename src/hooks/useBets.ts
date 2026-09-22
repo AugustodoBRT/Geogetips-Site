@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { BetItem } from "@/lib/types";
 import type { BetStats } from "@/lib/stats";
 import { abaDoMesAtual, abasRecentes } from "@/lib/constants";
+import { GRUPO_PADRAO, GRUPOS, type Grupo, type IdGrupo } from "@/lib/grupos";
 import { useReleituraAutomatica } from "@/hooks/useReleituraAutomatica";
 
 interface UseBetsOptions {
@@ -17,6 +18,15 @@ export interface UseBetsResult {
   tabs: string[];
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  /** O grupo na tela (#72): o gratuito, a não ser que alguém escolha o Sigma. */
+  grupo: IdGrupo;
+  /**
+   * Troca de grupo e volta à aba do mês: as planilhas têm abas diferentes, e o
+   * mês escolhido no outro grupo pode não existir neste.
+   */
+  trocarGrupo: (grupo: IdGrupo) => void;
+  /** Os grupos que o servidor oferece. Com um só, a tela nem mostra o seletor. */
+  grupos: Grupo[];
   /** Há requisição em curso — serve à barra de progresso. */
   loading: boolean;
   /**
@@ -52,6 +62,15 @@ export interface UseBetsResult {
  */
 export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResult {
   const [activeTab, setActiveTab] = useState<string>(abaDoMesAtual());
+  const [grupo, setGrupo] = useState<IdGrupo>(GRUPO_PADRAO);
+  const [grupos, setGrupos] = useState<Grupo[]>([GRUPOS[0]]);
+  const trocarGrupo = useCallback((novo: IdGrupo) => {
+    setGrupo(novo);
+    setActiveTab(abaDoMesAtual());
+  }, []);
+  // O que está carregado é identificado por grupo e aba juntos: a mesma aba de
+  // outro grupo é outro dado.
+  const chave = `${grupo}|${activeTab}`;
   const [tabs, setTabs] = useState<string[]>(abasRecentes());
   const [bets, setBets] = useState<BetItem[]>([]);
   const [stats, setStats] = useState<BetStats | null>(null);
@@ -98,7 +117,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
     }
     // Trocou de aba: o que está na tela é de outro mês e sai agora. Numa
     // releitura da mesma aba os dados ficam onde estão — ver `mostrarEsqueleto`.
-    if (abaCarregadaRef.current !== null && abaCarregadaRef.current !== activeTab) {
+    if (abaCarregadaRef.current !== null && abaCarregadaRef.current !== chave) {
       setBets([]);
       setStats(null);
       setLidoEm(null);
@@ -117,6 +136,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
       try {
         const params = new URLSearchParams({ tab: activeTab });
         if (onlyStats) params.set("only", "stats");
+        if (grupo !== GRUPO_PADRAO) params.set("grupo", grupo);
 
         const res = await fetch(`/api/bets?${params}`, {
           signal: controller.signal,
@@ -129,6 +149,12 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
         if (controller.signal.aborted) return;
 
         if (!res.ok || !json.success) {
+          // Link do Sigma aberto antes de o grupo existir: volta ao gratuito
+          // em vez de uma tela de erro por um grupo que ainda não tem dado.
+          if (json?.grupoIndisponivel && grupo !== GRUPO_PADRAO) {
+            setGrupo(GRUPO_PADRAO);
+            return;
+          }
           // Uma releitura de fundo que falha não derruba o que já está na tela:
           // os números de um minuto atrás continuam certos até a próxima.
           if (silenciosa) return;
@@ -144,7 +170,10 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
         setLidoEm(typeof json.lidoEm === "string" ? json.lidoEm : null);
         // A aba servida pode não ser a pedida: no começo do mês o servidor
         // devolve a mais recente no lugar da que ainda não existe.
-        registrarAba(typeof json.activeTab === "string" ? json.activeTab : activeTab);
+        registrarAba(
+          `${grupo}|${typeof json.activeTab === "string" ? json.activeTab : activeTab}`
+        );
+        if (Array.isArray(json.grupos) && json.grupos.length > 0) setGrupos(json.grupos);
         setStats(json.stats ?? null);
         setBets(Array.isArray(json.data) ? json.data : []);
         if (Array.isArray(json.tabs) && json.tabs.length > 0) setTabs(json.tabs);
@@ -169,7 +198,7 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
 
     carregar();
     return () => controller.abort();
-  }, [activeTab, onlyStats, nonce, registrarAba]);
+  }, [activeTab, grupo, chave, onlyStats, nonce, registrarAba]);
 
   return {
     bets,
@@ -177,8 +206,11 @@ export function useBets({ onlyStats = false }: UseBetsOptions = {}): UseBetsResu
     tabs,
     activeTab,
     setActiveTab,
+    grupo,
+    trocarGrupo,
+    grupos,
     loading,
-    mostrarEsqueleto: loading && abaCarregada !== activeTab,
+    mostrarEsqueleto: loading && abaCarregada !== chave,
     erro,
     isMock,
     lidoEm,
