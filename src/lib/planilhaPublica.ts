@@ -77,25 +77,34 @@ function urlCsvDaAba(spreadsheetId: string, aba: string): string {
  * da coluna DATA com o nome da aba. É o que impede a aba-fallback do gviz de
  * entrar no lugar de um mês que não existe.
  *
- * Decide pelo mês da **maioria** das linhas, e não pelo da primeira. A aba
- * guarda aposta de longo prazo com a data do evento, meses à frente; se ela
- * fosse a primeira linha de um mês novo, a aba passaria por inexistente e o
- * mês inteiro sumiria do site. A aba-fallback continua recusada: as linhas
- * dela são, na maioria, do mês dela.
+ * Decide pelo mês da **maioria** das linhas, e não pelo da primeira: se a
+ * primeira linha de um mês novo fosse uma aposta de longo prazo, a aba passaria
+ * por inexistente e o mês inteiro sumiria do site.
+ *
+ * Aposta de longo prazo guarda a data do evento, meses à frente, e por isso
+ * **não vota**: contar essas linhas fazia o mesmo mês sumir pelo motivo
+ * contrário, bastando serem mais que as do dia — o que acontece justamente nos
+ * primeiros dias de um mês, quando a aba tem poucas linhas.
+ *
+ * Quem denuncia a aba-fallback do gviz é linha de mês **anterior** ao pedido:
+ * a varredura só sonda meses até o corrente, então a aba que vem no lugar é
+ * sempre de um mês já passado, e as linhas dela contam e vencem o esperado,
+ * que fica em zero.
  */
 export function pertenceAoMes(linhas: string[][], mes: number, ano2: number): boolean {
-  const porMes = new Map<string, number>();
+  const limite = (2000 + ano2) * 100 + mes;
+  const porMes = new Map<number, number>();
   for (const l of linhas) {
     const data = (l[1] || "").trim();
     const m = data.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (!m) continue;
-    const chave = `${parseInt(m[2], 10)}/${m[3].slice(-2)}`;
-    porMes.set(chave, (porMes.get(chave) ?? 0) + 1);
+    const ordem = parseInt(m[3], 10) * 100 + parseInt(m[2], 10);
+    if (ordem > limite) continue;
+    porMes.set(ordem, (porMes.get(ordem) ?? 0) + 1);
   }
-  // Aba sem nenhuma data legível: não dá para afirmar que é a certa
-  if (porMes.size === 0) return false;
-  const esperado = `${mes}/${String(ano2).padStart(2, "0")}`;
-  const doEsperado = porMes.get(esperado) ?? 0;
+  // Aba sem nenhuma linha do mês pedido: não dá para afirmar que é a certa
+  const doEsperado = porMes.get(limite) ?? 0;
+  if (doEsperado === 0) return false;
   return Array.from(porMes.values()).every((n) => n <= doEsperado);
 }
 
