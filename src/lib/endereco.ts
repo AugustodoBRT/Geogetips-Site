@@ -1,4 +1,5 @@
 import { abaDoMesAtual, abaValida } from "./constants";
+import { GRUPO_PADRAO, grupoParaEndereco, type IdGrupo } from "./grupos";
 
 /**
  * O estado da tela escrito no endereço, e lido de volta.
@@ -70,11 +71,21 @@ export function abaDoEndereco(valor: string | undefined): string | undefined {
 }
 
 /**
- * Um link interno que leva junto a aba escolhida.
+ * Um link interno que leva junto a aba e o grupo escolhidos.
  *
  * Sem isso, quem estava olhando Abril26 no Painel e clicava em "Ver todas"
- * caía no feed do mês atual e tinha de escolher Abril26 de novo.
+ * caía no feed do mês atual e tinha de escolher Abril26 de novo. O grupo vai
+ * pelo mesmo motivo (#72): do Painel do Sigma, "Ver todas" abre as apostas do
+ * Sigma, e não as do gratuito.
  */
-export function comAba(caminho: string, aba: string, ref: Date = new Date()): string {
-  return `${caminho}${escreverConsulta({ aba: abaParaEndereco(aba, ref) })}`;
+export function comAba(
+  caminho: string,
+  aba: string,
+  grupo: IdGrupo = GRUPO_PADRAO,
+  ref: Date = new Date()
+): string {
+  return `${caminho}${escreverConsulta({
+    aba: abaParaEndereco(aba, ref),
+    grupo: grupoParaEndereco(grupo),
+  })}`;
 }

@@ -95,6 +95,27 @@ Duas constantes em `src/lib/constants.ts`, usadas em todos os pontos do site:
 
 Nunca escreva esses links direto no JSX.
 
+### Os dois grupos: gratuito e GeogeTips - Sigma
+O site mostra os resultados de um grupo por vez (`src/lib/grupos.ts`). O
+gratuito é o padrão. O **GeogeTips - Sigma**, o grupo pago, tem planilha
+própria, no mesmo formato da atual, e fica **desligado até ela existir**:
+
+```env
+# Planilha do Sigma. Sem ela, o site oferece só o grupo gratuito.
+GOOGLE_SPREADSHEET_ID_SIGMA=
+# Página do Sigma na prop.ag. Sem ela, o link da lista de espera não aparece.
+NEXT_PUBLIC_SIGMA_URL=
+```
+
+Com a planilha configurada, as telas de dados ganham o seletor "Grátis |
+Sigma", e o grupo escolhido vai para o endereço (`?grupo=sigma`).
+
+Os resultados do Sigma aparecem com **3 dias de atraso** (`atrasoDias` em
+`grupos.ts`), para as entradas pagas não circularem de graça. O atraso é
+aplicado **no servidor**, em `/api/bets` e `/api/resumo`, antes de qualquer
+conta: um atraso só na tela deixaria as apostas recentes legíveis no JSON da
+API. A home e a imagem de compartilhamento seguem falando do grupo gratuito.
+
 ### Histórico mês a mês
 `/historico` compara todos os meses da planilha lado a lado, via
 `/api/resumo` — que devolve **só agregados por aba**, sem o array de apostas.

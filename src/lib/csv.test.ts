@@ -80,6 +80,9 @@ describe("apostasParaCsv", () => {
 describe("nomeDoArquivo", () => {
   it("diz a aba, o resultado e as datas", () => {
     expect(nomeDoArquivo("Setembro26", "TODAS", "", "")).toBe("geogetips-setembro26.csv");
+    expect(nomeDoArquivo("Setembro26", "TODAS", "", "", "sigma")).toBe(
+      "geogetips-sigma-setembro26.csv"
+    );
     expect(nomeDoArquivo("TODOS", "GREEN", "", "")).toBe("geogetips-geral-green.csv");
     expect(nomeDoArquivo("Setembro26", "RED", "2026-09-01", "2026-09-15")).toBe(
       "geogetips-setembro26-red-2026-09-01-a-2026-09-15.csv"

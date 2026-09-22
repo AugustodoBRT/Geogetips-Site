@@ -12,6 +12,8 @@ import { BarraDeProgresso } from "@/components/BarraDeProgresso";
 import { BlocoDeRisco } from "@/components/BlocoDeRisco";
 import { useBets } from "@/hooks/useBets";
 import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
+import { AvisoAtraso, SeletorGrupo } from "@/components/SeletorGrupo";
+import { ehGrupo, grupoParaEndereco } from "@/lib/grupos";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
@@ -75,6 +77,9 @@ export default function PainelPage() {
     tabs,
     activeTab,
     setActiveTab,
+    grupo,
+    trocarGrupo,
+    grupos,
     loading,
     mostrarEsqueleto,
     erro,
@@ -180,11 +185,15 @@ export default function PainelPage() {
   useEstadoNaUrl(
     {
       aba: abaParaEndereco(activeTab),
+      grupo: grupoParaEndereco(grupo),
       de,
       ate,
       janela: period === janelaPadrao ? "" : period,
     },
     (lidos) => {
+      // O grupo antes da aba: trocar de grupo volta a aba ao mês, e a aba do
+      // link tem de vencer essa volta.
+      if (ehGrupo(lidos.grupo) && lidos.grupo !== grupo) trocarGrupo(lidos.grupo);
       const aba = abaDoEndereco(lidos.aba);
       if (aba && aba !== activeTab) {
         abaDoLink.current = aba;
@@ -482,6 +491,11 @@ export default function PainelPage() {
         {/* min-w-0: sem isso o parágrafo cresce ao filtrar um dia e espreme os
             filtros até quebrarem em duas linhas. Quem reflui é o texto. */}
         <div className="min-w-0">
+          {grupos.length > 1 && (
+            <div className="mb-3">
+              <SeletorGrupo grupos={grupos} grupo={grupo} onChange={trocarGrupo} />
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
               Painel de Performance
@@ -546,6 +560,7 @@ export default function PainelPage() {
       </div>
 
       {isMock && <AvisoMock />}
+      <AvisoAtraso grupo={grupo} />
       {erro && <AvisoErro mensagem={erro} onTentarNovamente={recarregar} />}
 
       <SeletorUnidade />
@@ -1082,7 +1097,7 @@ export default function PainelPage() {
                 Top Esportes
               </h2>
               <Link
-                href={comAba("/estatisticas", activeTab)}
+                href={comAba("/estatisticas", activeTab, grupo)}
                 className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0 py-[5px] -my-[5px]"
               >
                 <span>Detalhes</span>
@@ -1144,6 +1159,7 @@ export default function PainelPage() {
         bets={scopedBets}
         converter={converter}
         aba={activeTab}
+        grupo={grupo}
         recorte={`${trecho.prefixo} ${trecho.nome}${periodo ? ` (${periodo})` : ""}`}
         carregando={loading}
       />
@@ -1173,7 +1189,7 @@ export default function PainelPage() {
               Top Casas
             </h2>
             <Link
-              href={comAba("/estatisticas", activeTab)}
+              href={comAba("/estatisticas", activeTab, grupo)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0 py-[5px] -my-[5px]"
             >
               <span>Ver todas</span>
@@ -1223,11 +1239,12 @@ export default function PainelPage() {
       {/* Lucro por dia: o mês inteiro, com os dias ruins à vista. Recebe a aba
           inteira, e não o recorte: o calendário é sempre o mês cheio, e o
           intervalo aparece como dias sem cor. A key zera o mês escolhido nas
-          setas quando a aba muda. */}
+          setas quando a aba ou o grupo mudam. */}
       <CalendarioDeLucro
-        key={activeTab}
+        key={`${grupo}|${activeTab}`}
         bets={allBets}
         aba={activeTab}
+        grupo={grupo}
         de={de}
         ate={ate}
         converter={converter}
@@ -1257,7 +1274,7 @@ export default function PainelPage() {
             </div>
 
             <Link
-              href={comAba("/apostas", activeTab)}
+              href={comAba("/apostas", activeTab, grupo)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
               <span>Ver todas</span>
@@ -1372,7 +1389,7 @@ export default function PainelPage() {
             </div>
 
             <Link
-              href={comAba("/adms", activeTab)}
+              href={comAba("/adms", activeTab, grupo)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
               <span>Detalhes</span>

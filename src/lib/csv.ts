@@ -1,4 +1,5 @@
 import { rotuloDaAba } from "./constants";
+import { GRUPO_PADRAO, type IdGrupo } from "./grupos";
 import type { BetItem } from "./types";
 
 /**
@@ -79,16 +80,21 @@ export function apostasParaCsv(
 /**
  * Nome do arquivo pelo recorte: `geogetips-setembro26-green-2026-09-01-a-2026-09-15.csv`.
  *
- * Só o que ajuda a achar o arquivo depois na pasta de downloads: aba, resultado
- * e datas. Casa, esporte e adm iriam deixar o nome gigante.
+ * Só o que ajuda a achar o arquivo depois na pasta de downloads: grupo, aba,
+ * resultado e datas. Casa, esporte e adm iriam deixar o nome gigante. O grupo
+ * só aparece quando não é o gratuito, para os dois arquivos nunca se
+ * confundirem: `geogetips-sigma-setembro26.csv`.
  */
 export function nomeDoArquivo(
   aba: string,
   resultado: string,
   de: string,
-  ate: string
+  ate: string,
+  grupo: IdGrupo = GRUPO_PADRAO
 ): string {
-  const partes = ["geogetips", rotuloDaAba(aba).toLowerCase()];
+  const partes = ["geogetips"];
+  if (grupo !== GRUPO_PADRAO) partes.push(grupo);
+  partes.push(rotuloDaAba(aba).toLowerCase());
   if (resultado && resultado !== "TODAS") partes.push(resultado.toLowerCase());
   if (de && ate) partes.push(de === ate ? de : `${de}-a-${ate}`);
   else if (de) partes.push(`desde-${de}`);
