@@ -163,6 +163,15 @@ describe("linhasParaBets", () => {
     expect(red?.lucro).toBe(-100);
   });
 
+  it("guarda a odd com três casas, como a planilha escreve", () => {
+    // Dez apostas da planilha têm odd como 2,625. Com duas casas, o feed, o
+    // detalhe e o CSV mostravam "2,63".
+    const [bet] = linhasParaBets("Setembro26", [
+      linha({ [DATA]: "14/09/2026", [PARTIDA]: "A x B", [ODD]: "2,625" }),
+    ]);
+    expect(bet.odd).toBe(2.625);
+  });
+
   it("prefere a coluna LUCRO ao próprio cálculo", () => {
     // A planilha é a fonte da verdade; o cálculo é só rede de segurança.
     const [bet] = linhasParaBets("Setembro26", [

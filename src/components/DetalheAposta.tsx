@@ -5,7 +5,7 @@ import { Dialogo } from "@/components/Dialogo";
 import type { BetItem } from "@/lib/types";
 import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
-import { formatarOdd, formatarReais, formatarReaisComSinal } from "@/lib/format";
+import { formatarOddExata, formatarReais, formatarReaisComSinal } from "@/lib/format";
 
 interface DetalheApostaProps {
   bet: BetItem;
@@ -99,7 +99,7 @@ export function DetalheAposta({
               Odd
             </div>
             <div className="font-mono text-base font-bold text-[var(--text)] mt-0.5">
-              {formatarOdd(bet.odd)}
+              {formatarOddExata(bet.odd)}
             </div>
           </div>
 

@@ -208,7 +208,10 @@ export function linhasParaBets(tab: string, rows: string[][]): BetItem[] {
       partida: partida || "Aposta Registrada",
       tip: (row[4] || "").trim() || "Aposta",
       casa: (row[5] || "").trim() || "Sem Casa",
-      odd: parseFloat(odd.toFixed(2)),
+      // Três casas: a planilha tem odds como 2,625, e duas as mostravam
+      // "2,63" no feed, no detalhe e no CSV. A tela escreve a terceira só
+      // quando ela existe (`formatarOddExata`).
+      odd: parseFloat(odd.toFixed(3)),
       valor: parseFloat(valor.toFixed(2)),
       unidades: reaisParaUnidades(valor),
       resultado,
