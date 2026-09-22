@@ -94,7 +94,7 @@ test("hold: o modo vai para o endereço e volta depois de recarregar", async ({
     "Hold (margem da casa)": "4",
     "Odd encontrada": "2,10",
   });
-  await expect(resultado(page)).toContainText("1,98");
+  await expect(resultado(page)).toContainText("1,976");
   await expect(resultado(page)).toContainText("+6,28%");
 
   await page.reload();
@@ -123,7 +123,7 @@ test("múltiplas: exemplo, seleção nova e remoção", async ({ page }) => {
   await page.getByText("Como usar").click();
   await page.getByRole("button", { name: "Preencher com o exemplo" }).click();
   await expect(resultado(page)).toContainText("+7,29%");
-  await expect(resultado(page)).toContainText("4,29");
+  await expect(resultado(page)).toContainText("4,288");
 
   await page.getByRole("button", { name: "Adicionar seleção" }).click();
   await expect(page.getByRole("group", { name: "Seleção 3", exact: true })).toBeVisible();
@@ -287,7 +287,7 @@ test("com a referência completa, a odd justa aparece antes da odd encontrada", 
   await expect(
     page
       .getByRole("region", { name: "Dados da aposta" })
-      .getByText("2,00", { exact: true })
+      .getByText("2,000", { exact: true })
   ).toBeVisible();
 
   await preencher(page, { "Odd encontrada": "2,10" });
@@ -296,6 +296,95 @@ test("com a referência completa, a odd justa aparece antes da odd encontrada", 
   await page.getByRole("button", { name: "Limpar" }).click();
   await expect(page.getByLabel("Odd analisada", { exact: true })).toHaveValue("");
   await expect(resultado(page)).toContainText("Preencha as odds");
+});
+
+test("a lista diz só quantos resultados o mercado tem", async ({ page }) => {
+  await page.goto("/calculadora");
+  const opcoes = await page
+    .getByLabel("Resultados do mercado", { exact: true })
+    .locator("option")
+    .allTextContents();
+  expect(opcoes.slice(0, 2)).toEqual(["2 resultados", "3 resultados"]);
+});
+
+// Os campos aceitam três casas. Com a odd justa em duas, 2,781 aparecia como
+// "2,78", e a tela dizia "Sem valor" para 2,78 e "tem valor acima de 2,78".
+test("a odd justa sai com três casas, e 2,78 contra 2,781 não tem valor", async ({
+  page,
+}) => {
+  await page.goto("/calculadora");
+  await page.getByLabel("Resultados do mercado", { exact: true }).selectOption("3");
+  await preencher(page, {
+    "Odd analisada": "2,62",
+    "Odd contrária 1": "3,80",
+    "Odd contrária 2": "2,40",
+    "Odd encontrada": "2,78",
+  });
+  await expect(resultado(page)).toContainText("Sem valor");
+  await expect(resultado(page)).toContainText("acima de 2,781");
+  await expect(resultado(page)).not.toContainText("acima de 2,78.");
+});
+
+test("hold mostra a margem e o payout", async ({ page }) => {
+  await page.goto("/calculadora?modo=hold");
+  await preencher(page, {
+    "Odd de referência": "2,00",
+    "Hold (margem da casa)": "10",
+    "Odd encontrada": "2,50",
+  });
+  await expect(resultado(page)).toContainText("2,200");
+  await expect(resultado(page)).toContainText("10,00%");
+  await expect(resultado(page)).toContainText("90,9%");
+});
+
+test("surebet arredonda as apostas e mostra o lucro garantido e o máximo", async ({
+  page,
+}) => {
+  await page.goto("/calculadora?modo=surebet");
+  await preencher(page, { "Odd do resultado 1": "2,08", "Odd do resultado 2": "2,02" });
+  await expect(resultado(page)).toContainText("R$ 2,47");
+
+  await page.getByRole("button", { name: "R$ 5", exact: true }).click();
+  const linhas = resultado(page).getByRole("table").locator("tbody tr");
+  await expect(linhas.nth(0)).toContainText("R$ 50,00");
+  await expect(linhas.nth(1)).toContainText("R$ 50,00");
+  // Sai o primeiro, volta 104; sai o segundo, 101. Garantido é o menor.
+  await expect(resultado(page)).toContainText(/Lucro garantido de R\$\s1,00/);
+  await expect(resultado(page)).toContainText(/até R\$\s4,00/);
+});
+
+test("surebet que o arredondamento come tem a própria mensagem", async ({ page }) => {
+  await page.goto("/calculadora?modo=surebet");
+  // 2,001 e 2,000 somam 99,98%: existe. Com R$ 10, as apostas de R$ 5,00
+  // voltam 10,01 e 10,00, e não sobra lucro.
+  await preencher(page, {
+    "Odd do resultado 1": "2,001",
+    "Odd do resultado 2": "2,000",
+    "Investimento total (R$)": "10",
+  });
+  await expect(resultado(page)).toContainText("Surebet sem lucro");
+  await expect(resultado(page)).toContainText("a surebet existe");
+  await expect(resultado(page)).not.toContainText("precisa ficar abaixo de 100%");
+});
+
+test("no celular, o resumo aparece logo depois dos campos e leva ao resultado", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/calculadora");
+  await preencher(page, {
+    "Odd analisada": "1,90",
+    "Odd contrária": "1,90",
+    "Odd encontrada": "2,10",
+  });
+  const resumo = page.getByRole("button", { name: /\+5,00% de valor · 1,14u/ });
+  await expect(resumo).toBeVisible();
+  await resumo.click();
+  await expect(resultado(page).getByText("Stake recomendada")).toBeInViewport();
+
+  // No computador o resultado já está ao lado, e o resumo não aparece.
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(resumo).toBeHidden();
 });
 
 for (const tema of ["claro", "escuro"] as const) {

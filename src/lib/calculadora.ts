@@ -197,7 +197,7 @@ export function calcularPorHold(
 
 interface ApostaDaSurebet {
   odd: number;
-  /** Quanto apostar neste resultado, em reais, arredondado ao centavo. */
+  /** Quanto apostar neste resultado, em reais, arredondado ao passo escolhido. */
   valor: number;
   /** Quanto volta se este resultado sair. */
   retorno: number;
@@ -205,40 +205,67 @@ interface ApostaDaSurebet {
 
 export interface ResultadoSurebet {
   apostas: ApostaDaSurebet[];
+  /** A soma das apostas. Com arredondamento, pode passar ou faltar do investimento. */
+  investido: number;
   /** Menor retorno entre os resultados: é o que está garantido. */
   retornoGarantido: number;
   /** Retorno garantido menos o investido. Negativo quando não há surebet. */
   lucro: number;
+  /** O lucro se sair o resultado de maior retorno. */
+  lucroMaximo: number;
   /** Lucro sobre o investido, em fração. */
   roi: number;
+  /** As odds somam menos de 100% de probabilidade: existe surebet no mercado. */
+  existe: boolean;
+  /** Existe, e as apostas arredondadas fecham com lucro. */
   ehSurebet: boolean;
 }
+
+/**
+ * Os arredondamentos que a tela oferece para as apostas da surebet. Aposta
+ * quebrada em centavos é o sinal mais óbvio de surebet para a casa; em reais
+ * redondos, ela passa por aposta comum, e o lucro encolhe um pouco.
+ */
+export const PASSOS_DA_SUREBET = [
+  { valor: 0.01, rotulo: "Centavo" },
+  { valor: 1, rotulo: "R$ 1" },
+  { valor: 5, rotulo: "R$ 5" },
+] as const;
 
 /**
  * Modo "Surebet": divide o investimento entre todos os resultados, cada um em
  * uma casa, para o retorno ser o mesmo saia o que sair.
  *
- * O valor de cada resultado é proporcional a 1 / odd. Arredondado ao centavo,
- * o retorno varia alguns centavos de um resultado para outro; o garantido é
- * o menor deles, e é esse que a tela mostra como lucro.
+ * O valor de cada resultado é proporcional a 1 / odd, arredondado ao `passo`
+ * (centavo, a não ser que se peça outro). Arredondado, o retorno varia de um
+ * resultado para outro; o garantido é o menor deles, e é esse que a tela
+ * mostra como lucro.
+ *
+ * `existe` e `ehSurebet` são perguntas diferentes: as odds podem somar menos
+ * de 100% e, ainda assim, o arredondamento comer o lucro inteiro.
  */
 export function calcularSurebet(
   investimento: number,
-  odds: readonly number[]
+  odds: readonly number[],
+  passo = 0.01
 ): ResultadoSurebet {
   const soma = odds.reduce((acc, o) => acc + 1 / o, 0);
   const apostas = odds.map((odd) => {
-    const valor = centavos((investimento * (1 / odd)) / soma);
+    const valor = centavos(Math.round((investimento * (1 / odd)) / soma / passo) * passo);
     return { odd, valor, retorno: centavos(valor * odd) };
   });
-  const investido = apostas.reduce((acc, a) => acc + a.valor, 0);
-  const retornoGarantido = Math.min(...apostas.map((a) => a.retorno));
+  const investido = centavos(apostas.reduce((acc, a) => acc + a.valor, 0));
+  const retornos = apostas.map((a) => a.retorno);
+  const retornoGarantido = Math.min(...retornos);
   const lucro = centavos(retornoGarantido - investido);
   return {
     apostas,
+    investido,
     retornoGarantido,
     lucro,
+    lucroMaximo: centavos(Math.max(...retornos) - investido),
     roi: investido > 0 ? lucro / investido : 0,
+    existe: soma < 1,
     ehSurebet: soma < 1 && lucro > 0,
   };
 }

@@ -3,6 +3,8 @@ import {
   UNIDADE_MAXIMA,
   formatarInteiro,
   formatarOdd,
+  formatarOddExata,
+  formatarOddJusta,
   formatarReais,
   formatarReaisComSinal,
   formatarUnidades,
@@ -52,6 +54,19 @@ describe("formatarInteiro", () => {
 
   it("não deixa casa decimal aparecer numa contagem", () => {
     expect(formatarInteiro(1970.4)).toBe("1.970");
+  });
+});
+
+describe("formatarOddExata e formatarOddJusta", () => {
+  it("a odd digitada sai com a terceira casa só quando ela existe", () => {
+    expect(formatarOddExata(2)).toBe("2,00");
+    expect(formatarOddExata(1.85)).toBe("1,85");
+    expect(formatarOddExata(1.875)).toBe("1,875");
+  });
+
+  it("a odd justa sai sempre com três casas", () => {
+    expect(formatarOddJusta(2.7811)).toBe("2,781");
+    expect(formatarOddJusta(2)).toBe("2,000");
   });
 });
 
