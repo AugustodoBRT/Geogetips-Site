@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronsDownUp,
   ChevronsUpDown,
+  Download,
   LayoutGrid,
   List,
   Search,
@@ -32,7 +33,8 @@ import { FiltroPeriodo } from "@/components/FiltroPeriodo";
 import { calcularRoi, taxaDeAcerto } from "@/lib/stats";
 import { agruparPorDia, diasAbertosDeSaida } from "@/lib/dias";
 import { normalizarTexto } from "@/lib/texto";
-import { trechoDaAba } from "@/lib/constants";
+import { trechoDaAba, VALOR_UNIDADE } from "@/lib/constants";
+import { apostasParaCsv, nomeDoArquivo } from "@/lib/csv";
 import {
   abaDoEndereco,
   abaParaEndereco,
@@ -437,6 +439,25 @@ export default function ApostasPage() {
 
   const fecharDetalhe = useCallback(() => setSelectedBet(null), []);
 
+  /**
+   * Baixa o recorte em CSV: tudo o que o filtro deixa passar, e não só o que
+   * está desenhado — com dias recolhidos e "Mostrar mais", a tela mostra uma
+   * parte, e a planilha de quem baixa precisa do recorte inteiro. Gerado aqui
+   * mesmo, sem ir ao servidor.
+   */
+  function baixarCsv() {
+    const csv = apostasParaCsv(filteredBets, converter, VALOR_UNIDADE);
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = nomeDoArquivo(activeTab, statusFilter, de, ate);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    // Revogar na mesma volta cancela o download em parte dos navegadores.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   async function handleCopyBet(bet: BetItem) {
     const texto = `${bet.partida} - ${bet.tip} @${formatarOdd(bet.odd)} (${bet.casa})`;
     try {
@@ -470,6 +491,20 @@ export default function ApostasPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          {/* No cabeçalho, e não na barra de filtros: lá ele empurrava as faixas
+              de odd para uma terceira linha até em 1440 px. Aqui fica ao lado
+              do outro controle que age sobre o feed inteiro, a visualização. */}
+          <button
+            type="button"
+            onClick={baixarCsv}
+            disabled={mostrarEsqueleto || Boolean(erro) || filteredBets.length === 0}
+            title={`Baixar as ${formatarInteiro(filteredBets.length)} apostas do filtro, para abrir no Excel ou no Google Sheets`}
+            className="flex items-center gap-1.5 px-3 py-1.5 min-h-[30px] bg-[var(--bg-card)] border border-tinta/[0.12] rounded-full shadow-sm text-xs font-semibold text-[var(--text-2)] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-40 disabled:pointer-events-none transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" aria-hidden="true" />
+            Baixar CSV
+          </button>
+
           {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que traz borda, margem e padding do navegador e existe para agrupar campo de formulário — não uma barra de botões. */}
           <div
             className="flex items-center bg-[var(--bg-card)] border border-tinta/[0.12] rounded-full p-0.5 shadow-sm"

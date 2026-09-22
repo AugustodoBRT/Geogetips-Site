@@ -1,15 +1,19 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/constants";
 
-const PAGINAS: { caminho: string; frequencia: "hourly" | "daily"; prioridade: number }[] =
-  [
-    { caminho: "/", frequencia: "daily", prioridade: 1 },
-    { caminho: "/painel", frequencia: "hourly", prioridade: 0.9 },
-    { caminho: "/apostas", frequencia: "hourly", prioridade: 0.9 },
-    { caminho: "/historico", frequencia: "daily", prioridade: 0.7 },
-    { caminho: "/adms", frequencia: "daily", prioridade: 0.7 },
-    { caminho: "/estatisticas", frequencia: "daily", prioridade: 0.7 },
-  ];
+const PAGINAS: {
+  caminho: string;
+  frequencia: "hourly" | "daily" | "monthly";
+  prioridade: number;
+}[] = [
+  { caminho: "/", frequencia: "daily", prioridade: 1 },
+  { caminho: "/painel", frequencia: "hourly", prioridade: 0.9 },
+  { caminho: "/apostas", frequencia: "hourly", prioridade: 0.9 },
+  { caminho: "/historico", frequencia: "daily", prioridade: 0.7 },
+  { caminho: "/adms", frequencia: "daily", prioridade: 0.7 },
+  { caminho: "/estatisticas", frequencia: "daily", prioridade: 0.7 },
+  { caminho: "/perguntas", frequencia: "monthly", prioridade: 0.6 },
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const agora = new Date();

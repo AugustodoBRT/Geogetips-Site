@@ -13,6 +13,7 @@ import {
 import { getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
 import { computeStatsFromBets, type BetStats } from "@/lib/stats";
 import { MOCK_BETS } from "@/lib/data";
+import { type PeriodoDoHistorico, periodoDoHistorico } from "@/lib/periodo";
 import { ABA_TODOS, VALOR_UNIDADE } from "@/lib/constants";
 import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
 import { BotaoTelegram, SecaoTelegram } from "@/components/Telegram";
@@ -25,13 +26,20 @@ import { CarrosselProfundidade } from "@/components/CarrosselProfundidade";
 // diferentes do mesmo dado por até quatro minutos.
 export const revalidate = 60;
 
-async function carregarStats(): Promise<BetStats | null> {
-  if (USANDO_MOCK) return computeStatsFromBets(MOCK_BETS);
+/**
+ * Os números da home e desde quando eles existem, das mesmas apostas: o
+ * período tem de descrever exatamente o histórico que o total conta.
+ */
+async function carregarResumo(): Promise<{
+  stats: BetStats | null;
+  periodo: PeriodoDoHistorico | null;
+}> {
   try {
-    return computeStatsFromBets(await getBetsFromTab(ABA_TODOS));
+    const bets = USANDO_MOCK ? MOCK_BETS : await getBetsFromTab(ABA_TODOS);
+    return { stats: computeStatsFromBets(bets), periodo: periodoDoHistorico(bets) };
   } catch {
     // Sem planilha, a home simplesmente não afirma número nenhum.
-    return null;
+    return { stats: null, periodo: null };
   }
 }
 
@@ -90,7 +98,7 @@ const PASSOS = [
 ];
 
 export default async function HomePage() {
-  const stats = await carregarStats();
+  const { stats, periodo } = await carregarResumo();
   const temNumeros = Boolean(stats && stats.totalBets > 0);
 
   return (
@@ -154,8 +162,21 @@ export default async function HomePage() {
             <span className="font-mono font-bold text-[var(--text-2)] text-sm">
               {formatarInteiro(stats.totalBets)}
             </span>
-            apostas registradas
+            {periodo
+              ? `apostas registradas desde ${periodo.desde}`
+              : "apostas registradas"}
           </div>
+          {periodo && (
+            <>
+              <div className="w-1 h-1 rounded-full bg-tinta/15 hidden sm:block" />
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-bold text-[var(--text-2)] text-sm">
+                  {formatarInteiro(periodo.diasComAposta)}
+                </span>
+                {periodo.diasComAposta === 1 ? "dia com aposta" : "dias com aposta"}
+              </div>
+            </>
+          )}
           <div className="w-1 h-1 rounded-full bg-tinta/15 hidden sm:block" />
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-[var(--text-2)] text-sm">
@@ -321,6 +342,16 @@ export default async function HomePage() {
                 </li>
               ))}
             </ol>
+          </Revelar>
+
+          <Revelar atraso={0.12}>
+            <Link
+              href="/perguntas"
+              className="inline-flex items-center gap-2 mt-12 text-sm font-semibold text-[var(--text)] hover:text-[var(--accent)] transition-colors"
+            >
+              <span>Como cada número é calculado, e outras perguntas</span>
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </Link>
           </Revelar>
         </div>
       </section>

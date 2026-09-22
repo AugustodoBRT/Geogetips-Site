@@ -9,6 +9,7 @@ import { SeletorAba } from "@/components/SeletorAba";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonKpis, SkeletonLinhas } from "@/components/Skeleton";
 import { BarraDeProgresso } from "@/components/BarraDeProgresso";
+import { BlocoDeRisco } from "@/components/BlocoDeRisco";
 import { useBets } from "@/hooks/useBets";
 import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
 import { AvisoAtraso, SeletorGrupo } from "@/components/SeletorGrupo";
@@ -18,6 +19,7 @@ import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { FiltroPeriodo } from "@/components/FiltroPeriodo";
+import { CalendarioDeLucro } from "@/components/CalendarioDeLucro";
 import { paraISO, parseDateTimestamp, rotuloDoPeriodo, timestampDoISO } from "@/lib/date";
 import { ABA_TODOS, rotuloDaAba, trechoDaAba } from "@/lib/constants";
 import {
@@ -37,6 +39,7 @@ import {
   tempoRelativo,
 } from "@/lib/format";
 import { calcularRoi, computeStatsFromBets, taxaDeAcerto } from "@/lib/stats";
+import { maiorQueda } from "@/lib/risco";
 import {
   TrendingUp,
   TrendingDown,
@@ -365,13 +368,14 @@ export default function PainelPage() {
     // Maior queda de um pico até o vale seguinte. É a métrica de risco que
     // falta quando só se olha lucro e ROI: diz quanto a banca chegou a
     // devolver antes de recuperar.
-    let pico = -Infinity;
-    let drawdown = 0;
-    for (const ponto of points) {
-      if (ponto.cumProfit > pico) pico = ponto.cumProfit;
-      const queda = pico - ponto.cumProfit;
-      if (queda > drawdown) drawdown = queda;
-    }
+    //
+    // A conta é a mesma do bloco de risco (lib/risco.ts), partindo de onde a
+    // curva estava na véspera da janela. Antes o pico começava no primeiro
+    // ponto, e um primeiro dia negativo não contava como queda.
+    const drawdown = maiorQueda(
+      points.map((p) => p.cumProfit),
+      firstPoint.cumProfit - firstPoint.dayProfit
+    ).valor;
 
     return {
       width,
@@ -643,8 +647,16 @@ export default function PainelPage() {
                 suffix="%"
               />
             </div>
+            {/* O ROI daqui conta anuladas e pendentes no investido, como a
+                planilha. Quem compara com outro grupo precisa saber disso, e a
+                explicação mora em /perguntas. */}
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
-              Lucro sobre o total apostado
+              <Link
+                href="/perguntas#roi"
+                className="inline-block py-[5px] -my-[5px] underline decoration-dotted decoration-tinta/30 underline-offset-2 hover:text-[var(--accent)] hover:decoration-[var(--accent)] transition-colors"
+              >
+                Lucro sobre o total apostado
+              </Link>
             </div>
           </div>
 
@@ -1141,6 +1153,16 @@ export default function PainelPage() {
         </section>
       </div>
 
+      {/* Risco: o tamanho das fases ruins, logo abaixo da curva que as mostra.
+          Segue o recorte da tela, como os blocos ao redor. */}
+      <BlocoDeRisco
+        bets={scopedBets}
+        converter={converter}
+        aba={activeTab}
+        recorte={`${trecho.prefixo} ${trecho.nome}${periodo ? ` (${periodo})` : ""}`}
+        carregando={loading}
+      />
+
       {/* Top Casas.
           Pergunta gêmea da de esporte, e por um motivo que esporte não tem:
           casa limita conta boa. Quando isso acontece, o resultado do grupo muda
@@ -1212,6 +1234,20 @@ export default function PainelPage() {
           </div>
         )}
       </section>
+
+      {/* Lucro por dia: o mês inteiro, com os dias ruins à vista. Recebe a aba
+          inteira, e não o recorte: o calendário é sempre o mês cheio, e o
+          intervalo aparece como dias sem cor. A key zera o mês escolhido nas
+          setas quando a aba muda. */}
+      <CalendarioDeLucro
+        key={activeTab}
+        bets={allBets}
+        aba={activeTab}
+        de={de}
+        ate={ate}
+        converter={converter}
+        carregando={loading}
+      />
 
       {/* Bottom Section: Recent Activity Stream (6 cols) + Top Adms Leaderboard (6 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
