@@ -403,7 +403,7 @@ export default function EstatisticasPage() {
               <div className="space-y-4">
                 {sports.length === 0 ? (
                   <p className="text-xs text-[var(--text-3)]">
-                    Sem dados de categoria na aba.
+                    Sem dados de categoria neste período.
                   </p>
                 ) : (
                   sports.map((sport) => {
@@ -465,7 +465,7 @@ export default function EstatisticasPage() {
               <div className="space-y-3.5">
                 {bookies.length === 0 ? (
                   <p className="text-xs text-[var(--text-3)]">
-                    Sem dados de casas na aba.
+                    Sem dados de casas neste período.
                   </p>
                 ) : (
                   bookies.map((b) => (

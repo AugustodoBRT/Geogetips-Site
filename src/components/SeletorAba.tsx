@@ -37,7 +37,7 @@ export function SeletorAba({
           .sort((a, b) => ordemDaAba(b) - ordemDaAba(a))
           .map((tab) => (
             <option key={tab} value={tab}>
-              Aba: {tab}
+              {tab}
             </option>
           ))}
       </select>

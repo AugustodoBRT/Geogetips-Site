@@ -80,7 +80,7 @@ export default function AdmsPage() {
             )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Assertividade e lucro por unidade calculados {trecho.prefixo}{" "}
+            Assertividade e lucro por unidade {trecho.prefixo}{" "}
             <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>. A
             taxa considera apenas apostas finalizadas.
           </p>
@@ -341,7 +341,7 @@ function Recorte({
         {titulo}
       </h3>
       {itens.length === 0 ? (
-        <p className="text-xs text-[var(--text-3)]">Nada nesta aba.</p>
+        <p className="text-xs text-[var(--text-3)]">Nada neste período.</p>
       ) : (
         <div className="divide-y divide-tinta/[0.05]">
           {itens.map((i) => (

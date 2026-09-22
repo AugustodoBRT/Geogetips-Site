@@ -76,6 +76,70 @@ export function valorEsperado(odd: number, probabilidade: number): number {
   return odd * probabilidade - 1;
 }
 
+/**
+ * Fração da banca que o critério de Kelly manda apostar, com Kelly inteiro.
+ *
+ * f = (p × odd − 1) / (odd − 1): o valor esperado dividido pelo lucro que a
+ * odd paga por real. É a stake que mais faz a banca crescer no longo prazo,
+ * desde que a probabilidade esteja certa. Aqui ela é estimada pela casa de
+ * referência, e por isso a tela aplica só uma fração do Kelly.
+ *
+ * Zero quando não há valor esperado positivo: Kelly nunca manda apostar sem
+ * valor.
+ */
+export function kelly(odd: number, probabilidade: number): number {
+  const ev = valorEsperado(odd, probabilidade);
+  return ev > 0 ? ev / (odd - 1) : 0;
+}
+
+/**
+ * As frações de Kelly que a tela oferece. Um quarto é o padrão: Kelly inteiro
+ * com probabilidade estimada faz a banca oscilar demais, e meio erro na
+ * estimativa já transforma a stake certa em excesso.
+ */
+export const FRACOES_DE_KELLY = [
+  { valor: 0.125, rotulo: "1/8" },
+  { valor: 0.25, rotulo: "1/4" },
+  { valor: 0.5, rotulo: "1/2" },
+  { valor: 1, rotulo: "Inteiro" },
+] as const;
+
+export const FRACAO_DE_KELLY_PADRAO = 0.25;
+
+/** Banca de 100 unidades: 1u é 1% da banca, e a stake em unidades é a porcentagem. */
+export const BANCA_PADRAO_EM_UNIDADES = 100;
+
+/**
+ * Stake acima de 5% da banca numa aposta só. Com um quarto de Kelly, isso pede
+ * valor esperado de dois dígitos, que quase sempre é odd digitada errada ou
+ * mercado que a casa ainda vai corrigir. A tela mostra, mas pede para conferir.
+ */
+export const STAKE_ALTA = 0.05;
+
+export interface Stake {
+  /** Kelly inteiro, em fração da banca. */
+  kellyInteiro: number;
+  /** A stake com a fração escolhida, em fração da banca: 0,0114 é 1,14%. */
+  fracaoDaBanca: number;
+  /** A mesma stake em unidades, numa banca do tamanho informado. */
+  unidades: number;
+}
+
+/**
+ * A stake recomendada: a fração escolhida do Kelly, em porcentagem da banca e
+ * em unidades. Com a banca de 100u, 1,14% da banca são 1,14u.
+ */
+export function stakeDeKelly(
+  odd: number,
+  probabilidade: number,
+  fracaoDeKelly: number,
+  bancaEmUnidades: number
+): Stake {
+  const kellyInteiro = kelly(odd, probabilidade);
+  const fracaoDaBanca = kellyInteiro * fracaoDeKelly;
+  return { kellyInteiro, fracaoDaBanca, unidades: fracaoDaBanca * bancaEmUnidades };
+}
+
 export interface ResultadoOddJusta {
   /** Margem da casa de referência, em fração. */
   margem: number;

@@ -483,7 +483,7 @@ export default function ApostasPage() {
             Feed de Apostas
           </h1>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Feed cronológico lido {trecho.prefixo}{" "}
+            Feed cronológico {trecho.prefixo}{" "}
             <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>
             {periodo && <span> ({periodo})</span>}.
           </p>

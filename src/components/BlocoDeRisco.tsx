@@ -8,7 +8,11 @@ import { reaisParaUnidades } from "@/lib/constants";
 import { paraISO } from "@/lib/date";
 import { abaParaEndereco, escreverConsulta } from "@/lib/endereco";
 import { grupoParaEndereco, type IdGrupo } from "@/lib/grupos";
-import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
+import {
+  formatarInteiro,
+  formatarReaisComSinal,
+  formatarUnidadesSemSinal,
+} from "@/lib/format";
 import { calcularRisco, type DiaFechado } from "@/lib/risco";
 import type { BetItem } from "@/lib/types";
 
@@ -18,7 +22,7 @@ function curta(data: string): string {
 }
 
 function unidades(reais: number): string {
-  return `${reaisParaUnidades(Math.abs(reais)).toFixed(2).replace(".", ",")}u`;
+  return formatarUnidadesSemSinal(reaisParaUnidades(reais));
 }
 
 type Tom = "verde" | "vermelho" | "neutro";
@@ -86,11 +90,12 @@ function LinkDoDia({
 }
 
 /**
- * O bloco de risco do Painel (#68).
+ * O bloco "Atenção" do Painel (#68, #80).
  *
- * Lucro e ROI dizem aonde o grupo chegou; isto diz quanto se sofreu no
- * caminho. Segue o recorte da tela (aba e intervalo de datas), como os outros
- * blocos, e não a janela do gráfico: a janela é só do desenho.
+ * Lucro e ROI dizem aonde o grupo chegou; isto diz como a banca se comportou
+ * no caminho, nas fases boas e nas ruins. Segue o recorte da tela (aba e
+ * intervalo de datas), como os outros blocos, e não a janela do gráfico: a
+ * janela é só do desenho.
  *
  * As contas estão em lib/risco.ts, em reais da planilha; aqui os valores
  * passam para a unidade do visitante com `converter`. Unidades e contagens não
@@ -110,12 +115,12 @@ export function BlocoDeRisco({
   aba: string;
   /** O grupo na tela, pelo mesmo motivo: do Sigma, o dia abre o feed do Sigma. */
   grupo: IdGrupo;
-  /** Como o subtítulo chama o recorte: "em Setembro26", "no período 01/09 a 15/09". */
+  /** Como o subtítulo chama o recorte: "Setembro26", "Setembro26 (01/09 a 15/09)". */
   recorte: string;
   carregando: boolean;
 }) {
   const risco = useMemo(() => calcularRisco(bets), [bets]);
-  const { maiorQueda: queda } = risco;
+  const { maiorQueda: queda, maiorAlta: alta } = risco;
 
   return (
     <section
@@ -131,11 +136,11 @@ export function BlocoDeRisco({
             id="titulo-risco"
             className="text-base font-bold text-[var(--text)] tracking-tight"
           >
-            Risco
+            Atenção
           </h2>
           <p className="text-xs text-[var(--text-3)]">
-            Quanto a banca sofreu no caminho {recorte}: o tamanho das fases ruins, e não
-            só aonde o grupo chegou.
+            Como a banca se comportou durante {recorte}: o tamanho das fases boas e ruins;
+            não só aonde o grupo chegou.
           </p>
         </div>
       </div>
@@ -149,6 +154,9 @@ export function BlocoDeRisco({
           </p>
         )
       ) : (
+        // Em pares, o ruim à esquerda e o bom à direita: maior queda e maior
+        // alta, pior e melhor dia, maior red e maior green. Oito cartões fecham
+        // a grade de quatro colunas e a de duas, no celular.
         <dl className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
           <Medida
             rotulo="Maior queda"
@@ -165,12 +173,17 @@ export function BlocoDeRisco({
           </Medida>
 
           <Medida
-            rotulo="Reds seguidos"
-            valor={formatarInteiro(risco.maiorSequenciaDeReds)}
-            tom={risco.maiorSequenciaDeReds > 0 ? "vermelho" : "neutro"}
+            rotulo="Maior alta"
+            valor={
+              alta.valor > 0 ? formatarReaisComSinal(converter(alta.valor)) : "Nenhuma"
+            }
+            tom={alta.valor > 0 ? "verde" : "neutro"}
           >
-            maior sequência; a de greens foi de{" "}
-            {formatarInteiro(risco.maiorSequenciaDeGreens)}
+            {alta.valor > 0 && alta.pico
+              ? alta.vale
+                ? `${unidades(alta.valor)}, de ${curta(alta.vale)} a ${curta(alta.pico)}`
+                : `${unidades(alta.valor)}, do início até ${curta(alta.pico)}`
+              : "A curva não subiu neste recorte"}
           </Medida>
 
           {risco.piorDia && (
@@ -198,17 +211,17 @@ export function BlocoDeRisco({
           )}
 
           <Medida
-            rotulo="Maior green"
-            valor={formatarReaisComSinal(converter(risco.maiorGreen))}
-            tom={risco.maiorGreen > 0 ? "verde" : "neutro"}
+            rotulo="Maior red"
+            valor={formatarReaisComSinal(converter(risco.maiorRed))}
+            tom={risco.maiorRed < 0 ? "vermelho" : "neutro"}
           >
             numa aposta só
           </Medida>
 
           <Medida
-            rotulo="Maior red"
-            valor={formatarReaisComSinal(converter(risco.maiorRed))}
-            tom={risco.maiorRed < 0 ? "vermelho" : "neutro"}
+            rotulo="Maior green"
+            valor={formatarReaisComSinal(converter(risco.maiorGreen))}
+            tom={risco.maiorGreen > 0 ? "verde" : "neutro"}
           >
             numa aposta só
           </Medida>

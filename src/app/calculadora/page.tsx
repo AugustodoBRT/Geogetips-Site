@@ -12,7 +12,7 @@ import { CalculadoraEV } from "@/components/CalculadoraEV";
 export const metadata: Metadata = {
   title: "Calculadora de valor esperado",
   description:
-    "Odd justa, hold, surebet e múltiplas: descubra se uma odd paga mais do que a probabilidade real justifica.",
+    "Odd justa, hold, surebet e múltiplas: descubra se uma odd paga mais do que a probabilidade real justifica, e quanto apostar nela pelo critério de Kelly.",
   alternates: { canonical: "/calculadora" },
   robots: { index: false, follow: false },
 };
@@ -25,8 +25,9 @@ export default function CalculadoraPage() {
           Calculadora de valor esperado
         </h1>
         <p className="text-sm text-[var(--text-2)] mt-2 leading-relaxed max-w-2xl">
-          Descubra se uma odd paga mais do que a probabilidade real justifica. A margem da
-          casa sai da conta, e o que sobra é a odd justa.
+          Descubra se uma odd paga mais do que a probabilidade real justifica, e quanto
+          apostar nela. A margem da casa sai da conta, o que sobra é a odd justa, e o
+          critério de Kelly diz a stake em unidades.
         </p>
       </header>
 

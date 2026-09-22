@@ -7,7 +7,12 @@ import { SkeletonLinhas } from "@/components/Skeleton";
 import { timestampDoISO } from "@/lib/date";
 import { abaParaEndereco, escreverConsulta } from "@/lib/endereco";
 import { grupoParaEndereco, type IdGrupo } from "@/lib/grupos";
-import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
+import { reaisParaUnidades } from "@/lib/constants";
+import {
+  formatarInteiro,
+  formatarReaisComSinal,
+  formatarUnidadesSemSinal,
+} from "@/lib/format";
 import {
   compacto,
   type DiaDoCalendario,
@@ -29,6 +34,15 @@ const SEMANA = [
   { curto: "Sex", nome: "sexta-feira" },
   { curto: "Sáb", nome: "sábado" },
 ];
+
+/**
+ * O resultado em unidades, entre parênteses: "(9,35u)". Sai das reais da
+ * planilha, e não das convertidas: a unidade do grupo não muda com a do
+ * visitante.
+ */
+function emUnidades(reais: number): string {
+  return `(${formatarUnidadesSemSinal(reaisParaUnidades(reais))})`;
+}
 
 /** Cor da célula pelo resultado do dia. Os pares `-soft` já passam no contraste. */
 function tomDoDia(dia: DiaDoCalendario, fora: boolean): string {
@@ -160,7 +174,7 @@ export function CalendarioDeLucro({
           <SkeletonLinhas quantidade={3} altura="h-16" />
         ) : (
           <p className="text-center text-xs text-[var(--text-3)] py-6">
-            Sem apostas com data nesta aba.
+            Sem apostas com data neste período.
           </p>
         )
       ) : (
@@ -205,8 +219,20 @@ export function CalendarioDeLucro({
                         </span>
                         {clicavel && (
                           <>
-                            <span className="block font-mono text-[10.5px] sm:text-xs font-bold mt-0.5 truncate">
+                            {/* Valor inteiro, em reais e em unidades, só a partir
+                                de lg: abaixo disso a célula tem de 40 a 90 px e
+                                "+R$ 3.622,15" não cabe. Lá fica o resumido, e o
+                                valor exato vai no nome acessível. */}
+                            <span className="block lg:hidden font-mono text-[10.5px] sm:text-xs font-bold mt-0.5 truncate">
                               {compacto(converter(dia.lucro))}
+                            </span>
+                            <span className="hidden lg:flex flex-wrap items-baseline gap-x-1 mt-0.5 font-mono">
+                              <span className="text-xs font-bold whitespace-nowrap">
+                                {formatarReaisComSinal(converter(dia.lucro))}
+                              </span>
+                              <span className="text-[10px] font-semibold whitespace-nowrap">
+                                {emUnidades(dia.lucro)}
+                              </span>
                             </span>
                             <span className="hidden sm:block text-[10px] text-[var(--text-2)] truncate">
                               {formatarInteiro(dia.apostas)}{" "}
@@ -236,7 +262,7 @@ export function CalendarioDeLucro({
                             })}`}
                             aria-label={`${dia.data}: ${formatarReaisComSinal(
                               converter(dia.lucro)
-                            )} em ${formatarInteiro(dia.apostas)} ${
+                            )} ${emUnidades(dia.lucro)} em ${formatarInteiro(dia.apostas)} ${
                               dia.apostas === 1 ? "aposta" : "apostas"
                             }${fora ? ", fora do período escolhido" : ""}`}
                             className={`${classe} focus-visible:ring-2 focus-visible:ring-[var(--accent)]`}
@@ -264,7 +290,8 @@ export function CalendarioDeLucro({
             >
               {formatarReaisComSinal(converter(mes.lucro))}
             </strong>{" "}
-            · {formatarInteiro(mes.apostas)} {mes.apostas === 1 ? "aposta" : "apostas"} em{" "}
+            {emUnidades(mes.lucro)} · {formatarInteiro(mes.apostas)}{" "}
+            {mes.apostas === 1 ? "aposta" : "apostas"} em{" "}
             {formatarInteiro(mes.diasComAposta)}{" "}
             {mes.diasComAposta === 1 ? "dia" : "dias"}
             {(de || ate) && ". Os dias fora do período escolhido aparecem sem cor"}.

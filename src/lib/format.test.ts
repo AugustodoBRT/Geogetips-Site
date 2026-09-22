@@ -6,6 +6,7 @@ import {
   formatarReais,
   formatarReaisComSinal,
   formatarUnidades,
+  formatarUnidadesSemSinal,
   lerNumeroBR,
   tamanhoDoValor,
   tempoRelativo,
@@ -66,6 +67,14 @@ describe("formatarUnidades", () => {
     expect(formatarUnidades(2.5)).toBe("+2,50u");
     expect(formatarUnidades(-1.25)).toBe("-1,25u");
     expect(formatarUnidades(0)).toBe("+0,00u");
+  });
+});
+
+describe("formatarUnidadesSemSinal", () => {
+  it("dá só o tamanho, porque o sinal já está no valor em reais ao lado", () => {
+    expect(formatarUnidadesSemSinal(9.35)).toBe("9,35u");
+    expect(formatarUnidadesSemSinal(-38.24)).toBe("38,24u");
+    expect(formatarUnidadesSemSinal(0)).toBe("0,00u");
   });
 });
 

@@ -89,6 +89,14 @@ export function formatarUnidades(unidades: number): string {
 }
 
 /**
+ * -9.35 -> "9,35u": o tamanho, para ir ao lado de um valor em reais que já
+ * leva o sinal e a cor. "-R$ 935,00 (-9,35u)" diria o sinal duas vezes.
+ */
+export function formatarUnidadesSemSinal(unidades: number): string {
+  return `${Math.abs(unidades).toFixed(2).replace(".", ",")}u`;
+}
+
+/**
  * Classe de tamanho para o número grande de um card de KPI.
  *
  * O card tem largura fixa e o valor cresce com a banca: "+R$ 461,00" cabe em

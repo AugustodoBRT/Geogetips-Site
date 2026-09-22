@@ -56,6 +56,20 @@ export function maiorQueda(acumulado: readonly number[], inicial = 0): Queda {
 }
 
 /**
+ * A maior alta de uma curva acumulada, de um vale até o pico seguinte.
+ *
+ * É a maior queda da curva virada de cabeça para baixo: o mesmo percurso, com
+ * vale no lugar de pico. `inicio` é o índice do vale (-1 quando a subida parte
+ * do ponto de partida) e `fim`, o do pico.
+ */
+export function maiorAlta(acumulado: readonly number[], inicial = 0): Queda {
+  return maiorQueda(
+    acumulado.map((ponto) => -ponto),
+    -inicial
+  );
+}
+
+/**
  * Os dias já vividos, do mais antigo ao mais novo, com o resultado de cada um.
  *
  * Dia futuro fica de fora: é aposta de longo prazo, pendente e com lucro zero,
@@ -80,42 +94,10 @@ export function diasFechados(
     .map(({ data, lucro, apostas }) => ({ data, lucro: arredondar(lucro), apostas }));
 }
 
-/**
- * A maior sequência de um resultado, aposta a aposta, na ordem da planilha.
- *
- * As apostas chegam do servidor da mais nova para a mais antiga, com a posição
- * na planilha desempatando dentro do dia (`ordenarApostas`). Virar a lista e
- * reordenar por data, de forma estável, devolve a ordem em que foram lançadas.
- * Void e pendente não entram e não quebram a sequência: uma anulada no meio de
- * cinco reds não fez ninguém ganhar nada.
- */
-export function maiorSequencia(
-  bets: readonly BetItem[],
-  resultado: "GREEN" | "RED",
-  ref: Date = new Date()
-): number {
-  const hoje = inicioDeHoje(ref);
-  const cronologica = [...bets]
-    .reverse()
-    .map((b) => ({ b, ts: parseDateTimestamp(b.data) }))
-    .filter(({ ts }) => ts > 0 && ts <= hoje)
-    .sort((x, y) => x.ts - y.ts)
-    .map(({ b }) => b)
-    .filter((b) => b.resultado === "GREEN" || b.resultado === "RED");
-
-  let atual = 0;
-  let maior = 0;
-  for (const b of cronologica) {
-    atual = b.resultado === resultado ? atual + 1 : 0;
-    if (atual > maior) maior = atual;
-  }
-  return maior;
-}
-
 export interface Risco {
   maiorQueda: { valor: number; pico: string | null; vale: string | null };
-  maiorSequenciaDeReds: number;
-  maiorSequenciaDeGreens: number;
+  /** A fase boa: quanto a curva subiu, de um vale até o pico seguinte. */
+  maiorAlta: { valor: number; vale: string | null; pico: string | null };
   melhorDia: DiaFechado | null;
   piorDia: DiaFechado | null;
   /** Lucro da melhor e da pior aposta sozinha. */
@@ -137,6 +119,7 @@ export function calcularRisco(bets: readonly BetItem[], ref: Date = new Date()):
     return acumulado;
   });
   const queda = maiorQueda(curva);
+  const alta = maiorAlta(curva);
 
   const decididas = bets.filter((b) => b.resultado === "GREEN" || b.resultado === "RED");
   const lucros = decididas.map((b) => b.lucro);
@@ -158,8 +141,12 @@ export function calcularRisco(bets: readonly BetItem[], ref: Date = new Date()):
       pico: queda.inicio >= 0 ? dias[queda.inicio].data : null,
       vale: queda.fim >= 0 ? dias[queda.fim].data : null,
     },
-    maiorSequenciaDeReds: maiorSequencia(bets, "RED", ref),
-    maiorSequenciaDeGreens: maiorSequencia(bets, "GREEN", ref),
+    maiorAlta: {
+      valor: arredondar(alta.valor),
+      // Vale no ponto de partida: a curva subiu já no primeiro dia.
+      vale: alta.inicio >= 0 ? dias[alta.inicio].data : null,
+      pico: alta.fim >= 0 ? dias[alta.fim].data : null,
+    },
     melhorDia,
     piorDia,
     maiorGreen: lucros.length > 0 ? Math.max(...lucros, 0) : 0,
