@@ -49,6 +49,18 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Escolha feita em outra aba do site vale aqui também, como a do tema. Sem
+  // isto, duas abas abertas mostravam o mesmo número em escalas diferentes.
+  useEffect(() => {
+    function deOutraAba(e: StorageEvent) {
+      if (e.key !== CHAVE) return;
+      const n = e.newValue === null ? VALOR_UNIDADE : parseFloat(e.newValue);
+      setUnidade(valido(n) ? n : VALOR_UNIDADE);
+    }
+    window.addEventListener("storage", deOutraAba);
+    return () => window.removeEventListener("storage", deOutraAba);
+  }, []);
+
   const definirUnidade = useCallback((valor: number) => {
     if (!valido(valor)) return;
     setUnidade(valor);

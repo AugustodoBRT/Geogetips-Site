@@ -264,7 +264,7 @@ export function CalendarioDeLucro({
                               converter(dia.lucro)
                             )} ${emUnidades(dia.lucro)} em ${formatarInteiro(dia.apostas)} ${
                               dia.apostas === 1 ? "aposta" : "apostas"
-                            }${fora ? ", fora do período escolhido" : ""}`}
+                            }${dia.hoje ? ", hoje" : ""}${fora ? ", fora do período escolhido" : ""}`}
                             className={`${classe} focus-visible:ring-2 focus-visible:ring-[var(--accent)]`}
                           >
                             {conteudo}

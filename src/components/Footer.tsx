@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Table2 } from "lucide-react";
+import { LinkInterno } from "@/components/LinkInterno";
 import { MarcaG } from "@/components/MarcaG";
 import { IconeTelegram, IconeX } from "@/components/Telegram";
 import { TELEGRAM_URL, PLANILHA_URL, X_URL } from "@/lib/constants";
@@ -61,12 +61,12 @@ export function Footer() {
             <ul className="flex flex-wrap gap-x-5 gap-y-2 list-none p-0 m-0">
               {LINKS.map((l) => (
                 <li key={l.href}>
-                  <Link
+                  <LinkInterno
                     href={l.href}
                     className="inline-block py-1.5 text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] transition-colors"
                   >
                     {l.label}
-                  </Link>
+                  </LinkInterno>
                 </li>
               ))}
             </ul>

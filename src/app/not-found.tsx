@@ -13,7 +13,13 @@ const ATALHOS = [
   { href: "/painel", nome: "Painel", texto: "Lucro, ROI e evolução da banca" },
   { href: "/apostas", nome: "Apostas", texto: "O feed, dia a dia" },
   { href: "/historico", nome: "Histórico", texto: "Todos os meses lado a lado" },
+  { href: "/adms", nome: "Adms", texto: "O resultado de cada adm" },
   { href: "/estatisticas", nome: "Estatísticas", texto: "Por esporte e por casa" },
+  {
+    href: "/perguntas",
+    nome: "Perguntas frequentes",
+    texto: "Como cada número é calculado",
+  },
 ];
 
 /**
