@@ -2,6 +2,7 @@ import { CORES, CORES_ESCURO } from "@/lib/cores";
 import { SITE_URL } from "@/lib/constants";
 import { SCRIPT_TEMA_INICIAL } from "@/lib/tema";
 import type { Metadata, Viewport } from "next";
+import { Fragment } from "react";
 import { DM_Serif_Display, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/Navigation";
@@ -126,7 +127,20 @@ export default function RootLayout({
           <UnidadeProvider>
             <Navigation />
             <main id="conteudo" className="flex-1">
-              {children}
+              {/* O Fragment com chave não é enfeite (#86). Este `children` é o
+                  roteador do Next, que recebe o componente do error.tsx como
+                  propriedade: se o chunk dele ainda não carregou quando o React
+                  chega aqui, o elemento fica pendente e a hidratação suspende.
+                  Suspendendo direto no <main>, o React do Next 15 às vezes
+                  retoma sem voltar o cursor e acusa o erro 418 de hidratação
+                  (react/react#37584); no Fragment, que vira nó próprio, retomar
+                  não mexe no cursor. Sem a chave o React desfaz o Fragment e o
+                  defeito volta. Vale o mesmo para um error.tsx num segmento
+                  cujo layout ponha `children` dentro de um elemento HTML.
+                  Pode sair quando o react-dom embutido no Next já tiver
+                  `popHydrationStateOnInterruptedWork` (react/react#35494, no
+                  react-dom 19.3.0). */}
+              <Fragment key="pagina">{children}</Fragment>
             </main>
             <Footer />
           </UnidadeProvider>
