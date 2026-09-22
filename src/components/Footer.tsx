@@ -10,6 +10,7 @@ const LINKS = [
   { label: "Histórico", href: "/historico" },
   { label: "Adms", href: "/adms" },
   { label: "Estatísticas", href: "/estatisticas" },
+  { label: "Perguntas frequentes", href: "/perguntas" },
 ];
 
 export function Footer() {

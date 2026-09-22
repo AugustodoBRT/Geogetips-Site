@@ -322,6 +322,16 @@ export default async function HomePage() {
               ))}
             </ol>
           </Revelar>
+
+          <Revelar atraso={0.12}>
+            <Link
+              href="/perguntas"
+              className="inline-flex items-center gap-2 mt-12 text-sm font-semibold text-[var(--text)] hover:text-[var(--accent)] transition-colors"
+            >
+              <span>Como cada número é calculado, e outras perguntas</span>
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </Link>
+          </Revelar>
         </div>
       </section>
     </div>
