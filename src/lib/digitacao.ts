@@ -1,5 +1,5 @@
 import { lerOdd, lerPorcentagem } from "./calculadora";
-import { lerNumeroBR } from "./format";
+import { formatarOddExata, lerNumeroBR } from "./format";
 
 /**
  * O que se digita nos campos da calculadora, arrumado tecla a tecla (#82).
@@ -55,9 +55,7 @@ export function digitandoValor(texto: string): string {
 /** Odd com duas casas, ou três quando a terceira existe: "2" → "2,00", "1,875" fica. */
 export function oddAoSair(texto: string): string {
   const odd = lerOdd(texto);
-  if (odd === null) return texto;
-  const tres = odd.toFixed(3);
-  return (tres.endsWith("0") ? odd.toFixed(2) : tres).replace(".", ",");
+  return odd === null ? texto : formatarOddExata(odd);
 }
 
 const CURTO = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });

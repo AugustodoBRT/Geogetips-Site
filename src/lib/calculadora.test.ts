@@ -127,6 +127,35 @@ describe("calcularSurebet", () => {
     expect(r.apostas.reduce((acc, a) => acc + a.valor, 0)).toBeCloseTo(1000, 1);
     expect(r.ehSurebet).toBe(true);
   });
+
+  it("arredonda as apostas ao passo pedido, e o lucro garantido encolhe", () => {
+    // Ao centavo: 49,27 e 50,73, com R$ 2,47 garantidos.
+    expect(calcularSurebet(100, [2.08, 2.02]).lucro).toBe(2.47);
+
+    const r = calcularSurebet(100, [2.08, 2.02], 5);
+    expect(r.apostas.map((a) => a.valor)).toEqual([50, 50]);
+    expect(r.investido).toBe(100);
+    // Sai o primeiro: 104. Sai o segundo: 101. Garantido é o menor.
+    expect(r.lucro).toBe(1);
+    expect(r.lucroMaximo).toBe(4);
+    expect(r.ehSurebet).toBe(true);
+  });
+
+  it("o investido é a soma das apostas arredondadas, não o digitado", () => {
+    const r = calcularSurebet(100, [3.2, 3.5, 3.4], 5);
+    expect(r.investido).toBe(r.apostas.reduce((acc, a) => acc + a.valor, 0));
+  });
+
+  it("separa a surebet que existe da que o arredondamento come", () => {
+    // 2,001 e 2,000 somam 99,98%: existe. Com R$ 10, as apostas de 5,00 e
+    // 5,00 voltam 10,01 e 10,00, e o garantido não passa do investido.
+    const r = calcularSurebet(10, [2.001, 2]);
+    expect(r.existe).toBe(true);
+    expect(r.lucro).toBe(0);
+    expect(r.ehSurebet).toBe(false);
+
+    expect(calcularSurebet(100, [1.9, 1.9]).existe).toBe(false);
+  });
 });
 
 describe("calcularMultipla", () => {

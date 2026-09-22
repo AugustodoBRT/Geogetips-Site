@@ -82,6 +82,28 @@ export function formatarOdd(odd: number): string {
   return odd.toFixed(2).replace(".", ",");
 }
 
+/**
+ * Odd como a casa escreve: duas casas, ou três quando a terceira existe.
+ * 2 -> "2,00", 1.875 -> "1,875", 1.85 -> "1,85". É a odd digitada na
+ * calculadora, que aceita três casas: com duas, 1,875 viraria "1,88".
+ */
+export function formatarOddExata(odd: number): string {
+  const tres = odd.toFixed(3);
+  return (tres.endsWith("0") ? odd.toFixed(2) : tres).replace(".", ",");
+}
+
+/**
+ * Odd justa, sempre com três casas: 2.7811 -> "2,781".
+ *
+ * É a régua contra a qual se compara a odd encontrada, que pode ter três
+ * casas. Com duas, a odd justa de 2,781 aparecia como "2,78", e a tela dizia
+ * "Sem valor" para uma odd de 2,78 e, na mesma frase, "tem valor qualquer odd
+ * acima de 2,78".
+ */
+export function formatarOddJusta(odd: number): string {
+  return odd.toFixed(3).replace(".", ",");
+}
+
 /** 2.5 -> "+2,50u" */
 export function formatarUnidades(unidades: number): string {
   const sinal = unidades >= 0 ? "+" : "";
