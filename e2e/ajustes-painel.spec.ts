@@ -3,10 +3,10 @@ import { expect, test } from "@playwright/test";
 /**
  * Os ajustes de #80 no Painel e no menu.
  *
- * O seletor mostra só o mês, o bloco de risco virou "Atenção" sem o card de
- * reds seguidos, cada dia do calendário diz o valor em reais e em unidades, e
- * o calendário veio para antes de Top Casas. A FAQ no menu do computador está
- * em perguntas.spec.ts; aqui fica a do celular.
+ * O seletor mostra só o mês, o bloco de risco virou "Atenção", com a maior
+ * alta no lugar dos reds seguidos, cada dia do calendário diz o valor em reais
+ * e em unidades, e o calendário veio para antes de Top Casas. A FAQ no menu do
+ * computador está em perguntas.spec.ts; aqui fica a do celular.
  */
 
 test("o seletor mostra só o mês, sem o prefixo de aba", async ({ page }) => {
@@ -23,7 +23,7 @@ test("o seletor mostra só o mês, sem o prefixo de aba", async ({ page }) => {
   await expect(page.getByRole("main")).not.toContainText(/\baba\b/i);
 });
 
-test("o bloco Atenção fala das fases boas e ruins e não tem mais reds seguidos", async ({
+test("o bloco Atenção tem a maior alta ao lado da maior queda e não tem mais reds seguidos", async ({
   page,
 }) => {
   await page.goto("/painel");
@@ -33,9 +33,25 @@ test("o bloco Atenção fala das fases boas e ruins e não tem mais reds seguido
     /Como a banca se comportou durante \S+: o tamanho das fases boas e ruins; não só aonde o grupo chegou\./
   );
   await expect(bloco.getByText("Reds seguidos")).toHaveCount(0);
-  await expect(bloco.locator("dt")).toHaveCount(7);
+  await expect(bloco.locator("dt")).toHaveCount(8);
 
-  // A grade de quatro colunas termina sem buraco: o último card ocupa duas.
+  // A fase boa ao lado da ruim, na mesma linha.
+  const alta = bloco
+    .locator("div")
+    .filter({ has: page.locator("dt", { hasText: "Maior alta" }) });
+  await expect(alta.locator("dd span").first()).toHaveText(
+    /^(\+R\$\s[\d.]+,\d{2}|Nenhuma)$/
+  );
+  const [yQueda, yAlta] = await Promise.all(
+    ["Maior queda", "Maior alta"].map((r) =>
+      bloco
+        .locator("dt", { hasText: r })
+        .evaluate((e) => Math.round(e.getBoundingClientRect().top))
+    )
+  );
+  expect(yAlta).toBe(yQueda);
+
+  // A grade de quatro colunas termina sem buraco.
   const caixas = await bloco
     .locator("dl > div")
     .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().right));

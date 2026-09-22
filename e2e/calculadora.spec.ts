@@ -20,10 +20,7 @@ async function preencher(page: Page, campos: Record<string, string>) {
 
 test("fica fora do menu, do rodapé, do sitemap e da busca", async ({ page, request }) => {
   await page.goto("/calculadora");
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-    "content",
-    /noindex/
-  );
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
   await expect(page.locator('a[href="/calculadora"]')).toHaveCount(0);
 
   const sitemap = await (await request.get("/sitemap.xml")).text();
@@ -85,7 +82,9 @@ test("mercado de 3 resultados pede duas odds contrárias", async ({ page }) => {
   await expect(resultado(page)).toContainText("2,14");
 });
 
-test("hold: o modo vai para o endereço e volta depois de recarregar", async ({ page }) => {
+test("hold: o modo vai para o endereço e volta depois de recarregar", async ({
+  page,
+}) => {
   await page.goto("/calculadora");
   await page.getByRole("button", { name: "Hold", exact: true }).click();
   await expect(page).toHaveURL(/\?modo=hold$/);
@@ -133,6 +132,87 @@ test("múltiplas: exemplo, seleção nova e remoção", async ({ page }) => {
 
   await page.getByRole("button", { name: "Remover a seleção 3" }).click();
   await expect(resultado(page)).toContainText("+7,29%");
+});
+
+test("a stake de Kelly sai em unidades, e a fração e a banca ficam guardadas", async ({
+  page,
+}) => {
+  await page.goto("/calculadora");
+  await preencher(page, {
+    "Odd analisada": "1,90",
+    "Odd contrária": "1,90",
+    "Odd encontrada": "2,10",
+  });
+  // Probabilidade de 50% numa odd 2,10: Kelly inteiro de 4,55% da banca, e um
+  // quarto dele, o padrão, 1,14%. Com a banca de 100u, 1,14u.
+  const stake = resultado(page)
+    .getByRole("heading", { name: "Stake recomendada" })
+    .locator("..")
+    .locator("..");
+  await expect(stake).toContainText("Kelly 1/4");
+  await expect(stake).toContainText("1,14u");
+  await expect(stake).toContainText("1,14% da banca");
+  await expect(stake).toContainText(/R\$\s113,64 com 1u = R\$\s100,00/);
+
+  await stake.getByRole("button", { name: "1/2" }).click();
+  await expect(stake).toContainText("2,27u");
+  await page.getByLabel("Banca", { exact: true }).fill("50");
+  await expect(stake).toContainText("1,14u");
+  await expect(stake).toContainText("2,27% da banca");
+
+  await page.reload();
+  await preencher(page, {
+    "Odd analisada": "1,90",
+    "Odd contrária": "1,90",
+    "Odd encontrada": "2,10",
+  });
+  await expect(stake.getByRole("button", { name: "1/2" })).toHaveAttribute(
+    "aria-pressed",
+    "true"
+  );
+  await expect(page.getByLabel("Banca", { exact: true })).toHaveValue("50");
+});
+
+test("sem valor, o Kelly manda não apostar; com valor alto demais, pede conferência", async ({
+  page,
+}) => {
+  await page.goto("/calculadora");
+  await preencher(page, {
+    "Odd analisada": "1,90",
+    "Odd contrária": "1,90",
+    "Odd encontrada": "1,80",
+  });
+  await expect(resultado(page)).toContainText("o Kelly manda não apostar");
+  await expect(resultado(page)).toContainText("0u");
+
+  // EV de 50%: um quarto do Kelly dá 6,25% da banca.
+  await preencher(page, { "Odd encontrada": "3,00" });
+  await expect(resultado(page)).toContainText("6,25u");
+  await expect(resultado(page)).toContainText("Mais de 5% da banca numa aposta só");
+});
+
+test("hold e múltiplas também dão a stake; surebet não, porque o valor é dividido", async ({
+  page,
+}) => {
+  await page.goto("/calculadora?modo=hold");
+  await preencher(page, {
+    "Odd de referência": "2,00",
+    "Hold (margem da casa)": "10",
+    "Odd encontrada": "2,50",
+  });
+  // Odd justa 2,20, EV de 13,64%: Kelly inteiro de 9,09%, um quarto 2,27%.
+  await expect(resultado(page)).toContainText("+13,64%");
+  await expect(resultado(page)).toContainText("2,27u");
+
+  await page.getByRole("button", { name: "Múltiplas", exact: true }).click();
+  await page.getByText("Como usar").click();
+  await page.getByRole("button", { name: "Preencher com o exemplo" }).click();
+  await expect(resultado(page)).toContainText("Stake recomendada");
+
+  await page.getByRole("button", { name: "Surebet", exact: true }).click();
+  await preencher(page, { "Odd do resultado 1": "2,10", "Odd do resultado 2": "2,10" });
+  await expect(resultado(page)).toContainText("Surebet");
+  await expect(resultado(page)).not.toContainText("Stake recomendada");
 });
 
 for (const tema of ["claro", "escuro"] as const) {

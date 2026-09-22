@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcularRisco, diasFechados, maiorQueda } from "./risco";
+import { calcularRisco, diasFechados, maiorAlta, maiorQueda } from "./risco";
 import type { BetItem, BetResult } from "./types";
 
 /**
@@ -59,6 +59,31 @@ describe("maiorQueda", () => {
   });
 });
 
+describe("maiorAlta", () => {
+  it("acha a maior subida de um vale ao pico seguinte", () => {
+    // Vale -80 no índice 2, pico 100 no índice 4: subiu 180. A subida de -50
+    // a 30, antes dele, foi menor.
+    expect(maiorAlta([-50, 30, -80, 40, 100, 60])).toEqual({
+      valor: 180,
+      inicio: 2,
+      fim: 4,
+    });
+  });
+
+  it("conta a subida do primeiro dia, a partir do ponto de partida", () => {
+    expect(maiorAlta([50, 80, -30])).toEqual({ valor: 80, inicio: -1, fim: 1 });
+  });
+
+  it("parte de onde a curva estava antes da janela", () => {
+    expect(maiorAlta([110, 90], 100)).toEqual({ valor: 10, inicio: -1, fim: 0 });
+  });
+
+  it("é zero quando a curva só cai", () => {
+    expect(maiorAlta([-10, -20, -30])).toEqual({ valor: 0, inicio: -1, fim: -1 });
+    expect(maiorAlta([])).toEqual({ valor: 0, inicio: -1, fim: -1 });
+  });
+});
+
 describe("diasFechados", () => {
   it("soma cada dia, do mais antigo ao mais novo, sem futuro nem data ilegível", () => {
     const dias = diasFechados(
@@ -101,6 +126,9 @@ describe("calcularRisco", () => {
       pico: "17/09/2026",
       vale: "19/09/2026",
     });
+    // Do vale de 30 no dia 19 ao pico de 150 no dia 21. A subida do começo,
+    // de 0 a 300 no dia 17, é maior: essa é a alta.
+    expect(risco.maiorAlta).toEqual({ valor: 300, vale: null, pico: "17/09/2026" });
     expect(risco.melhorDia).toEqual({ data: "17/09/2026", lucro: 300, apostas: 1 });
     expect(risco.piorDia).toEqual({ data: "18/09/2026", lucro: -250, apostas: 2 });
     expect(risco.maiorGreen).toBe(300);
@@ -119,6 +147,7 @@ describe("calcularRisco", () => {
   it("recorte vazio não inventa número", () => {
     expect(calcularRisco([], REF)).toEqual({
       maiorQueda: { valor: 0, pico: null, vale: null },
+      maiorAlta: { valor: 0, vale: null, pico: null },
       melhorDia: null,
       piorDia: null,
       maiorGreen: 0,

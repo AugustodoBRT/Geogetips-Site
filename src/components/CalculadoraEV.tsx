@@ -1,18 +1,29 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useEstadoNaUrl } from "@/hooks/useEstadoNaUrl";
+import { useUnidade } from "@/hooks/useUnidade";
 import { escolher } from "@/lib/endereco";
-import { formatarOdd, formatarReais, lerNumeroBR } from "@/lib/format";
 import {
+  formatarOdd,
+  formatarReais,
+  formatarUnidadesSemSinal,
+  lerNumeroBR,
+} from "@/lib/format";
+import {
+  BANCA_PADRAO_EM_UNIDADES,
   calcularMultipla,
   calcularOddJusta,
   calcularPorHold,
   calcularSurebet,
+  FRACAO_DE_KELLY_PADRAO,
+  FRACOES_DE_KELLY,
   lerOdd,
   lerPorcentagem,
   margem,
+  STAKE_ALTA,
+  stakeDeKelly,
 } from "@/lib/calculadora";
 
 const MODOS = [
@@ -240,6 +251,161 @@ function Veredito({
   );
 }
 
+/** Como o visitante quer dimensionar a stake: a fração do Kelly e a banca em unidades. */
+interface Gestao {
+  fracao: number;
+  /** Banca em unidades, como está digitada. */
+  banca: string;
+}
+
+const GESTAO_PADRAO: Gestao = {
+  fracao: FRACAO_DE_KELLY_PADRAO,
+  banca: String(BANCA_PADRAO_EM_UNIDADES),
+};
+
+/** Onde a fração e a banca ficam guardadas: é preferência de quem visita, como a unidade. */
+const CHAVE_GESTAO = "geogetips:kelly";
+
+/**
+ * A stake recomendada pelo critério de Kelly, em unidades.
+ *
+ * Unidade, e não porcentagem, porque é assim que o grupo manda as entradas.
+ * Com a banca padrão de 100u, a stake em unidades é a porcentagem da banca; a
+ * banca muda a conta para quem trabalha com outra proporção. O valor em reais
+ * usa a unidade escolhida no Painel, a mesma do resto do site.
+ */
+function StakeRecomendada({
+  odd,
+  probabilidade,
+  gestao,
+  onGestao,
+}: {
+  odd: number;
+  probabilidade: number;
+  gestao: Gestao;
+  onGestao: (gestao: Gestao) => void;
+}) {
+  const { unidade } = useUnidade();
+  const banca = lerNumeroBR(gestao.banca);
+  const bancaValida = banca !== null && banca > 0;
+  const stake = stakeDeKelly(odd, probabilidade, gestao.fracao, bancaValida ? banca : 0);
+  const fracao = FRACOES_DE_KELLY.find((f) => f.valor === gestao.fracao);
+
+  return (
+    <div className="rounded-xl border border-tinta/[0.07] bg-[var(--bg-soft)] p-4 space-y-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className="text-[10.5px] font-bold uppercase tracking-wider text-[var(--text-3)]">
+          Stake recomendada
+        </h3>
+        <span className="text-[10.5px] font-bold text-[var(--text-3)]">
+          Kelly {fracao?.rotulo.toLowerCase()}
+        </span>
+      </div>
+
+      {!bancaValida ? (
+        <p className="text-xs text-[var(--text-2)]">
+          Informe o tamanho da banca em unidades para ver a stake.
+        </p>
+      ) : stake.unidades > 0 ? (
+        <div className="space-y-1.5">
+          <p className="font-mono text-3xl font-bold leading-none text-[var(--text)]">
+            {formatarUnidadesSemSinal(stake.unidades)}
+          </p>
+          <p className="text-xs text-[var(--text-2)] leading-relaxed">
+            {porcento(stake.fracaoDaBanca)} da banca ·{" "}
+            <strong className="text-[var(--text)]">
+              {formatarReais(stake.unidades * unidade)}
+            </strong>{" "}
+            com 1u = {formatarReais(unidade)}
+          </p>
+          {stake.fracaoDaBanca > STAKE_ALTA && (
+            <p className="text-[11.5px] leading-snug font-semibold text-[var(--red)]">
+              Mais de {porcento(STAKE_ALTA, 0)} da banca numa aposta só. Valor esperado
+              desse tamanho costuma ser odd digitada errada ou mercado que a casa ainda
+              vai corrigir: confira antes.
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-1">
+          <p className="font-mono text-3xl font-bold leading-none text-[var(--text)]">
+            0u
+          </p>
+          <p className="text-xs text-[var(--text-2)] leading-relaxed">
+            Sem valor esperado positivo, o Kelly manda não apostar.
+          </p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-end justify-between gap-3 pt-3 border-t border-tinta/[0.06]">
+        <div className="space-y-1.5">
+          <span
+            id="rotulo-fracao-kelly"
+            className="block text-[11px] font-bold text-[var(--text-2)]"
+          >
+            Fração do Kelly
+          </span>
+          {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que chega com borda, margem e padding do navegador; aqui é uma barra de botões, como as outras do site. */}
+          <div
+            role="group"
+            aria-labelledby="rotulo-fracao-kelly"
+            className="inline-flex items-center gap-0.5 bg-[var(--bg)] p-1 rounded-full border border-tinta/[0.06]"
+          >
+            {FRACOES_DE_KELLY.map((f) => (
+              <button
+                key={f.valor}
+                type="button"
+                aria-pressed={gestao.fracao === f.valor}
+                onClick={() => onGestao({ ...gestao, fracao: f.valor })}
+                className={`px-2.5 py-1 min-h-[24px] text-xs font-semibold rounded-full transition-colors ${
+                  gestao.fracao === f.valor
+                    ? "bg-[var(--accent)] text-[var(--sobre-cor)] font-bold"
+                    : "text-[var(--text-2)] hover:text-[var(--accent)]"
+                }`}
+              >
+                {f.rotulo}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-1.5 w-24">
+          <label
+            htmlFor="kelly-banca"
+            className="block text-[11px] font-bold text-[var(--text-2)]"
+          >
+            Banca
+          </label>
+          <div className="relative">
+            <input
+              id="kelly-banca"
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              value={gestao.banca}
+              onChange={(e) => onGestao({ ...gestao, banca: e.target.value })}
+              aria-invalid={!bancaValida || undefined}
+              aria-describedby="kelly-banca-ajuda"
+              className={`${CLASSE_CAMPO} py-1.5 pr-7 ${
+                bancaValida ? "border-tinta/[0.1]" : "border-[var(--red)]"
+              }`}
+            />
+            <span
+              aria-hidden="true"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--text-3)] pointer-events-none"
+            >
+              u
+            </span>
+          </div>
+        </div>
+      </div>
+      <p id="kelly-banca-ajuda" className="text-[11px] text-[var(--text-3)] leading-snug">
+        Banca em unidades. Com 100u, 1u é 1% da banca. Um quarto do Kelly é o mais usado:
+        a probabilidade é estimada, e o Kelly inteiro faz a banca oscilar demais.
+      </p>
+    </div>
+  );
+}
+
 function Espera({
   texto = "Preencha as odds para ver o resultado.",
 }: {
@@ -292,6 +458,33 @@ export function CalculadoraEV() {
     SELECAO_VAZIA,
   ]);
   const [oddMultipla, setOddMultipla] = useState("");
+
+  // Fração do Kelly e banca: valem para os três modos que dão stake, e ficam
+  // guardadas no navegador. Lidas depois da montagem, para o servidor e a
+  // primeira pintura do navegador desenharem igual.
+  const [gestao, setGestao] = useState<Gestao>(GESTAO_PADRAO);
+  useEffect(() => {
+    try {
+      const salva = JSON.parse(window.localStorage.getItem(CHAVE_GESTAO) ?? "null");
+      if (
+        salva &&
+        FRACOES_DE_KELLY.some((f) => f.valor === salva.fracao) &&
+        typeof salva.banca === "string"
+      ) {
+        setGestao({ fracao: salva.fracao, banca: salva.banca });
+      }
+    } catch {
+      // Armazenamento bloqueado ou valor estragado: fica o padrão.
+    }
+  }, []);
+  const mudarGestao = (nova: Gestao) => {
+    setGestao(nova);
+    try {
+      window.localStorage.setItem(CHAVE_GESTAO, JSON.stringify(nova));
+    } catch {
+      // Sem armazenamento, a escolha vale só até recarregar.
+    }
+  };
 
   let campos: ReactNode;
   let resultado: ReactNode;
@@ -389,6 +582,12 @@ export function CalculadoraEV() {
       resultado = (
         <div className="space-y-5">
           <Veredito valorEsperado={r.valorEsperado} oddJusta={r.oddJusta} />
+          <StakeRecomendada
+            odd={encontrada.valor}
+            probabilidade={r.probabilidadeJusta}
+            gestao={gestao}
+            onGestao={mudarGestao}
+          />
           <dl className="grid grid-cols-2 gap-2">
             <Detalhe rotulo="Odd justa" valor={formatarOdd(r.oddJusta)} />
             <Detalhe rotulo="Probabilidade" valor={porcento(r.probabilidadeJusta, 1)} />
@@ -460,6 +659,12 @@ export function CalculadoraEV() {
       resultado = (
         <div className="space-y-5">
           <Veredito valorEsperado={r.valorEsperado} oddJusta={r.oddJusta} />
+          <StakeRecomendada
+            odd={encontrada.valor}
+            probabilidade={r.probabilidadeJusta}
+            gestao={gestao}
+            onGestao={mudarGestao}
+          />
           <dl className="grid grid-cols-2 gap-2">
             <Detalhe rotulo="Odd justa" valor={formatarOdd(r.oddJusta)} />
             <Detalhe rotulo="Probabilidade" valor={porcento(r.probabilidadeJusta, 1)} />
@@ -742,6 +947,12 @@ export function CalculadoraEV() {
       resultado = (
         <div className="space-y-5">
           <Veredito valorEsperado={r.valorEsperado} oddJusta={r.oddJusta} />
+          <StakeRecomendada
+            odd={multipla.valor}
+            probabilidade={r.probabilidadeJusta}
+            gestao={gestao}
+            onGestao={mudarGestao}
+          />
           <dl className="grid grid-cols-2 gap-2">
             <Detalhe rotulo="Odd justa" valor={formatarOdd(r.oddJusta)} />
             <Detalhe rotulo="Probabilidade" valor={porcento(r.probabilidadeJusta, 1)} />

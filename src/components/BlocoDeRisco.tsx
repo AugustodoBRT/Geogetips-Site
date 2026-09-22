@@ -37,19 +37,15 @@ function Medida({
   rotulo,
   valor,
   tom = "neutro",
-  className = "",
   children,
 }: {
   rotulo: string;
   valor: string;
   tom?: Tom;
-  className?: string;
   children?: React.ReactNode;
 }) {
   return (
-    <div
-      className={`bg-[var(--bg-soft)] rounded-xl border border-tinta/[0.04] p-3.5 sm:p-4 min-w-0 ${className}`}
-    >
+    <div className="bg-[var(--bg-soft)] rounded-xl border border-tinta/[0.04] p-3.5 sm:p-4 min-w-0">
       <dt className="text-[10.5px] font-bold uppercase tracking-wider text-[var(--text-3)]">
         {rotulo}
       </dt>
@@ -124,7 +120,7 @@ export function BlocoDeRisco({
   carregando: boolean;
 }) {
   const risco = useMemo(() => calcularRisco(bets), [bets]);
-  const { maiorQueda: queda } = risco;
+  const { maiorQueda: queda, maiorAlta: alta } = risco;
 
   return (
     <section
@@ -158,9 +154,9 @@ export function BlocoDeRisco({
           </p>
         )
       ) : (
-        // Ruim à esquerda e bom à direita, em pares: pior e melhor dia, maior
-        // red e maior green. Com sete cartões, o último ocupa duas colunas para
-        // a grade não terminar com um buraco, no celular e no computador.
+        // Em pares, o ruim à esquerda e o bom à direita: maior queda e maior
+        // alta, pior e melhor dia, maior red e maior green. Oito cartões fecham
+        // a grade de quatro colunas e a de duas, no celular.
         <dl className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
           <Medida
             rotulo="Maior queda"
@@ -177,15 +173,17 @@ export function BlocoDeRisco({
           </Medida>
 
           <Medida
-            rotulo="Dias no verde"
-            valor={`${formatarInteiro(risco.diasNoVerde)} de ${formatarInteiro(risco.diasComAposta)}`}
-            tom="verde"
+            rotulo="Maior alta"
+            valor={
+              alta.valor > 0 ? formatarReaisComSinal(converter(alta.valor)) : "Nenhuma"
+            }
+            tom={alta.valor > 0 ? "verde" : "neutro"}
           >
-            {formatarInteiro(risco.diasNoVermelho)} no vermelho
-            {risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho > 0 &&
-              `, ${formatarInteiro(
-                risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho
-              )} no zero`}
+            {alta.valor > 0 && alta.pico
+              ? alta.vale
+                ? `${unidades(alta.valor)}, de ${curta(alta.vale)} a ${curta(alta.pico)}`
+                : `${unidades(alta.valor)}, do início até ${curta(alta.pico)}`
+              : "A curva não subiu neste recorte"}
           </Medida>
 
           {risco.piorDia && (
@@ -229,9 +227,20 @@ export function BlocoDeRisco({
           </Medida>
 
           <Medida
+            rotulo="Dias no verde"
+            valor={`${formatarInteiro(risco.diasNoVerde)} de ${formatarInteiro(risco.diasComAposta)}`}
+            tom="verde"
+          >
+            {formatarInteiro(risco.diasNoVermelho)} no vermelho
+            {risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho > 0 &&
+              `, ${formatarInteiro(
+                risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho
+              )} no zero`}
+          </Medida>
+
+          <Medida
             rotulo="Apostas por dia"
             valor={risco.mediaDeApostasPorDia.toFixed(1).replace(".", ",")}
-            className="col-span-2"
           >
             média em {formatarInteiro(risco.diasComAposta)}{" "}
             {risco.diasComAposta === 1 ? "dia" : "dias"} com aposta

@@ -34,7 +34,8 @@ export interface Termo extends Pergunta {
   termo: string;
 }
 
-const UNIDADE = `R$ ${VALOR_UNIDADE.toFixed(2).replace(".", ",")}`;
+const reais = (valor: number) => `R$ ${valor.toFixed(2).replace(".", ",")}`;
+const UNIDADE = reais(VALOR_UNIDADE);
 
 const PLANILHA: Acao = { rotulo: "Abrir a planilha pública", href: PLANILHA_URL };
 
@@ -53,7 +54,7 @@ export const METODO: Termo[] = [
     termo: "Unidade",
     pergunta: "Quanto vale uma unidade?",
     resposta: [
-      `Uma unidade (1u) vale ${UNIDADE}. Cada aposta tem o próprio valor, e em unidades ele é o valor dividido por ${VALOR_UNIDADE.toFixed(0)}.`,
+      `Uma unidade (1u) vale ${UNIDADE}, então o valor em reais é o número de unidades multiplicado por ${VALOR_UNIDADE.toFixed(0)}: uma aposta de 2u é de ${reais(2 * VALOR_UNIDADE)}, e um lucro de 9,35u é de ${reais(9.35 * VALOR_UNIDADE)}.`,
       "O quadro “Quanto vale 1 unidade para você?”, no Painel e em Apostas, refaz as contas em reais para a sua banca. Com a unidade em R$ 20, uma aposta de R$ 100 aparece como R$ 20, e o lucro dela encolhe na mesma proporção.",
     ],
   },

@@ -4,10 +4,12 @@ import {
   calcularOddJusta,
   calcularPorHold,
   calcularSurebet,
+  kelly,
   lerOdd,
   lerPorcentagem,
   margem,
   probabilidadesJustas,
+  stakeDeKelly,
   valorEsperado,
 } from "./calculadora";
 
@@ -151,5 +153,48 @@ describe("calcularMultipla", () => {
       5
     );
     expect(r.oddJusta).toBeCloseTo(2.1438 * 2, 3);
+  });
+});
+
+describe("kelly", () => {
+  it("é o valor esperado dividido pelo lucro que a odd paga", () => {
+    // Probabilidade real de 50% numa odd 2,10: EV de 5%, e a odd paga 1,10
+    // por real. Kelly inteiro: 0,05 / 1,10 = 4,55% da banca.
+    expect(kelly(2.1, 0.5)).toBeCloseTo(0.05 / 1.1, 10);
+  });
+
+  it("não manda apostar sem valor esperado positivo", () => {
+    expect(kelly(1.9, 0.5)).toBe(0);
+    expect(kelly(2, 0.5)).toBe(0);
+  });
+
+  it("confere com o modo odd justa num 1X2", () => {
+    // 2,62 / 3,80 / 2,40 na referência dão odd justa de 2,781 para o
+    // primeiro resultado. Encontrada a 3,00: Kelly inteiro de 3,94%.
+    const r = calcularOddJusta(2.62, [3.8, 2.4], 3);
+    expect(r.oddJusta).toBeCloseTo(2.781, 3);
+    expect(kelly(3, r.probabilidadeJusta)).toBeCloseTo(0.03935, 4);
+  });
+});
+
+describe("stakeDeKelly", () => {
+  it("aplica a fração e passa para unidades da banca", () => {
+    const s = stakeDeKelly(2.1, 0.5, 0.25, 100);
+    expect(s.kellyInteiro).toBeCloseTo(0.04545, 5);
+    // Um quarto de Kelly: 1,14% da banca, que numa banca de 100u são 1,14u.
+    expect(s.fracaoDaBanca).toBeCloseTo(0.01136, 5);
+    expect(s.unidades).toBeCloseTo(1.136, 3);
+  });
+
+  it("numa banca menor em unidades, a mesma porcentagem é menos unidade", () => {
+    expect(stakeDeKelly(2.1, 0.5, 0.25, 50).unidades).toBeCloseTo(0.568, 3);
+  });
+
+  it("é zero sem valor", () => {
+    expect(stakeDeKelly(1.8, 0.5, 1, 100)).toEqual({
+      kellyInteiro: 0,
+      fracaoDaBanca: 0,
+      unidades: 0,
+    });
   });
 });

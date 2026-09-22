@@ -56,6 +56,20 @@ export function maiorQueda(acumulado: readonly number[], inicial = 0): Queda {
 }
 
 /**
+ * A maior alta de uma curva acumulada, de um vale até o pico seguinte.
+ *
+ * É a maior queda da curva virada de cabeça para baixo: o mesmo percurso, com
+ * vale no lugar de pico. `inicio` é o índice do vale (-1 quando a subida parte
+ * do ponto de partida) e `fim`, o do pico.
+ */
+export function maiorAlta(acumulado: readonly number[], inicial = 0): Queda {
+  return maiorQueda(
+    acumulado.map((ponto) => -ponto),
+    -inicial
+  );
+}
+
+/**
  * Os dias já vividos, do mais antigo ao mais novo, com o resultado de cada um.
  *
  * Dia futuro fica de fora: é aposta de longo prazo, pendente e com lucro zero,
@@ -82,6 +96,8 @@ export function diasFechados(
 
 export interface Risco {
   maiorQueda: { valor: number; pico: string | null; vale: string | null };
+  /** A fase boa: quanto a curva subiu, de um vale até o pico seguinte. */
+  maiorAlta: { valor: number; vale: string | null; pico: string | null };
   melhorDia: DiaFechado | null;
   piorDia: DiaFechado | null;
   /** Lucro da melhor e da pior aposta sozinha. */
@@ -103,6 +119,7 @@ export function calcularRisco(bets: readonly BetItem[], ref: Date = new Date()):
     return acumulado;
   });
   const queda = maiorQueda(curva);
+  const alta = maiorAlta(curva);
 
   const decididas = bets.filter((b) => b.resultado === "GREEN" || b.resultado === "RED");
   const lucros = decididas.map((b) => b.lucro);
@@ -123,6 +140,12 @@ export function calcularRisco(bets: readonly BetItem[], ref: Date = new Date()):
       // subir. Não há dia para apontar como pico.
       pico: queda.inicio >= 0 ? dias[queda.inicio].data : null,
       vale: queda.fim >= 0 ? dias[queda.fim].data : null,
+    },
+    maiorAlta: {
+      valor: arredondar(alta.valor),
+      // Vale no ponto de partida: a curva subiu já no primeiro dia.
+      vale: alta.inicio >= 0 ? dias[alta.inicio].data : null,
+      pico: alta.fim >= 0 ? dias[alta.fim].data : null,
     },
     melhorDia,
     piorDia,
