@@ -57,7 +57,7 @@ test("odd com três casas e ponto é lida como decimal", async ({ page }) => {
 test("odd inválida avisa no campo e não calcula", async ({ page }) => {
   await page.goto("/calculadora");
   await preencher(page, {
-    "Odd analisada": "abc",
+    "Odd analisada": "0,95",
     "Odd contrária": "1,90",
     "Odd encontrada": "2,10",
   });
@@ -71,7 +71,7 @@ test("odd inválida avisa no campo e não calcula", async ({ page }) => {
 
 test("mercado de 3 resultados pede duas odds contrárias", async ({ page }) => {
   await page.goto("/calculadora");
-  await page.getByRole("button", { name: "3 resultados (1X2)" }).click();
+  await page.getByLabel("Resultados do mercado", { exact: true }).selectOption("3");
   await preencher(page, {
     "Odd analisada": "2,00",
     "Odd contrária 1": "3,40",
@@ -215,6 +215,89 @@ test("hold e múltiplas também dão a stake; surebet não, porque o valor é di
   await expect(resultado(page)).not.toContainText("Stake recomendada");
 });
 
+test("odd justa vai até 8 resultados", async ({ page }) => {
+  await page.goto("/calculadora");
+  const seletor = page.getByLabel("Resultados do mercado", { exact: true });
+  await expect(seletor.locator("option")).toHaveCount(7);
+  await seletor.selectOption("8");
+
+  // Oito resultados a 8,00 somam exatamente 100%: sem margem, a odd justa é
+  // a própria 8,00, e 9,00 encontrada dá 12,5% de valor.
+  await preencher(page, { "Odd analisada": "8" });
+  for (let i = 1; i <= 7; i++) await preencher(page, { [`Odd contrária ${i}`]: "8" });
+  await preencher(page, { "Odd encontrada": "9" });
+  await expect(resultado(page)).toContainText("+12,50%");
+  await expect(resultado(page)).toContainText("0,00%");
+});
+
+test("surebet vai até 4 resultados", async ({ page }) => {
+  await page.goto("/calculadora?modo=surebet");
+  const seletor = page.getByLabel("Resultados do mercado", { exact: true });
+  await expect(seletor.locator("option")).toHaveCount(3);
+  await seletor.selectOption("4");
+
+  // Quatro resultados a 4,20 somam 95,24%: R$ 25,00 em cada, 5% de lucro.
+  for (let i = 1; i <= 4; i++)
+    await preencher(page, { [`Odd do resultado ${i}`]: "4,20" });
+  await expect(resultado(page)).toContainText("+5,00%");
+  await expect(resultado(page).getByRole("table").locator("tbody tr")).toHaveCount(4);
+  await expect(resultado(page).getByRole("table")).toContainText("R$ 25,00");
+});
+
+test("a odd se arruma enquanto se digita e fica com duas ou três casas ao sair", async ({
+  page,
+}) => {
+  await page.goto("/calculadora");
+  const analisada = page.getByLabel("Odd analisada", { exact: true });
+  const contraria = page.getByLabel("Odd contrária", { exact: true });
+
+  // Ponto vira vírgula, letra não entra, e a quarta casa não cabe.
+  await analisada.pressSequentially("1.8a756");
+  await expect(analisada).toHaveValue("1,875");
+  // Enter passa para o próximo campo, e sair do campo fecha o formato.
+  await analisada.press("Enter");
+  await expect(contraria).toBeFocused();
+  await expect(analisada).toHaveValue("1,875");
+
+  await contraria.pressSequentially("2");
+  await contraria.press("Tab");
+  await expect(contraria).toHaveValue("2,00");
+
+  // Três casas com zero no fim viram duas: 1,850 é 1,85.
+  await analisada.fill("1.850");
+  await analisada.blur();
+  await expect(analisada).toHaveValue("1,85");
+
+  // Em reais, o milhar aparece ao sair.
+  await page.getByRole("button", { name: "Surebet", exact: true }).click();
+  const investimento = page.getByLabel("Investimento total (R$)", { exact: true });
+  await investimento.fill("1000");
+  await investimento.blur();
+  await expect(investimento).toHaveValue("1.000,00");
+});
+
+test("com a referência completa, a odd justa aparece antes da odd encontrada", async ({
+  page,
+}) => {
+  await page.goto("/calculadora");
+  await preencher(page, { "Odd analisada": "1,90", "Odd contrária": "1,90" });
+  await expect(resultado(page)).toContainText("Falta a odd encontrada");
+  await expect(resultado(page)).toContainText("2,00");
+  // E ao lado do campo da odd encontrada, para comparar de olho.
+  await expect(
+    page
+      .getByRole("region", { name: "Dados da aposta" })
+      .getByText("2,00", { exact: true })
+  ).toBeVisible();
+
+  await preencher(page, { "Odd encontrada": "2,10" });
+  await expect(resultado(page)).toContainText("+5,00%");
+
+  await page.getByRole("button", { name: "Limpar" }).click();
+  await expect(page.getByLabel("Odd analisada", { exact: true })).toHaveValue("");
+  await expect(resultado(page)).toContainText("Preencha as odds");
+});
+
 for (const tema of ["claro", "escuro"] as const) {
   test(`nenhum texto abaixo do contraste mínimo no tema ${tema}`, async ({ browser }) => {
     // Três auditorias de contraste na mesma página passam dos 30 s padrão.
@@ -235,7 +318,7 @@ for (const tema of ["claro", "escuro"] as const) {
 
     await preencher(page, { "Odd encontrada": "1,80" });
     await expect(resultado(page)).toContainText("Sem valor");
-    await preencher(page, { "Odd analisada": "x" });
+    await preencher(page, { "Odd analisada": "0,5" });
     expect(await textosSemContraste(page)).toEqual([]);
 
     await page.getByRole("button", { name: "Surebet", exact: true }).click();
