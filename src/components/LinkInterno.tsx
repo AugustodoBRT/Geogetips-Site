@@ -13,6 +13,16 @@ import type { ComponentProps, MouseEvent } from "react";
  * link dava outra coisa. Aqui essa navegação vira uma carga nova, que abre a
  * tela no padrão, com tela e endereço concordando.
  *
+ * O grupo sobrevive: ele não é recorte, é de qual canal são os resultados, e o
+ * resto do site leva ele junto de propósito (ver `comAba`). Sem isto, quem
+ * estava no GeogeTips - Sigma voltava para o gratuito só de clicar no nome da
+ * página em que já estava.
+ *
+ * Quando o grupo é a única coisa no endereço não há o que recomeçar, e a
+ * navegação é só barrada: deixá-la seguir limparia o endereço e a tela
+ * continuaria no Sigma, que é o desencontro que este arquivo existe para
+ * evitar.
+ *
  * Clique com tecla (nova aba, nova janela) e botão do meio seguem o caminho de
  * sempre.
  */
@@ -22,7 +32,9 @@ function recomecarSeForAMesmaPagina(e: MouseEvent<HTMLAnchorElement>, href: stri
   const { pathname, search } = window.location;
   if (pathname !== href || search === "") return;
   e.preventDefault();
-  window.location.assign(href);
+  const grupo = new URLSearchParams(search).get("grupo");
+  const alvo = grupo ? `${href}?grupo=${encodeURIComponent(grupo)}` : href;
+  if (alvo !== pathname + search) window.location.assign(alvo);
 }
 
 type LinkInternoProps = Omit<ComponentProps<typeof Link>, "href"> & { href: string };

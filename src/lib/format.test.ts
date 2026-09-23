@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   UNIDADE_MAXIMA,
   formatarInteiro,
+  corDoValor,
   ehZero,
   formatarOdd,
   formatarOddExata,
   formatarOddJusta,
+  formatarPorcentagem,
   formatarReais,
   formatarReaisComSinal,
   formatarUnidades,
@@ -99,6 +101,24 @@ describe("zero em reais", () => {
     expect(formatarReaisComSinal(-0)).toMatch(/^R\$\s0,00$/);
     expect(formatarReaisComSinal(-0.001)).toMatch(/^R\$\s0,00$/);
     expect(formatarReaisComSinal(-0.01)).toMatch(/^-R\$\s0,01$/);
+  });
+
+  it("corDoValor não pinta o zero", () => {
+    // A casa que só tem aposta pendente, o adm que empatou e o mês em
+    // andamento apareciam em verde em toda lista do site.
+    expect(corDoValor(0)).toBe("text-[var(--text)]");
+    expect(corDoValor(-0)).toBe("text-[var(--text)]");
+    expect(corDoValor(-0.004)).toBe("text-[var(--text)]");
+    expect(corDoValor(12)).toBe("text-[var(--green)]");
+    expect(corDoValor(-12)).toBe("text-[var(--red)]");
+  });
+
+  it("formatarPorcentagem marca o sinal, menos no zero", () => {
+    expect(formatarPorcentagem(9.69)).toBe("+9,69%");
+    expect(formatarPorcentagem(-9.17)).toBe("-9,17%");
+    expect(formatarPorcentagem(3.5)).toBe("+3,50%");
+    expect(formatarPorcentagem(0)).toBe("0,00%");
+    expect(formatarPorcentagem(-0)).toBe("0,00%");
   });
 
   it("ehZero vale até meio centavo", () => {

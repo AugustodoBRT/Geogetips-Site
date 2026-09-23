@@ -53,6 +53,25 @@ export const FORMATO_TAXA = {
 } as const satisfies Intl.NumberFormatOptions;
 
 /**
+ * A cor de um resultado: verde acima de zero, vermelho abaixo, neutro no zero.
+ *
+ * Zero não é ganho nem perda. Espalhado como `valor >= 0 ? verde : vermelho`,
+ * ele saía verde em toda lista do site — a casa que só tem aposta pendente, o
+ * adm que empatou, o mês em andamento.
+ */
+export function corDoValor(valor: number): string {
+  if (ehZero(valor)) return "text-[var(--text)]";
+  return valor > 0 ? "text-[var(--green)]" : "text-[var(--red)]";
+}
+
+const PORCENTAGEM = new Intl.NumberFormat("pt-BR", FORMATO_ROI);
+
+/** "+9,69%", "-9,17%" e "0,00%" — o zero sem sinal, como nos reais. */
+export function formatarPorcentagem(valor: number): string {
+  return `${PORCENTAGEM.format(valor)}%`;
+}
+
+/**
  * O valor em reais é zero depois de arredondar ao centavo?
  *
  * Para a cor: zero não é ganho nem perda. O dia só com pendentes saía verde.

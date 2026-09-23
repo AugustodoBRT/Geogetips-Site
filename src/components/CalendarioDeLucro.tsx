@@ -9,6 +9,7 @@ import { abaParaEndereco, escreverConsulta } from "@/lib/endereco";
 import { grupoParaEndereco, type IdGrupo } from "@/lib/grupos";
 import { reaisParaUnidades } from "@/lib/constants";
 import {
+  corDoValor,
   formatarInteiro,
   formatarReaisComSinal,
   formatarUnidadesSemSinal,
@@ -285,9 +286,7 @@ export function CalendarioDeLucro({
 
           <p className="text-xs text-[var(--text-2)]">
             Total de {nomeDoMes(mes)}:{" "}
-            <strong
-              className={mes.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"}
-            >
+            <strong className={corDoValor(mes.lucro)}>
               {formatarReaisComSinal(converter(mes.lucro))}
             </strong>{" "}
             {emUnidades(mes.lucro)} · {formatarInteiro(mes.apostas)}{" "}
