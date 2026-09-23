@@ -27,6 +27,19 @@ describe("pertenceAoMes", () => {
     expect(pertenceAoMes(linhas, 10, 26)).toBe(true);
   });
 
+  // Nos primeiros dias do mês a aba tem poucas linhas, e as de longo prazo
+  // podem ser a maioria. Elas não votam: contando, o mês sumia do site pelo
+  // motivo contrário.
+  it("aceita a aba em que as de longo prazo são a maioria", () => {
+    const linhas = [linha("01/10/2026"), linha("15/12/2026"), linha("20/12/2026")];
+    expect(pertenceAoMes(linhas, 10, 26)).toBe(true);
+  });
+
+  it("recusa a aba que só tem aposta de mês que ainda vem", () => {
+    // Sem nenhuma linha do próprio mês, não dá para afirmar que a aba é a certa.
+    expect(pertenceAoMes([linha("20/12/2026")], 10, 26)).toBe(false);
+  });
+
   it("continua recusando a aba-fallback, que é quase toda de outro mês", () => {
     const setembro = [linha("30/09/2026"), linha("30/09/2026"), linha("05/10/2026")];
     expect(pertenceAoMes(setembro, 10, 26)).toBe(false);
