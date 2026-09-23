@@ -5,7 +5,12 @@ import { Dialogo } from "@/components/Dialogo";
 import type { BetItem } from "@/lib/types";
 import { SportBadge } from "@/components/SportBadge";
 import { BookieBadge } from "@/components/BookieBadge";
-import { formatarOddExata, formatarReais, formatarReaisComSinal } from "@/lib/format";
+import {
+  corDoValor,
+  formatarOddExata,
+  formatarReais,
+  formatarReaisComSinal,
+} from "@/lib/format";
 
 interface DetalheApostaProps {
   bet: BetItem;
@@ -121,9 +126,10 @@ export function DetalheAposta({
               className={`font-mono text-base font-bold mt-0.5 ${
                 bet.resultado === "PENDENTE" || bet.resultado === "VOID"
                   ? "text-[var(--text-3)]"
-                  : bet.lucro >= 0
-                    ? "text-[var(--green)]"
-                    : "text-[var(--red)]"
+                  : // A cor sai do mesmo número que o texto abaixo escreve, já
+                    // convertido: aposta finalizada em zero dizia "R$ 0,00",
+                    // sem sinal, pintado de verde no mesmo <div>.
+                    corDoValor(converter(bet.lucro))
               }`}
             >
               {/* Mesma regra do card que abriu este modal: converter para a
