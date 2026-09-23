@@ -4,6 +4,7 @@ import {
   ArrowRight,
   TrendingUp,
   TrendingDown,
+  Minus,
   FileSpreadsheet,
   Target,
   Landmark,
@@ -17,6 +18,7 @@ import { type PeriodoDoHistorico, periodoDoHistorico } from "@/lib/periodo";
 import { ABA_TODOS, VALOR_UNIDADE } from "@/lib/constants";
 import {
   corDoValor,
+  ehZero,
   formatarInteiro,
   formatarPorcentagem,
   formatarReaisComSinal,
@@ -226,20 +228,20 @@ export default async function HomePage() {
                 className={`font-serif text-3xl tracking-tight ${
                   !temNumeros || !stats
                     ? "text-[var(--text-3)]"
-                    : stats.totalLucro > 0
-                      ? "text-[var(--green)]"
-                      : stats.totalLucro < 0
-                        ? "text-[var(--red)]"
-                        : "text-[var(--text)]"
+                    : corDoValor(stats.totalLucro)
                 }`}
               >
                 {temNumeros && stats ? formatarReaisComSinal(stats.totalLucro) : "—"}
               </div>
               <div className="text-xs font-medium text-[var(--text-2)] mt-1.5 flex items-center gap-1">
-                {temNumeros && stats && stats.totalLucro < 0 ? (
-                  <TrendingDown className="w-3.5 h-3.5" />
-                ) : (
+                {/* Sem dado o cartão mostra "—", e zero não é ganho: os dois
+                    levam o traço, como o Painel e o Histórico já fazem. */}
+                {!temNumeros || !stats || ehZero(stats.totalLucro) ? (
+                  <Minus className="w-3.5 h-3.5" />
+                ) : stats.totalLucro > 0 ? (
                   <TrendingUp className="w-3.5 h-3.5" />
+                ) : (
+                  <TrendingDown className="w-3.5 h-3.5" />
                 )}
                 <span>
                   {temNumeros && stats

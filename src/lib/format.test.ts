@@ -15,6 +15,7 @@ import {
   lerNumeroBR,
   tamanhoDoValor,
   tempoRelativo,
+  varDoValor,
 } from "./format";
 
 /**
@@ -111,6 +112,16 @@ describe("zero em reais", () => {
     expect(corDoValor(-0.004)).toBe("text-[var(--text)]");
     expect(corDoValor(12)).toBe("text-[var(--green)]");
     expect(corDoValor(-12)).toBe("text-[var(--red)]");
+  });
+
+  it("varDoValor não pinta o zero, e usa o cinza das marcas", () => {
+    // O gráfico do Painel pinta por atributo do SVG: a bolinha do dia em que o
+    // acumulado volta ao empate saía verde sobre a linha do zero.
+    expect(varDoValor(0)).toBe("var(--text-3)");
+    expect(varDoValor(-0)).toBe("var(--text-3)");
+    expect(varDoValor(-0.004)).toBe("var(--text-3)");
+    expect(varDoValor(12)).toBe("var(--green)");
+    expect(varDoValor(-12)).toBe("var(--red)");
   });
 
   it("formatarPorcentagem marca o sinal, menos no zero", () => {

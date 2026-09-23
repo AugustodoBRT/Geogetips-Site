@@ -44,6 +44,7 @@ import {
   formatarUnidades,
   tamanhoDoValor,
   tempoRelativo,
+  varDoValor,
 } from "@/lib/format";
 import { calcularRoi, computeStatsFromBets, taxaDeAcerto } from "@/lib/stats";
 import { maiorQueda } from "@/lib/risco";
@@ -817,13 +818,7 @@ export default function PainelPage() {
                 {hoveredPoint ? (
                   <span className="text-[var(--text)] font-medium">
                     Dia <strong>{hoveredPoint.date}</strong>: Acumulado{" "}
-                    <strong
-                      className={
-                        hoveredPoint.cumProfit >= 0
-                          ? "text-[var(--green)]"
-                          : "text-[var(--red)]"
-                      }
-                    >
+                    <strong className={corDoValor(hoveredPoint.cumProfit)}>
                       {formatarReaisComSinal(hoveredPoint.cumProfit)}
                     </strong>{" "}
                     ({formatarReaisComSinal(hoveredPoint.dayProfit)} no dia ·{" "}
@@ -1023,7 +1018,7 @@ export default function PainelPage() {
                           ? 1.5
                           : 3
                     }
-                    fill={p.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
+                    fill={varDoValor(p.cumProfit)}
                     initial={{ opacity: 0, scale: 0.4 }}
                     animate={{
                       opacity: chartData.points.length > 20 ? 0.6 : 0.8,
@@ -1093,7 +1088,7 @@ export default function PainelPage() {
                       cy={hoveredPoint.y}
                       r="7"
                       fill="none"
-                      stroke={hoveredPoint.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
+                      stroke={varDoValor(hoveredPoint.cumProfit)}
                       strokeWidth="2"
                       opacity="0.4"
                     />
@@ -1103,7 +1098,7 @@ export default function PainelPage() {
                       cx={hoveredPoint.x}
                       cy={hoveredPoint.y}
                       r="4"
-                      fill={hoveredPoint.cumProfit >= 0 ? "var(--green)" : "var(--red)"}
+                      fill={varDoValor(hoveredPoint.cumProfit)}
                       stroke="var(--bg-card)"
                       strokeWidth="2"
                     />
