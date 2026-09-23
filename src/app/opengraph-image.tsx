@@ -5,7 +5,7 @@ import { getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
 import { computeStatsFromBets } from "@/lib/stats";
 import { MOCK_BETS } from "@/lib/data";
 import { ABA_TODOS } from "@/lib/constants";
-import { formatarInteiro, formatarUnidades } from "@/lib/format";
+import { ehZero, formatarInteiro, formatarUnidades } from "@/lib/format";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -79,7 +79,14 @@ export default async function OpenGraphImage() {
           {
             rotulo: "RESULTADO",
             valor: formatarUnidades(stats.totalUnidades),
-            cor: stats.totalUnidades >= 0 ? CORES.green : CORES.red,
+            // Hex do CORES, e não corDoValor: o Satori não resolve var(). O
+            // grupo empatado, e o recorte só com aposta pendente, escreviam
+            // "0,00u" sem sinal já em verde no card que vai para o WhatsApp.
+            cor: ehZero(stats.totalUnidades)
+              ? CORES.text
+              : stats.totalUnidades > 0
+                ? CORES.green
+                : CORES.red,
           },
         ]
       : [];
