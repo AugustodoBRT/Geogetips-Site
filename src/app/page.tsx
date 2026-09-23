@@ -15,7 +15,12 @@ import { computeStatsFromBets, type BetStats } from "@/lib/stats";
 import { MOCK_BETS } from "@/lib/data";
 import { type PeriodoDoHistorico, periodoDoHistorico } from "@/lib/periodo";
 import { ABA_TODOS, VALOR_UNIDADE } from "@/lib/constants";
-import { formatarInteiro, formatarReaisComSinal } from "@/lib/format";
+import {
+  corDoValor,
+  formatarInteiro,
+  formatarPorcentagem,
+  formatarReaisComSinal,
+} from "@/lib/format";
 import { BotaoTelegram, SecaoTelegram } from "@/components/Telegram";
 import { TextoQueCai, Revelar, EntradaSequencial } from "@/components/animacoes";
 import { CarrosselProfundidade } from "@/components/CarrosselProfundidade";
@@ -186,13 +191,8 @@ export default async function HomePage() {
           </div>
           <div className="w-1 h-1 rounded-full bg-tinta/15 hidden sm:block" />
           <div className="flex items-center gap-2">
-            <span
-              className={`font-mono font-bold text-sm ${
-                stats.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-              }`}
-            >
-              {stats.roi >= 0 ? "+" : ""}
-              {stats.roi.toFixed(2).replace(".", ",")}%
+            <span className={`font-mono font-bold text-sm ${corDoValor(stats.roi)}`}>
+              {formatarPorcentagem(stats.roi)}
             </span>
             de ROI
           </div>
@@ -220,20 +220,26 @@ export default async function HomePage() {
               <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
                 Lucro Acumulado
               </div>
+              {/* Sem planilha não há alta nem queda: o traço saía em verde, com
+                  a seta para cima, como se o grupo estivesse no lucro. */}
               <div
                 className={`font-serif text-3xl tracking-tight ${
-                  (stats?.totalLucro ?? 0) >= 0
-                    ? "text-[var(--green)]"
-                    : "text-[var(--red)]"
+                  !temNumeros || !stats
+                    ? "text-[var(--text-3)]"
+                    : stats.totalLucro > 0
+                      ? "text-[var(--green)]"
+                      : stats.totalLucro < 0
+                        ? "text-[var(--red)]"
+                        : "text-[var(--text)]"
                 }`}
               >
                 {temNumeros && stats ? formatarReaisComSinal(stats.totalLucro) : "—"}
               </div>
               <div className="text-xs font-medium text-[var(--text-2)] mt-1.5 flex items-center gap-1">
-                {(stats?.totalLucro ?? 0) >= 0 ? (
-                  <TrendingUp className="w-3.5 h-3.5" />
-                ) : (
+                {temNumeros && stats && stats.totalLucro < 0 ? (
                   <TrendingDown className="w-3.5 h-3.5" />
+                ) : (
+                  <TrendingUp className="w-3.5 h-3.5" />
                 )}
                 <span>
                   {temNumeros && stats
@@ -265,14 +271,16 @@ export default async function HomePage() {
               </div>
               <div
                 className={`font-serif text-3xl tracking-tight ${
-                  (stats?.roi ?? 0) >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                  !temNumeros || !stats
+                    ? "text-[var(--text-3)]"
+                    : stats.roi > 0
+                      ? "text-[var(--green)]"
+                      : stats.roi < 0
+                        ? "text-[var(--red)]"
+                        : "text-[var(--text)]"
                 }`}
               >
-                {temNumeros && stats
-                  ? `${stats.roi >= 0 ? "+" : ""}${stats.roi
-                      .toFixed(2)
-                      .replace(".", ",")}%`
-                  : "—"}
+                {temNumeros && stats ? formatarPorcentagem(stats.roi) : "—"}
               </div>
               <div className="text-xs font-medium text-[var(--text-2)] mt-1.5">
                 {temNumeros && stats

@@ -9,6 +9,7 @@ import {
   Percent,
   Layers,
   Activity,
+  Minus,
 } from "lucide-react";
 import { AvisoErro, AvisoMock } from "@/components/AvisoDados";
 import { SkeletonCorpoHistorico } from "@/components/Skeleton";
@@ -25,10 +26,13 @@ import Link from "next/link";
 import { abaCurta, abaDoMesAtual } from "@/lib/constants";
 import { comAba } from "@/lib/endereco";
 import {
+  corDoValor,
+  ehZero,
   FORMATO_REAIS_COM_SINAL,
   FORMATO_ROI,
   FORMATO_TAXA,
   formatarInteiro,
+  formatarPorcentagem,
   formatarOdd,
   formatarReaisComSinal,
   formatarUnidades,
@@ -135,12 +139,16 @@ export default function HistoricoPage() {
                   </span>
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      consolidado.lucro >= 0
-                        ? "bg-[var(--green-soft)] text-[var(--green)]"
-                        : "bg-[var(--red-soft)] text-[var(--red)]"
+                      ehZero(consolidado.lucro)
+                        ? "bg-[var(--text-soft)] text-[var(--text-3)]"
+                        : consolidado.lucro > 0
+                          ? "bg-[var(--green-soft)] text-[var(--green)]"
+                          : "bg-[var(--red-soft)] text-[var(--red)]"
                     }`}
                   >
-                    {consolidado.lucro >= 0 ? (
+                    {ehZero(consolidado.lucro) ? (
+                      <Minus className="w-4 h-4" />
+                    ) : consolidado.lucro > 0 ? (
                       <TrendingUp className="w-4 h-4" />
                     ) : (
                       <TrendingDown className="w-4 h-4" />
@@ -150,9 +158,7 @@ export default function HistoricoPage() {
                 <div
                   className={`font-serif ${tamanhoDoValor(
                     formatarReaisComSinal(converter(consolidado.lucro))
-                  )} tracking-tight leading-none ${
-                    consolidado.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                  }`}
+                  )} tracking-tight leading-none ${corDoValor(consolidado.lucro)}`}
                 >
                   <NumeroAnimado
                     value={converter(consolidado.lucro)}
@@ -184,9 +190,7 @@ export default function HistoricoPage() {
                 <div
                   className={`font-serif ${tamanhoDoValor(
                     `${consolidado.roi.toFixed(2)}%`
-                  )} tracking-tight leading-none ${
-                    consolidado.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                  }`}
+                  )} tracking-tight leading-none ${corDoValor(consolidado.roi)}`}
                 >
                   <NumeroAnimado
                     value={consolidado.roi}
@@ -421,19 +425,18 @@ export default function HistoricoPage() {
                         {m.oddMedia > 0 ? formatarOdd(m.oddMedia) : "—"}
                       </td>
                       <td
-                        className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${
-                          m.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                        }`}
+                        className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${corDoValor(
+                          m.lucro
+                        )}`}
                       >
                         {formatarReaisComSinal(converter(m.lucro))}
                       </td>
                       <td
-                        className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${
-                          m.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                        }`}
+                        className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${corDoValor(
+                          m.roi
+                        )}`}
                       >
-                        {m.roi >= 0 ? "+" : ""}
-                        {m.roi.toFixed(2).replace(".", ",")}%
+                        {formatarPorcentagem(m.roi)}
                       </td>
                     </tr>
                   ))}
@@ -462,23 +465,18 @@ export default function HistoricoPage() {
                           : "—"}
                       </td>
                       <td
-                        className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${
-                          consolidado.lucro >= 0
-                            ? "text-[var(--green)]"
-                            : "text-[var(--red)]"
-                        }`}
+                        className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${corDoValor(
+                          consolidado.lucro
+                        )}`}
                       >
                         {formatarReaisComSinal(converter(consolidado.lucro))}
                       </td>
                       <td
-                        className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${
-                          consolidado.roi >= 0
-                            ? "text-[var(--green)]"
-                            : "text-[var(--red)]"
-                        }`}
+                        className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${corDoValor(
+                          consolidado.roi
+                        )}`}
                       >
-                        {consolidado.roi >= 0 ? "+" : ""}
-                        {consolidado.roi.toFixed(2).replace(".", ",")}%
+                        {formatarPorcentagem(consolidado.roi)}
                       </td>
                     </tr>
                   </tfoot>

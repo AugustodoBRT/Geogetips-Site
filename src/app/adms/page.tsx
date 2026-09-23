@@ -16,7 +16,14 @@ import { AvisoAtraso, SeletorGrupo } from "@/components/SeletorGrupo";
 import { ehGrupo, grupoParaEndereco } from "@/lib/grupos";
 import { SecaoTelegram } from "@/components/Telegram";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
-import { formatarInteiro, formatarReaisComSinal, formatarUnidades } from "@/lib/format";
+import {
+  corDoValor,
+  ehZero,
+  formatarInteiro,
+  formatarPorcentagem,
+  formatarReaisComSinal,
+  formatarUnidades,
+} from "@/lib/format";
 import { useUnidade } from "@/hooks/useUnidade";
 import { trechoDaAba } from "@/lib/constants";
 import { abaDoEndereco, abaParaEndereco } from "@/lib/endereco";
@@ -112,7 +119,10 @@ export default function AdmsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-entrada">
           {adms.map((adm, index) => {
-            const isProfitable = adm.lucroUnidades >= 0;
+            // Empate não é lucro: "0,00u" saía em verde, no mesmo cartão em
+            // que o selo "Top #1" já não aparece para quem não lucrou.
+            const semResultado = ehZero(adm.lucroUnidades);
+            const isProfitable = adm.lucroUnidades > 0;
             const total = adm.totalApostas || 1;
             const fatias = [
               { rotulo: "green", n: adm.greens, cor: "var(--green)" },
@@ -173,7 +183,11 @@ export default function AdmsPage() {
                     <div className="text-right shrink-0">
                       <span
                         className={`font-mono text-xl font-bold ${
-                          isProfitable ? "text-[var(--green)]" : "text-[var(--red)]"
+                          semResultado
+                            ? "text-[var(--text)]"
+                            : isProfitable
+                              ? "text-[var(--green)]"
+                              : "text-[var(--red)]"
                         }`}
                       >
                         {formatarUnidades(adm.lucroUnidades)}
@@ -198,7 +212,8 @@ export default function AdmsPage() {
                         Volume
                       </div>
                       <div className="font-mono text-base font-bold text-[var(--text)] mt-0.5">
-                        {formatarInteiro(adm.totalApostas)} tips
+                        {formatarInteiro(adm.totalApostas)}{" "}
+                        {adm.totalApostas === 1 ? "aposta" : "apostas"}
                       </div>
                     </div>
                     <div>
@@ -206,12 +221,11 @@ export default function AdmsPage() {
                         ROI
                       </div>
                       <div
-                        className={`font-mono text-base font-bold mt-0.5 ${
-                          adm.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                        }`}
+                        className={`font-mono text-base font-bold mt-0.5 ${corDoValor(
+                          adm.roi
+                        )}`}
                       >
-                        {adm.roi >= 0 ? "+" : ""}
-                        {adm.roi.toFixed(2).replace(".", ",")}%
+                        {formatarPorcentagem(adm.roi)}
                       </div>
                     </div>
                   </div>
@@ -245,7 +259,9 @@ export default function AdmsPage() {
                         adm.reds
                       )} red, ${formatarInteiro(adm.voids)} anuladas e ${formatarInteiro(
                         adm.pendentes
-                      )} pendentes, de ${formatarInteiro(adm.totalApostas)} tips`}
+                      )} pendentes, de ${formatarInteiro(adm.totalApostas)} ${
+                        adm.totalApostas === 1 ? "aposta" : "apostas"
+                      }`}
                     >
                       {fatias.map((f) => (
                         <div
@@ -353,16 +369,13 @@ function Recorte({
               <div className="min-w-0 space-y-0.5">
                 {casa ? <BookieBadge bookie={i.nome} /> : <SportBadge sport={i.nome} />}
                 <div className="text-[10.5px] text-[var(--text-3)] whitespace-nowrap">
-                  {formatarInteiro(i.apostas)} tips ·{" "}
+                  {formatarInteiro(i.apostas)} {i.apostas === 1 ? "aposta" : "apostas"} ·{" "}
                   {i.taxaAcerto.toFixed(1).replace(".", ",")}% acerto · ROI{" "}
-                  {i.roi >= 0 ? "+" : ""}
-                  {i.roi.toFixed(2).replace(".", ",")}%
+                  {formatarPorcentagem(i.roi)}
                 </div>
               </div>
               <span
-                className={`font-mono text-xs font-bold shrink-0 ${
-                  i.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                }`}
+                className={`font-mono text-xs font-bold shrink-0 ${corDoValor(i.lucro)}`}
               >
                 {formatarReaisComSinal(converter(i.lucro))}
               </span>

@@ -112,13 +112,19 @@ function Navigation() {
         className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between bg-[color:color-mix(in_srgb,var(--bg)_90%,transparent)] backdrop-blur-md border-b border-tinta/[0.07]"
       >
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
+          {/* Fecha o menu como os outros links: na home o caminho não muda,
+              e ele ficava aberto com a página travada sem rolagem. */}
+          <LinkInterno
+            href="/"
+            onClick={() => setAberto(false)}
+            className="flex items-center gap-2.5 group"
+          >
             {/* No hover o G gira um pouco, como nó em órbita. */}
             <MarcaG className="w-[32px] h-[32px] text-[var(--text)] transition-transform duration-300 group-hover:-rotate-12" />
             <span className="font-serif text-xl tracking-tight text-[var(--text)]">
               Geoge<span className="text-[var(--accent)]">Tips</span>
             </span>
-          </Link>
+          </LinkInterno>
 
           {/* Desktop */}
           <div className="hidden md:flex items-center gap-1.5 bg-[var(--bg-soft)] p-1 rounded-full border border-tinta/[0.05]">

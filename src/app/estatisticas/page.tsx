@@ -20,7 +20,10 @@ import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
 import {
+  corDoValor,
+  ehZero,
   formatarInteiro,
+  formatarPorcentagem,
   formatarReais,
   formatarReaisComSinal,
   percentuaisRedondos,
@@ -407,28 +410,32 @@ export default function EstatisticasPage() {
                   </p>
                 ) : (
                   sports.map((sport) => {
-                    const positivo = sport.lucro >= 0;
+                    const zerado = ehZero(sport.lucro);
+                    const positivo = sport.lucro > 0;
                     const largura = (Math.abs(sport.lucro) / maiorLucroAbs) * 100;
                     return (
                       <div key={sport.esporte} className="space-y-1.5">
                         <div className="flex justify-between items-center text-xs font-semibold gap-3">
                           <SportBadge sport={sport.esporte} />
                           <span
-                            className={`font-mono flex items-baseline gap-2 ${
-                              positivo ? "text-[var(--green)]" : "text-[var(--red)]"
-                            }`}
+                            className={`font-mono flex items-baseline gap-2 ${corDoValor(
+                              sport.lucro
+                            )}`}
                           >
                             {formatarReaisComSinal(converter(sport.lucro))}
                             <span className="text-[10.5px] text-[var(--text-3)] font-medium">
-                              ROI {sport.roi >= 0 ? "+" : ""}
-                              {sport.roi.toFixed(2).replace(".", ",")}%
+                              ROI {formatarPorcentagem(sport.roi)}
                             </span>
                           </span>
                         </div>
                         <div className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full origin-left animate-surgir-x ${
-                              positivo ? "bg-[var(--green)]" : "bg-[var(--red)]"
+                              zerado
+                                ? "bg-[var(--text-3)]"
+                                : positivo
+                                  ? "bg-[var(--green)]"
+                                  : "bg-[var(--red)]"
                             }`}
                             style={{ width: `${Math.max(largura, 2)}%` }}
                           />
@@ -473,18 +480,13 @@ export default function EstatisticasPage() {
                       <div className="flex justify-between items-center text-xs font-semibold gap-3">
                         <BookieBadge bookie={b.casa} />
                         <span className="font-mono flex flex-wrap items-baseline justify-end gap-x-2 text-right">
-                          <span
-                            className={
-                              b.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                            }
-                          >
+                          <span className={corDoValor(b.lucro)}>
                             {formatarReaisComSinal(converter(b.lucro))}
                           </span>
                           <span className="text-[10.5px] text-[var(--text-3)] font-medium">
                             {formatarInteiro(b.apostas)}{" "}
                             {b.apostas === 1 ? "aposta" : "apostas"} · ROI{" "}
-                            {b.roi >= 0 ? "+" : ""}
-                            {b.roi.toFixed(2).replace(".", ",")}%
+                            {formatarPorcentagem(b.roi)}
                           </span>
                         </span>
                       </div>
@@ -567,17 +569,16 @@ export default function EstatisticasPage() {
                       {s.taxaAcerto.toFixed(1).replace(".", ",")}%
                     </td>
                     <td
-                      className={`py-2.5 px-1.5 sm:px-3 text-right font-mono font-bold ${
-                        s.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                      }`}
+                      className={`py-2.5 px-1.5 sm:px-3 text-right font-mono font-bold ${corDoValor(
+                        s.roi
+                      )}`}
                     >
-                      {s.roi >= 0 ? "+" : ""}
-                      {s.roi.toFixed(2).replace(".", ",")}%
+                      {formatarPorcentagem(s.roi)}
                     </td>
                     <td
-                      className={`py-2.5 pl-1.5 sm:pl-3 text-right font-mono font-bold whitespace-nowrap ${
-                        s.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                      }`}
+                      className={`py-2.5 pl-1.5 sm:pl-3 text-right font-mono font-bold whitespace-nowrap ${corDoValor(
+                        s.lucro
+                      )}`}
                     >
                       {formatarReaisComSinal(converter(s.lucro))}
                     </td>
@@ -656,17 +657,16 @@ export default function EstatisticasPage() {
                       {formatarReais(converter(b.apostado))}
                     </td>
                     <td
-                      className={`py-2.5 px-1.5 sm:px-3 text-right font-mono font-bold ${
-                        b.roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                      }`}
+                      className={`py-2.5 px-1.5 sm:px-3 text-right font-mono font-bold ${corDoValor(
+                        b.roi
+                      )}`}
                     >
-                      {b.roi >= 0 ? "+" : ""}
-                      {b.roi.toFixed(2).replace(".", ",")}%
+                      {formatarPorcentagem(b.roi)}
                     </td>
                     <td
-                      className={`py-2.5 pl-1.5 sm:pl-3 text-right font-mono font-bold whitespace-nowrap ${
-                        b.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                      }`}
+                      className={`py-2.5 pl-1.5 sm:pl-3 text-right font-mono font-bold whitespace-nowrap ${corDoValor(
+                        b.lucro
+                      )}`}
                     >
                       {formatarReaisComSinal(converter(b.lucro))}
                     </td>

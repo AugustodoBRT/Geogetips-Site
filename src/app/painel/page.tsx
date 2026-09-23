@@ -31,12 +31,14 @@ import {
   lerData,
 } from "@/lib/endereco";
 import {
+  corDoValor,
   ehZero,
   FORMATO_REAIS_COM_SINAL,
   FORMATO_ROI,
   FORMATO_TAXA,
   formatarInteiro,
   formatarOddExata,
+  formatarPorcentagem,
   formatarReais,
   formatarReaisComSinal,
   formatarUnidades,
@@ -53,6 +55,7 @@ import {
   Layers,
   Percent,
   ArrowUpRight,
+  Minus,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -597,14 +600,21 @@ export default function PainelPage() {
               <span className="text-[11px] font-bold uppercase tracking-wider">
                 {periodoAtivo ? "Lucro no Período" : "Lucro Acumulado"}
               </span>
+              {/* Zero não é alta nem queda: o mês que começa só com pendentes
+                  saía com o cartão verde e a seta para cima, ao lado do selo do
+                  gráfico, que já mostrava o mesmo zero em cinza. */}
               <div
                 className={`hidden sm:flex w-8 h-8 rounded-lg items-center justify-center ${
-                  totalLucro >= 0
-                    ? "bg-[var(--green-soft)] text-[var(--green)]"
-                    : "bg-[var(--red-soft)] text-[var(--red)]"
+                  ehZero(totalLucro)
+                    ? "bg-[var(--text-soft)] text-[var(--text-3)]"
+                    : totalLucro > 0
+                      ? "bg-[var(--green-soft)] text-[var(--green)]"
+                      : "bg-[var(--red-soft)] text-[var(--red)]"
                 }`}
               >
-                {totalLucro >= 0 ? (
+                {ehZero(totalLucro) ? (
+                  <Minus className="w-4 h-4" />
+                ) : totalLucro > 0 ? (
                   <TrendingUp className="w-4 h-4" />
                 ) : (
                   <TrendingDown className="w-4 h-4" />
@@ -616,7 +626,11 @@ export default function PainelPage() {
                 formatarReaisComSinal(totalLucro),
                 true
               )} tracking-tight leading-none ${
-                totalLucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                ehZero(totalLucro)
+                  ? "text-[var(--text)]"
+                  : totalLucro > 0
+                    ? "text-[var(--green)]"
+                    : "text-[var(--red)]"
               }`}
             >
               <NumeroAnimado
@@ -646,7 +660,11 @@ export default function PainelPage() {
                 `${roi.toFixed(2)}%`,
                 true
               )} tracking-tight leading-none ${
-                roi >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+                ehZero(roi)
+                  ? "text-[var(--text)]"
+                  : roi > 0
+                    ? "text-[var(--green)]"
+                    : "text-[var(--red)]"
               }`}
             >
               <NumeroAnimado
@@ -1147,14 +1165,13 @@ export default function PainelPage() {
                     <div className="flex items-center gap-2.5">
                       <SportBadge sport={sport.esporte} />
                       <div className="text-[11px] text-[var(--text-3)]">
-                        {formatarInteiro(sport.apostas)} tips ·{" "}
+                        {formatarInteiro(sport.apostas)}{" "}
+                        {sport.apostas === 1 ? "aposta" : "apostas"} ·{" "}
                         {sport.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
                       </div>
                     </div>
                     <div
-                      className={`font-mono text-xs font-bold ${
-                        sport.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                      }`}
+                      className={`font-mono text-xs font-bold ${corDoValor(sport.lucro)}`}
                     >
                       {formatarReaisComSinal(converter(sport.lucro))}
                     </div>
@@ -1248,14 +1265,12 @@ export default function PainelPage() {
                 <div className="flex items-center gap-2.5 min-w-0">
                   <BookieBadge bookie={b.casa} />
                   <span className="text-[11px] text-[var(--text-3)] whitespace-nowrap">
-                    {formatarInteiro(b.apostas)} tips · ROI {b.roi >= 0 ? "+" : ""}
-                    {b.roi.toFixed(2).replace(".", ",")}%
+                    {formatarInteiro(b.apostas)} {b.apostas === 1 ? "aposta" : "apostas"}{" "}
+                    · ROI {formatarPorcentagem(b.roi)}
                   </span>
                 </div>
                 <span
-                  className={`font-mono text-xs font-bold shrink-0 ${
-                    b.lucro >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                  }`}
+                  className={`font-mono text-xs font-bold shrink-0 ${corDoValor(b.lucro)}`}
                 >
                   {formatarReaisComSinal(converter(b.lucro))}
                 </span>
@@ -1443,7 +1458,8 @@ export default function PainelPage() {
                     <div>
                       <div className="text-xs font-bold text-[var(--text)]">{t.nome}</div>
                       <div className="text-[10.5px] text-[var(--text-3)]">
-                        {formatarInteiro(t.totalApostas)} tips ·{" "}
+                        {formatarInteiro(t.totalApostas)}{" "}
+                        {t.totalApostas === 1 ? "aposta" : "apostas"} ·{" "}
                         {t.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
                       </div>
                     </div>
@@ -1451,9 +1467,9 @@ export default function PainelPage() {
 
                   <div className="text-right">
                     <div
-                      className={`font-mono text-xs font-bold ${
-                        t.lucroUnidades >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-                      }`}
+                      className={`font-mono text-xs font-bold ${corDoValor(
+                        t.lucroUnidades
+                      )}`}
                     >
                       {formatarUnidades(t.lucroUnidades)}
                     </div>
