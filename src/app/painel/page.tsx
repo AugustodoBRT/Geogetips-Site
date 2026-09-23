@@ -817,13 +817,7 @@ export default function PainelPage() {
                 {hoveredPoint ? (
                   <span className="text-[var(--text)] font-medium">
                     Dia <strong>{hoveredPoint.date}</strong>: Acumulado{" "}
-                    <strong
-                      className={
-                        hoveredPoint.cumProfit >= 0
-                          ? "text-[var(--green)]"
-                          : "text-[var(--red)]"
-                      }
-                    >
+                    <strong className={corDoValor(hoveredPoint.cumProfit)}>
                       {formatarReaisComSinal(hoveredPoint.cumProfit)}
                     </strong>{" "}
                     ({formatarReaisComSinal(hoveredPoint.dayProfit)} no dia ·{" "}

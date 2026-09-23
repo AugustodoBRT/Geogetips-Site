@@ -43,6 +43,7 @@ import {
   lerLista,
 } from "@/lib/endereco";
 import {
+  corDoValor,
   ehZero,
   FORMATO_REAIS_COM_SINAL,
   FORMATO_ROI,
@@ -637,12 +638,11 @@ export default function ApostasPage() {
           <div
             className={`font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight ${
               // Sem aposta decidida o cartão mostra um traço, que não é ganho:
-              // saía verde.
+              // saía verde. E com aposta decidida o ROI zerado também não é
+              // ganho — daí corDoValor, e não `roi >= 0`.
               resumo.greens + resumo.reds === 0
                 ? "text-[var(--text)]"
-                : resumo.roi >= 0
-                  ? "text-[var(--green)]"
-                  : "text-[var(--red)]"
+                : corDoValor(resumo.roi)
             }`}
           >
             {resumo.greens + resumo.reds > 0 ? (

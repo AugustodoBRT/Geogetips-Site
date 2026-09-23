@@ -287,7 +287,11 @@ export default function HistoricoPage() {
                     chegou a ficar em 0% enquanto abr/26 marcava 76%. Gráfico
                     não pode depender de animação terminar para estar correto. */}
                 {cronologico.map((m, i) => {
-                  const positivo = m.lucro >= 0;
+                  // Zero não é lucro: o mês zerado sai num toco neutro em cima
+                  // da linha, como a barra por esporte em /estatisticas. Com
+                  // `m.lucro >= 0` ele virava toco verde e rótulo verde.
+                  const zerado = ehZero(m.lucro);
+                  const positivo = m.lucro > 0;
                   const altura = (Math.abs(m.lucro) / maiorAbs) * 100;
                   const parcial = m.aba === mesAtual;
                   return (
@@ -297,9 +301,9 @@ export default function HistoricoPage() {
                     >
                       {/* metade de cima: lucro */}
                       <div className="h-[90px] w-full flex flex-col justify-end">
-                        {positivo && (
+                        {(positivo || zerado) && (
                           <div
-                            className={`w-full rounded-t-md bg-[var(--green)] origin-bottom animate-surgir-y ${parcial ? "opacity-55" : ""}`}
+                            className={`w-full rounded-t-md origin-bottom animate-surgir-y ${zerado ? "bg-[var(--text-3)]" : "bg-[var(--green)]"} ${parcial ? "opacity-55" : ""}`}
                             style={{
                               height: `${Math.max(altura, 2)}%`,
                               animationDelay: `${i * 50}ms`,
@@ -312,7 +316,7 @@ export default function HistoricoPage() {
 
                       {/* metade de baixo: prejuízo */}
                       <div className="h-[90px] w-full">
-                        {!positivo && (
+                        {!positivo && !zerado && (
                           <div
                             className={`w-full rounded-b-md bg-[var(--red)] origin-top animate-surgir-y ${parcial ? "opacity-55" : ""}`}
                             style={{
@@ -328,9 +332,9 @@ export default function HistoricoPage() {
                           {abaCurta(m.aba)}
                         </div>
                         <div
-                          className={`text-[10px] font-mono font-bold whitespace-nowrap ${
-                            positivo ? "text-[var(--green)]" : "text-[var(--red)]"
-                          }`}
+                          className={`text-[10px] font-mono font-bold whitespace-nowrap ${corDoValor(
+                            m.lucro
+                          )}`}
                         >
                           {formatarUnidades(m.unidades)}
                         </div>
