@@ -64,6 +64,18 @@ export function corDoValor(valor: number): string {
   return valor > 0 ? "text-[var(--green)]" : "text-[var(--red)]";
 }
 
+/**
+ * A mesma regra de `corDoValor` para quem pinta por atributo, e não por classe:
+ * o SVG do gráfico, que preenche com `fill` e `stroke`.
+ *
+ * O neutro aqui é `--text-3`, não `--text`: é o cinza das marcas desenhadas, o
+ * mesmo da barra zerada em /estatisticas e /historico. Para texto, `corDoValor`.
+ */
+export function varDoValor(valor: number): string {
+  if (ehZero(valor)) return "var(--text-3)";
+  return valor > 0 ? "var(--green)" : "var(--red)";
+}
+
 const PORCENTAGEM = new Intl.NumberFormat("pt-BR", FORMATO_ROI);
 
 /** "+9,69%", "-9,17%" e "0,00%" — o zero sem sinal, como nos reais. */
