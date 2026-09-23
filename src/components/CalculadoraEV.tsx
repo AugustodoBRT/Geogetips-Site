@@ -15,6 +15,7 @@ import { escolher } from "@/lib/endereco";
 import {
   formatarOddExata,
   formatarOddJusta,
+  formatarPorcentagem,
   formatarReais,
   formatarUnidadesSemSinal,
   lerNumeroBR,
@@ -96,10 +97,16 @@ const SUREBET_VAZIA = {
 
 const MAXIMO_DE_SELECOES = 10;
 
-/** 0,0526 → "5,26%"; com `sinal`, positivo ganha "+". */
-function porcento(fracao: number, casas = 2, sinal = false): string {
-  const texto = `${(fracao * 100).toFixed(casas).replace(".", ",")}%`;
-  return sinal && fracao > 0 ? `+${texto}` : texto;
+/**
+ * 0,0526 → "5,26%". Sem sinal: para isso existe `formatarPorcentagem`.
+ *
+ * O sinal daqui saía de `fracao > 0`, decidido antes do `toFixed` logo abaixo —
+ * então um valor mínimo arredondava para 0,00 e ficava "+0,00%". O `Intl` de
+ * `formatarPorcentagem` arredonda primeiro e só então decide, e por isso é ele
+ * quem escreve os valores com sinal nesta tela.
+ */
+function porcento(fracao: number, casas = 2): string {
+  return `${(fracao * 100).toFixed(casas).replace(".", ",")}%`;
 }
 
 /** Odd lida de um campo, e se o campo mostra erro: só quando há texto e ele não é odd. */
@@ -459,7 +466,7 @@ function Veredito({
           temValor ? "text-[var(--green)]" : "text-[var(--red)]"
         }`}
       >
-        {porcento(valorEsperado, 2, true)}
+        {formatarPorcentagem(valorEsperado * 100)}
       </div>
       <p className="text-xs text-[var(--text-2)] leading-relaxed">
         Valor esperado. A cada {formatarReais(100)} apostados nessa odd, o retorno médio é
@@ -718,7 +725,7 @@ function ResumoDeValor({
   return (
     <Resumo tom={valorEsperado > 0 ? "verde" : "vermelho"}>
       {valorEsperado > 0
-        ? `${porcento(valorEsperado, 2, true)} de valor${
+        ? `${formatarPorcentagem(valorEsperado * 100)} de valor${
             banca ? ` · ${formatarUnidadesSemSinal(stake.unidades)}` : ""
           }`
         : `Sem valor: ${porcento(valorEsperado, 2)}`}
@@ -782,7 +789,7 @@ function ResultadoDaSurebet({
           Surebet
         </span>
         <div className="font-serif text-5xl tracking-tight leading-none text-[var(--green)]">
-          {porcento(r.roi, 2, true)}
+          {formatarPorcentagem(r.roi * 100)}
         </div>
         <p className="text-xs text-[var(--text-2)] leading-relaxed">
           Lucro garantido de{" "}
@@ -1257,7 +1264,7 @@ export function CalculadoraEV() {
       resumo = (
         <Resumo tom={r.ehSurebet ? "verde" : "vermelho"}>
           {r.ehSurebet
-            ? `Surebet de ${porcento(r.roi, 2, true)}: ${formatarReais(r.lucro)} garantidos`
+            ? `Surebet de ${formatarPorcentagem(r.roi * 100)}: ${formatarReais(r.lucro)} garantidos`
             : r.existe
               ? "Surebet sem lucro com este arredondamento"
               : "Não há surebet"}

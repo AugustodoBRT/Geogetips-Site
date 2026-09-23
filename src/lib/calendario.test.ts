@@ -127,4 +127,15 @@ describe("compacto", () => {
     expect(compacto(999.6)).toBe("+1k");
     expect(compacto(0)).toBe("0");
   });
+
+  it("não deixa sinal sozinho no que arredondou para zero", () => {
+    // O sinal vinha do valor cru e a magnitude do arredondado: o dia de trinta
+    // centavos virava "+0", e o de trinta centavos negativos, "-0".
+    expect(compacto(0.4)).toBe("0");
+    expect(compacto(-0.4)).toBe("0");
+    expect(compacto(0.49)).toBe("0");
+    expect(compacto(-0.49)).toBe("0");
+    expect(compacto(0.5)).toBe("+1");
+    expect(compacto(-0.5)).toBe("-1");
+  });
 });
