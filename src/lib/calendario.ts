@@ -157,9 +157,13 @@ export function montarMes(
  * sobrando. O valor exato vai no nome acessível da célula.
  */
 export function compacto(valor: number): string {
-  const sinal = valor > 0 ? "+" : valor < 0 ? "-" : "";
   const abs = Math.abs(valor);
-  if (Math.round(abs) < 1000) return `${sinal}${Math.round(abs)}`;
+  const inteiro = Math.round(abs);
+  // O sinal sai do que vai ser impresso, não do valor cru. Saindo do cru, o dia
+  // de trinta centavos arredondava a magnitude para zero e deixava o "+" só na
+  // célula: "+0", que diz lucro onde não houve.
+  const sinal = inteiro === 0 ? "" : valor > 0 ? "+" : "-";
+  if (inteiro < 1000) return `${sinal}${inteiro}`;
   const mil = (Math.round(abs / 100) / 10).toString().replace(".", ",");
   return `${sinal}${mil}k`;
 }
