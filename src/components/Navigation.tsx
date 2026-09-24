@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link, { useLinkStatus } from "next/link";
+import { useLinkStatus } from "next/link";
 import { LinkInterno } from "@/components/LinkInterno";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
