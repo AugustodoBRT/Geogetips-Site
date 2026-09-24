@@ -165,12 +165,18 @@ export function BlocoDeRisco({
         // alta, pior e melhor dia, maior red e maior green. Oito cartões fecham
         // a grade de quatro colunas e a de duas, no celular.
         <dl className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          {/* O tom sai do número CONVERTIDO, que é o que o cartão escreve: na
+              unidade do visitante um valor pode imprimir "R$ 0,00", e zero não
+              é perda nem ganho (#103). Já o corte entre mostrar o valor e dizer
+              "Nenhuma" segue no dado CRU — a curva caiu de verdade, e trocar o
+              número por "Nenhuma" porque ele arredondou mentiria sobre o
+              recorte. Mesma divisão nos seis cartões abaixo. */}
           <Medida
             rotulo="Maior queda"
             valor={
               queda.valor > 0 ? formatarReaisComSinal(-converter(queda.valor)) : "Nenhuma"
             }
-            tom={queda.valor > 0 ? "vermelho" : "neutro"}
+            tom={queda.valor > 0 ? tomDoValor(-converter(queda.valor)) : "neutro"}
           >
             {queda.valor > 0 && queda.vale
               ? queda.pico
@@ -184,7 +190,7 @@ export function BlocoDeRisco({
             valor={
               alta.valor > 0 ? formatarReaisComSinal(converter(alta.valor)) : "Nenhuma"
             }
-            tom={alta.valor > 0 ? "verde" : "neutro"}
+            tom={alta.valor > 0 ? tomDoValor(converter(alta.valor)) : "neutro"}
           >
             {alta.valor > 0 && alta.pico
               ? alta.vale
@@ -197,7 +203,7 @@ export function BlocoDeRisco({
             <Medida
               rotulo="Pior dia"
               valor={formatarReaisComSinal(converter(risco.piorDia.lucro))}
-              tom={tomDoValor(risco.piorDia.lucro)}
+              tom={tomDoValor(converter(risco.piorDia.lucro))}
             >
               <LinkDoDia dia={risco.piorDia} aba={aba} grupo={grupo} /> ·{" "}
               {formatarInteiro(risco.piorDia.apostas)}{" "}
@@ -209,7 +215,7 @@ export function BlocoDeRisco({
             <Medida
               rotulo="Melhor dia"
               valor={formatarReaisComSinal(converter(risco.melhorDia.lucro))}
-              tom={tomDoValor(risco.melhorDia.lucro)}
+              tom={tomDoValor(converter(risco.melhorDia.lucro))}
             >
               <LinkDoDia dia={risco.melhorDia} aba={aba} grupo={grupo} /> ·{" "}
               {formatarInteiro(risco.melhorDia.apostas)}{" "}
@@ -226,7 +232,7 @@ export function BlocoDeRisco({
                 ? formatarReaisComSinal(converter(risco.maiorRed))
                 : "Nenhuma"
             }
-            tom={risco.maiorRed < 0 ? "vermelho" : "neutro"}
+            tom={risco.maiorRed < 0 ? tomDoValor(converter(risco.maiorRed)) : "neutro"}
           >
             {risco.maiorRed < 0 ? "numa aposta só" : "Nenhuma red neste recorte"}
           </Medida>
@@ -238,7 +244,9 @@ export function BlocoDeRisco({
                 ? formatarReaisComSinal(converter(risco.maiorGreen))
                 : "Nenhuma"
             }
-            tom={risco.maiorGreen > 0 ? "verde" : "neutro"}
+            tom={
+              risco.maiorGreen > 0 ? tomDoValor(converter(risco.maiorGreen)) : "neutro"
+            }
           >
             {risco.maiorGreen > 0 ? "numa aposta só" : "Nenhuma green neste recorte"}
           </Medida>
