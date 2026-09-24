@@ -1166,7 +1166,9 @@ export default function PainelPage() {
                       </div>
                     </div>
                     <div
-                      className={`font-mono text-xs font-bold ${corDoValor(sport.lucro)}`}
+                      className={`font-mono text-xs font-bold ${corDoValor(
+                        converter(sport.lucro)
+                      )}`}
                     >
                       {formatarReaisComSinal(converter(sport.lucro))}
                     </div>
@@ -1265,7 +1267,9 @@ export default function PainelPage() {
                   </span>
                 </div>
                 <span
-                  className={`font-mono text-xs font-bold shrink-0 ${corDoValor(b.lucro)}`}
+                  className={`font-mono text-xs font-bold shrink-0 ${corDoValor(
+                    converter(b.lucro)
+                  )}`}
                 >
                   {formatarReaisComSinal(converter(b.lucro))}
                 </span>
