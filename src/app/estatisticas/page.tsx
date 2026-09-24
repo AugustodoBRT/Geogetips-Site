@@ -410,8 +410,15 @@ export default function EstatisticasPage() {
                   </p>
                 ) : (
                   sports.map((sport) => {
-                    const zerado = ehZero(sport.lucro);
-                    const positivo = sport.lucro > 0;
+                    // A cor do valor e a barra leem o MESMO número que a linha
+                    // escreve: o já convertido para a unidade do visitante
+                    // (#103). Lendo o cru, um esporte que imprime "R$ 0,00"
+                    // numa unidade pequena saía verde, com a barra verde junto.
+                    // A largura segue no cru porque ali é proporção entre
+                    // esportes, não teste de zero.
+                    const lucroExibido = converter(sport.lucro);
+                    const zerado = ehZero(lucroExibido);
+                    const positivo = lucroExibido > 0;
                     const largura = (Math.abs(sport.lucro) / maiorLucroAbs) * 100;
                     return (
                       <div key={sport.esporte} className="space-y-1.5">
@@ -419,10 +426,10 @@ export default function EstatisticasPage() {
                           <SportBadge sport={sport.esporte} />
                           <span
                             className={`font-mono flex items-baseline gap-2 ${corDoValor(
-                              sport.lucro
+                              lucroExibido
                             )}`}
                           >
-                            {formatarReaisComSinal(converter(sport.lucro))}
+                            {formatarReaisComSinal(lucroExibido)}
                             <span className="text-[10.5px] text-[var(--text-3)] font-medium">
                               ROI {formatarPorcentagem(sport.roi)}
                             </span>
@@ -480,7 +487,7 @@ export default function EstatisticasPage() {
                       <div className="flex justify-between items-center text-xs font-semibold gap-3">
                         <BookieBadge bookie={b.casa} />
                         <span className="font-mono flex flex-wrap items-baseline justify-end gap-x-2 text-right">
-                          <span className={corDoValor(b.lucro)}>
+                          <span className={corDoValor(converter(b.lucro))}>
                             {formatarReaisComSinal(converter(b.lucro))}
                           </span>
                           <span className="text-[10.5px] text-[var(--text-3)] font-medium">
@@ -577,7 +584,7 @@ export default function EstatisticasPage() {
                     </td>
                     <td
                       className={`py-2.5 pl-1.5 sm:pl-3 text-right font-mono font-bold whitespace-nowrap ${corDoValor(
-                        s.lucro
+                        converter(s.lucro)
                       )}`}
                     >
                       {formatarReaisComSinal(converter(s.lucro))}
@@ -665,7 +672,7 @@ export default function EstatisticasPage() {
                     </td>
                     <td
                       className={`py-2.5 pl-1.5 sm:pl-3 text-right font-mono font-bold whitespace-nowrap ${corDoValor(
-                        b.lucro
+                        converter(b.lucro)
                       )}`}
                     >
                       {formatarReaisComSinal(converter(b.lucro))}
