@@ -839,6 +839,12 @@ export default function ApostasPage() {
             {dias.map((dia, indice) => {
               const aberto = estaAberto(dia.data);
               const idApostas = `apostas-do-dia-${indice}`;
+              // O resultado do dia já na unidade do visitante: é o número que a
+              // pílula escreve, então é dele que a cor tem de sair (#103). Lendo
+              // o cru, um dia que imprime "R$ 0,00" numa unidade pequena saía
+              // verde — o mesmo defeito que o comentário lá embaixo já dizia ter
+              // consertado, mas com o teste no valor errado.
+              const lucroDoDia = converter(dia.lucro);
               // Sem `layout` do framer: ela anima mudanças de tamanho por
               // transform, e ao mudar a altura das linhas a seção inteira
               // travou em scaleY(11.67) com translateY de 1504px — o feed
@@ -886,14 +892,14 @@ export default function ApostasPage() {
                           verde, com "+R$ 0,00", como se tivesse dado lucro. */}
                       <span
                         className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                          ehZero(dia.lucro)
+                          ehZero(lucroDoDia)
                             ? "bg-[var(--text-2-soft)] text-[var(--text-2)]"
-                            : dia.lucro > 0
+                            : lucroDoDia > 0
                               ? "bg-[var(--green-soft)] text-[var(--green)]"
                               : "bg-[var(--red-soft)] text-[var(--red)]"
                         }`}
                       >
-                        {formatarReaisComSinal(converter(dia.lucro))}
+                        {formatarReaisComSinal(lucroDoDia)}
                       </span>
                     </button>
                   </h2>
