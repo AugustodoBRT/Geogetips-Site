@@ -10,6 +10,7 @@ import { grupoParaEndereco, type IdGrupo } from "@/lib/grupos";
 import { reaisParaUnidades } from "@/lib/constants";
 import {
   corDoValor,
+  ehZero,
   formatarInteiro,
   formatarReaisComSinal,
   formatarUnidadesSemSinal,
@@ -45,15 +46,21 @@ function emUnidades(reais: number): string {
   return `(${formatarUnidadesSemSinal(reaisParaUnidades(reais))})`;
 }
 
-/** Cor da célula pelo resultado do dia. Os pares `-soft` já passam no contraste. */
-function tomDoDia(dia: DiaDoCalendario, fora: boolean): string {
+/**
+ * Cor da célula pelo resultado do dia. Os pares `-soft` já passam no contraste.
+ *
+ * `lucro` chega **já convertido** para a unidade do visitante (#103): é o número
+ * que a célula escreve, e a cor tem de sair dele. Lendo o valor cru, um dia que
+ * imprime "R$ 0,00" numa unidade pequena pintava a célula inteira de verde.
+ */
+function tomDoDia(dia: DiaDoCalendario, fora: boolean, lucro: number): string {
   if (fora || dia.futuro || dia.apostas === 0)
     return "border-tinta/[0.06] text-[var(--text-3)]";
-  if (dia.lucro > 0)
+  if (ehZero(lucro))
+    return "bg-[var(--bg-soft)] border-transparent text-[var(--text-2)] hover:border-tinta/[0.15]";
+  if (lucro > 0)
     return "bg-[var(--green-soft)] border-transparent text-[var(--green)] hover:border-[color:color-mix(in_srgb,var(--green)_45%,transparent)]";
-  if (dia.lucro < 0)
-    return "bg-[var(--red-soft)] border-transparent text-[var(--red)] hover:border-[color:color-mix(in_srgb,var(--red)_45%,transparent)]";
-  return "bg-[var(--bg-soft)] border-transparent text-[var(--text-2)] hover:border-tinta/[0.15]";
+  return "bg-[var(--red-soft)] border-transparent text-[var(--red)] hover:border-[color:color-mix(in_srgb,var(--red)_45%,transparent)]";
 }
 
 /**
@@ -208,7 +215,11 @@ export function CalendarioDeLucro({
                     }
                     const fora = foraDoPeriodo(dia);
                     const clicavel = dia.apostas > 0 && !dia.futuro;
-                    const tom = tomDoDia(dia, fora);
+                    // O resultado do dia na unidade do visitante, calculado uma
+                    // vez: é o que a célula escreve, o que o nome acessível diz
+                    // e o que decide o tom.
+                    const lucroDoDia = converter(dia.lucro);
+                    const tom = tomDoDia(dia, fora, lucroDoDia);
                     const conteudo = (
                       <>
                         <span
@@ -225,11 +236,11 @@ export function CalendarioDeLucro({
                                 "+R$ 3.622,15" não cabe. Lá fica o resumido, e o
                                 valor exato vai no nome acessível. */}
                             <span className="block lg:hidden font-mono text-[10.5px] sm:text-xs font-bold mt-0.5 truncate">
-                              {compacto(converter(dia.lucro))}
+                              {compacto(lucroDoDia)}
                             </span>
                             <span className="hidden lg:flex flex-wrap items-baseline gap-x-1 mt-0.5 font-mono">
                               <span className="text-xs font-bold whitespace-nowrap">
-                                {formatarReaisComSinal(converter(dia.lucro))}
+                                {formatarReaisComSinal(lucroDoDia)}
                               </span>
                               <span className="text-[10px] font-semibold whitespace-nowrap">
                                 {emUnidades(dia.lucro)}
@@ -262,7 +273,7 @@ export function CalendarioDeLucro({
                               ate: dia.iso,
                             })}`}
                             aria-label={`${dia.data}: ${formatarReaisComSinal(
-                              converter(dia.lucro)
+                              lucroDoDia
                             )} ${emUnidades(dia.lucro)} em ${formatarInteiro(dia.apostas)} ${
                               dia.apostas === 1 ? "aposta" : "apostas"
                             }${dia.hoje ? ", hoje" : ""}${fora ? ", fora do período escolhido" : ""}`}
@@ -286,7 +297,7 @@ export function CalendarioDeLucro({
 
           <p className="text-xs text-[var(--text-2)]">
             Total de {nomeDoMes(mes)}:{" "}
-            <strong className={corDoValor(mes.lucro)}>
+            <strong className={corDoValor(converter(mes.lucro))}>
               {formatarReaisComSinal(converter(mes.lucro))}
             </strong>{" "}
             {emUnidades(mes.lucro)} · {formatarInteiro(mes.apostas)}{" "}
