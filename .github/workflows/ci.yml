@@ -12,18 +12,29 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Duas escolhas valem para os dois jobs abaixo:
+#
+# Node 24 é o LTS ativo. O 20 encerrou em 30/04/2026 — o CI vinha construindo o
+# site em Node fora de suporte — e o 22 já está em manutenção, então pararia
+# aqui de novo em pouco tempo.
+#
+# O runner é preso numa versão em vez de `ubuntu-latest` porque a suíte de tela
+# tem teste de visual e de contraste, e sistema novo muda desenho de fonte.
+# Assim a subida para o Ubuntu 26, que o rótulo `latest` faz sozinho em
+# 19/10/2026, vira um pull request em que se vê o que quebra — e não uma
+# segunda-feira em que a suíte fica vermelha sem ninguém ter tocado no código.
 jobs:
   verificar:
     name: Lint, tipos, testes e build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Instalar dependências
@@ -57,15 +68,15 @@ jobs:
 
   telas:
     name: Testes de tela
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Instalar dependências
@@ -83,7 +94,7 @@ jobs:
 
       - name: Guardar o relatório quando falhar
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: relatorio-playwright
           path: playwright-report/
