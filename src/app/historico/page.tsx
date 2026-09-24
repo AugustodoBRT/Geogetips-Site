@@ -70,6 +70,12 @@ export default function HistoricoPage() {
 
   const mesesNegativos = meses.filter((m) => m.lucro < 0).length;
 
+  // O consolidado já convertido para a unidade do visitante: é o número que o
+  // cartão e o rodapé da tabela escrevem, então é dele que a cor, o tom e o
+  // ícone têm de sair (#103). Lendo o valor cru, um período que imprime
+  // "R$ 0,00" numa unidade pequena ainda saía verde.
+  const lucroConsolidado = consolidado ? converter(consolidado.lucro) : 0;
+
   // O mês corrente ainda está correndo: tem pendentes, e o resultado dele vai
   // mudar. Entra no consolidado — é dado real —, mas não pode aparecer ao lado
   // dos meses fechados como se estivesse fechado.
@@ -139,16 +145,16 @@ export default function HistoricoPage() {
                   </span>
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      ehZero(consolidado.lucro)
+                      ehZero(lucroConsolidado)
                         ? "bg-[var(--text-soft)] text-[var(--text-3)]"
-                        : consolidado.lucro > 0
+                        : lucroConsolidado > 0
                           ? "bg-[var(--green-soft)] text-[var(--green)]"
                           : "bg-[var(--red-soft)] text-[var(--red)]"
                     }`}
                   >
-                    {ehZero(consolidado.lucro) ? (
+                    {ehZero(lucroConsolidado) ? (
                       <Minus className="w-4 h-4" />
-                    ) : consolidado.lucro > 0 ? (
+                    ) : lucroConsolidado > 0 ? (
                       <TrendingUp className="w-4 h-4" />
                     ) : (
                       <TrendingDown className="w-4 h-4" />
@@ -157,11 +163,11 @@ export default function HistoricoPage() {
                 </div>
                 <div
                   className={`font-serif ${tamanhoDoValor(
-                    formatarReaisComSinal(converter(consolidado.lucro))
-                  )} tracking-tight leading-none ${corDoValor(consolidado.lucro)}`}
+                    formatarReaisComSinal(lucroConsolidado)
+                  )} tracking-tight leading-none ${corDoValor(lucroConsolidado)}`}
                 >
                   <NumeroAnimado
-                    value={converter(consolidado.lucro)}
+                    value={lucroConsolidado}
                     locales="pt-BR"
                     format={FORMATO_REAIS_COM_SINAL}
                   />
@@ -288,10 +294,16 @@ export default function HistoricoPage() {
                     não pode depender de animação terminar para estar correto. */}
                 {cronologico.map((m, i) => {
                   // Zero não é lucro: o mês zerado sai num toco neutro em cima
-                  // da linha, como a barra por esporte em /estatisticas. Com
-                  // `m.lucro >= 0` ele virava toco verde e rótulo verde.
-                  const zerado = ehZero(m.lucro);
-                  const positivo = m.lucro > 0;
+                  // da linha, como a barra por esporte em /estatisticas.
+                  //
+                  // O teste é sobre as UNIDADES, que é o que o rótulo escreve, e
+                  // não sobre os reais (#103). As duas escalas zeram em pontos
+                  // diferentes: "0,00u" cobre até R$ 0,49, enquanto `ehZero` em
+                  // reais para em meio centavo — então um mês de trinta centavos
+                  // escrevia "0,00u" e mesmo assim saía colorido. A altura segue
+                  // nos reais porque ali é proporção, não teste de zero.
+                  const zerado = ehZero(m.unidades);
+                  const positivo = m.unidades > 0;
                   const altura = (Math.abs(m.lucro) / maiorAbs) * 100;
                   const parcial = m.aba === mesAtual;
                   return (
@@ -333,7 +345,7 @@ export default function HistoricoPage() {
                         </div>
                         <div
                           className={`text-[10px] font-mono font-bold whitespace-nowrap ${corDoValor(
-                            m.lucro
+                            m.unidades
                           )}`}
                         >
                           {formatarUnidades(m.unidades)}
@@ -430,7 +442,7 @@ export default function HistoricoPage() {
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${corDoValor(
-                          m.lucro
+                          converter(m.lucro)
                         )}`}
                       >
                         {formatarReaisComSinal(converter(m.lucro))}
@@ -470,10 +482,10 @@ export default function HistoricoPage() {
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${corDoValor(
-                          consolidado.lucro
+                          lucroConsolidado
                         )}`}
                       >
-                        {formatarReaisComSinal(converter(consolidado.lucro))}
+                        {formatarReaisComSinal(lucroConsolidado)}
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${corDoValor(
