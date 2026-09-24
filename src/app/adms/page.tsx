@@ -375,7 +375,9 @@ function Recorte({
                 </div>
               </div>
               <span
-                className={`font-mono text-xs font-bold shrink-0 ${corDoValor(i.lucro)}`}
+                className={`font-mono text-xs font-bold shrink-0 ${corDoValor(
+                  converter(i.lucro)
+                )}`}
               >
                 {formatarReaisComSinal(converter(i.lucro))}
               </span>
