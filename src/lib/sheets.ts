@@ -272,10 +272,16 @@ export function ordenarApostas(bets: BetItem[], ref: Date = new Date()): BetItem
 /**
  * Quantos meses seguidos sem aba antes de parar de procurar.
  *
- * O grupo publica todo mês, então três buracos seguidos significam que a
- * planilha acabou ali — não que exista um mês solto mais atrás. Dois seriam
- * apertado demais: basta uma pausa de fim de ano para cortar o histórico no
- * meio.
+ * Três buracos seguidos significam que a planilha acabou ali — não que exista
+ * um mês solto mais atrás. Dois seriam apertado demais: basta uma pausa de fim
+ * de ano para cortar o histórico no meio.
+ *
+ * O corte só conta **depois** que a primeira aba apareceu. Enquanto nenhuma
+ * apareceu, os vazios são a pausa do grupo, não o fim da planilha — e essa
+ * distinção não é teórica: o grupo parou de registrar em 25/09/2026 e, pela
+ * regra antiga, em 01/12 a varredura morreria em dezembro, novembro e outubro
+ * sem nunca sondar setembro. Devolveria lista vazia com seis meses de dados na
+ * planilha, e a tela acusaria o compartilhamento de uma planilha pública.
  */
 const MESES_VAZIOS_PARA_PARAR = 3;
 
@@ -299,8 +305,9 @@ const LOTE_DE_SONDAGEM = 12;
 const LIMITE_DE_MESES = 120;
 
 /**
- * Anda para trás a partir do mês atual, mês a mês, até encontrar
- * `MESES_VAZIOS_PARA_PARAR` seguidos sem aba.
+ * Anda para trás a partir do mês atual, mês a mês, e para em uma de duas
+ * condições: `MESES_VAZIOS_PARA_PARAR` seguidos sem aba **depois** de já ter
+ * achado alguma, ou um lote inteiro sem achar nada.
  *
  * Substituiu um `abasRecentes(18)` de tamanho fixo. O problema daquele não era
  * custo, era **perda silenciosa**: o grupo começou em agosto de 2025, e a
@@ -328,8 +335,15 @@ export async function descobrirAbas(
         continue;
       }
       vaziosSeguidos += 1;
-      if (vaziosSeguidos >= MESES_VAZIOS_PARA_PARAR) return encontradas;
+      if (encontradas.length > 0 && vaziosSeguidos >= MESES_VAZIOS_PARA_PARAR) {
+        return encontradas;
+      }
     }
+
+    // Um lote inteiro sondado sem achar nada é o contrapeso: tolerar a pausa
+    // do grupo não pode virar licença para varrer dez anos toda vez que a
+    // planilha não responde. Um ano sem nenhuma aba e a procura acaba aqui.
+    if (encontradas.length === 0) return encontradas;
   }
 
   return encontradas;
