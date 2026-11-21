@@ -425,4 +425,32 @@ describe("descobrirAbas", () => {
     expect(achadas).toHaveLength(120);
     expect(vistas).toHaveLength(120);
   });
+
+  it("atravessa a pausa do grupo e acha o histórico atrás dela", async () => {
+    // O grupo parou de registrar em setembro de 2026. Em 01/12 os três
+    // primeiros passos são vazios — dezembro, novembro e outubro — e o corte
+    // disparava antes de setembro ser sondado: a planilha inteira sumia e a
+    // tela acusava o compartilhamento de uma planilha que está pública.
+    const meses = ["Setembro26", "Agosto26", "Julho26", "Junho26", "Maio26", "Abril26"];
+    const { sondar } = comAbas(meses);
+    const primeiroDeDezembro = new Date("2026-12-01T12:00:00Z");
+    expect(await descobrirAbas(sondar, primeiroDeDezembro)).toEqual(meses);
+  });
+
+  it("aguenta a pausa crescer sem perder o histórico", async () => {
+    // A mesma planilha três meses depois. Enquanto não nascer aba nova, o
+    // buraco da frente só aumenta, e ele não pode cortar o que está atrás.
+    const meses = ["Setembro26", "Agosto26"];
+    const { sondar } = comAbas(meses);
+    const marco = new Date("2027-03-01T12:00:00Z");
+    expect(await descobrirAbas(sondar, marco)).toEqual(meses);
+  });
+
+  it("não varre o histórico inteiro quando não existe aba nenhuma", async () => {
+    // Contrapeso do caso acima: tolerar o buraco da frente não pode virar
+    // licença para sondar dez anos toda vez que a planilha não responde.
+    const { sondar, vistas } = comAbas([]);
+    expect(await descobrirAbas(sondar, HOJE)).toEqual([]);
+    expect(vistas.length).toBeLessThanOrEqual(12);
+  });
 });
