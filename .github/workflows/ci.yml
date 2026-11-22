@@ -14,14 +14,20 @@ concurrency:
 
 # Duas escolhas valem para os dois jobs abaixo:
 #
-# Node 24 é o LTS ativo. O 20 encerrou em 30/04/2026 — o CI vinha construindo o
-# site em Node fora de suporte — e o 22 já está em manutenção, então pararia
-# aqui de novo em pouco tempo.
+# A versão do Node não é escrita aqui: os dois jobs leem o `.nvmrc` da raiz.
+# Assim o número existe em um lugar só, e quem clona o repositório pega o mesmo
+# que o CI usa em vez de descobrir a divergência quando algo quebra.
+#
+# O número é 24, e ficar nele é escolha, não inércia: entrou em manutenção em
+# 20/10/2026 — o LTS ativo desde 28/10 é o 26 —, mas tem suporte até
+# 30/04/2028. Subir agora gastaria o trabalho sem ganho nenhum.
 #
 # O runner é preso numa versão em vez de `ubuntu-latest` porque a suíte de tela
 # tem teste de visual e de contraste, e sistema novo muda desenho de fonte.
-# Assim a subida para o Ubuntu 26, que o rótulo `latest` faz sozinho em
-# 19/10/2026, vira um pull request em que se vê o que quebra — e não uma
+# O GitHub está migrando o rótulo `latest` para o Ubuntu 26 desde 19/10/2026;
+# a conclusão estava prevista para 19/11 e, em 22/11, ainda não aconteceu —
+# `ubuntu-latest` segue resolvendo para a 24.04. Com o pino, a data deixa de
+# importar: a subida vira um pull request em que se vê o que quebra, e não uma
 # segunda-feira em que a suíte fica vermelha sem ninguém ter tocado no código.
 jobs:
   verificar:
@@ -34,7 +40,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Instalar dependências
@@ -76,7 +82,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Instalar dependências
