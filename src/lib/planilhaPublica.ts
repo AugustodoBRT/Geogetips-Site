@@ -108,30 +108,64 @@ export function pertenceAoMes(linhas: string[][], mes: number, ano2: number): bo
   return Array.from(porMes.values()).every((n) => n <= doEsperado);
 }
 
-export interface AbaPublica {
+interface AbaPublica {
   aba: string;
   linhas: string[][];
 }
 
 /**
- * Lê uma aba pública. Devolve null quando o conteúdo não corresponde ao mês
- * pedido — ou seja, quando o gviz caiu na aba padrão.
+ * Por que a leitura não deu certo.
+ *
+ * As três são coisas diferentes e exigem respostas diferentes, e foi por
+ * devolver `null` para as três que o site passou meses podendo acusar a causa
+ * errada: em 01/10/2026 o antivírus interceptou o HTTPS, o Node recusou o
+ * certificado, e a tela mandou conferir o compartilhamento de uma planilha que
+ * estava pública.
+ *
+ * - `nao-publica`: o gviz devolveu HTML. A planilha não está compartilhada.
+ * - `outro-mes`: veio a aba-fallback do gviz. A aba pedida **não existe**, e
+ *   esta é a única das três que é resposta definitiva sobre a aba.
+ * - `falhou`: não deu para ler — HTTP ruim, rede, DNS, certificado, tempo
+ *   esgotado. Não diz nada sobre a aba existir ou não.
+ */
+export type MotivoDeFalha = "nao-publica" | "outro-mes" | "falhou";
+
+export type LeituraPublica =
+  | ({ ok: true } & AbaPublica)
+  | { ok: false; motivo: MotivoDeFalha; detalhe?: string };
+
+/**
+ * Lê uma aba pública e, quando não dá certo, diz por quê.
+ *
+ * Nunca lança: o erro de rede vira `motivo: "falhou"` com a causa em
+ * `detalhe`, para quem chama decidir o que fazer com a informação em vez de
+ * descobri-la por exclusão.
  */
 export async function lerAbaPublica(
   spreadsheetId: string,
   aba: string,
   mesEsperado?: { mes: number; ano2: number }
-): Promise<AbaPublica | null> {
-  const res = await fetch(urlCsvDaAba(spreadsheetId, aba), {
-    // Deixa o cache do Next tomar conta; sem isto cada render refaz a chamada
-    next: { revalidate: 60 },
-  });
+): Promise<LeituraPublica> {
+  let res: Response;
+  try {
+    res = await fetch(urlCsvDaAba(spreadsheetId, aba), {
+      // Deixa o cache do Next tomar conta; sem isto cada render refaz a chamada
+      next: { revalidate: 60 },
+    });
+  } catch (erro) {
+    const detalhe = erro instanceof Error ? erro.message : String(erro);
+    return { ok: false, motivo: "falhou", detalhe };
+  }
 
-  if (!res.ok) return null;
+  if (!res.ok) {
+    return { ok: false, motivo: "falhou", detalhe: `HTTP ${res.status}` };
+  }
 
   const texto = await res.text();
   // O gviz devolve HTML quando a planilha não é pública
-  if (texto.trimStart().startsWith("<")) return null;
+  if (texto.trimStart().startsWith("<")) {
+    return { ok: false, motivo: "nao-publica" };
+  }
 
   const todas = parseCsv(texto);
   // O gviz já consome a linha de cabeçalho da planilha e devolve os dados a
@@ -140,8 +174,8 @@ export async function lerAbaPublica(
   const linhas = todas.slice(1).filter((l) => l.some((c) => c.trim() !== ""));
 
   if (mesEsperado && !pertenceAoMes(linhas, mesEsperado.mes, mesEsperado.ano2)) {
-    return null;
+    return { ok: false, motivo: "outro-mes" };
   }
 
-  return { aba, linhas };
+  return { ok: true, aba, linhas };
 }

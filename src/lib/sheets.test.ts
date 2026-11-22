@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   descobrirAbas,
   linhasParaBets,
@@ -6,7 +6,9 @@ import {
   parseCurrency,
   parseOdd,
   parseResultado,
+  sondarAba,
 } from "./sheets";
+import type { LeituraPublica } from "./planilhaPublica";
 import type { BetItem } from "./types";
 
 /**
@@ -452,5 +454,110 @@ describe("descobrirAbas", () => {
     const { sondar, vistas } = comAbas([]);
     expect(await descobrirAbas(sondar, HOJE)).toEqual([]);
     expect(vistas.length).toBeLessThanOrEqual(12);
+  });
+
+  it("deixa a falha de leitura subir em vez de engolir a aba", async () => {
+    // O ponto do conserto: sondagem que falha não pode virar "mês vazio". Se
+    // virasse, três delas seguidas truncariam o histórico em silêncio.
+    const sondar = async (aba: string) => {
+      if (aba === "Julho26") throw new Error("Não foi possível ler a planilha agora.");
+      return ["Setembro26", "Agosto26"].includes(aba);
+    };
+    await expect(descobrirAbas(sondar, HOJE)).rejects.toThrow(
+      "Não foi possível ler a planilha agora."
+    );
+  });
+});
+
+/**
+ * A política da sondagem: o que é resposta definitiva sobre a aba, o que é
+ * oscilação que merece outra tentativa, e o que vira erro.
+ *
+ * Em 01/10/2026 um `catch { return false }` transformou certificado recusado
+ * em "a aba não existe", e a tela mandou conferir o compartilhamento de uma
+ * planilha que estava pública. Estes testes são o que impede a volta disso.
+ */
+describe("sondarAba", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  /** Um leitor falso que devolve as respostas na ordem, e conta as chamadas. */
+  function leitor(...respostas: LeituraPublica[]) {
+    let i = 0;
+    const ler = vi.fn(async () => respostas[Math.min(i++, respostas.length - 1)]);
+    return ler;
+  }
+
+  const COM_LINHA: LeituraPublica = {
+    ok: true,
+    aba: "Setembro26",
+    linhas: [["", "03/09/2026"]],
+  };
+
+  it("diz que existe quando a aba volta com linha", async () => {
+    const ler = leitor(COM_LINHA);
+    expect(await sondarAba("Setembro26", ler)).toBe(true);
+    expect(ler).toHaveBeenCalledTimes(1);
+  });
+
+  it("diz que não existe quando veio a aba-fallback, e não repete", async () => {
+    // "outro-mes" é resposta definitiva sobre a aba: repetir é requisição à toa.
+    const ler = leitor({ ok: false, motivo: "outro-mes" });
+    expect(await sondarAba("Novembro26", ler)).toBe(false);
+    expect(ler).toHaveBeenCalledTimes(1);
+  });
+
+  it("engole a oscilação: falha seguida de sucesso não vira erro", async () => {
+    const ler = leitor({ ok: false, motivo: "falhou", detalhe: "HTTP 429" }, COM_LINHA);
+    expect(await sondarAba("Setembro26", ler)).toBe(true);
+    expect(ler).toHaveBeenCalledTimes(2);
+  });
+
+  it("lança quando a falha sobrevive às tentativas, sem citar compartilhamento", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const ler = leitor({
+      ok: false,
+      motivo: "falhou",
+      detalhe: "unable to verify the first certificate",
+    });
+    await expect(sondarAba("Setembro26", ler)).rejects.toThrow(
+      "Não foi possível ler a planilha agora."
+    );
+    expect(ler).toHaveBeenCalledTimes(2);
+  });
+
+  it("põe a causa real no log do servidor, não na tela", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const ler = leitor({
+      ok: false,
+      motivo: "falhou",
+      detalhe: "unable to verify the first certificate",
+    });
+    await expect(sondarAba("Setembro26", ler)).rejects.toThrow();
+    expect(log.mock.calls[0][0]).toContain("unable to verify the first certificate");
+  });
+
+  it("acusa o compartilhamento só quando é mesmo isso, e sem repetir", async () => {
+    // A única situação em que a frase antiga era verdadeira. Página de login
+    // não muda na segunda tentativa: repetir dobraria o lote inteiro.
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const ler = leitor({ ok: false, motivo: "nao-publica" });
+    await expect(sondarAba("Setembro26", ler)).rejects.toThrow(
+      "A planilha não está compartilhada por link."
+    );
+    expect(ler).toHaveBeenCalledTimes(1);
+  });
+
+  it("não deixa nome de variável de ambiente chegar na mensagem", async () => {
+    // O visitante lia "configure GOOGLE_SERVICE_ACCOUNT_JSON" dentro de uma
+    // caixa vermelha. Não há conta de serviço configurada neste projeto.
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    for (const motivo of ["falhou", "nao-publica"] as const) {
+      const ler = leitor({ ok: false, motivo });
+      await expect(sondarAba("Setembro26", ler)).rejects.toThrow(
+        expect.not.stringContaining("GOOGLE_SERVICE_ACCOUNT_JSON")
+      );
+    }
   });
 });

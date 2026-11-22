@@ -10,7 +10,11 @@ import {
 } from "./constants";
 import { inicioDeHoje, parseDateTimestamp } from "./date";
 import { computeStatsFromBets } from "./stats";
-import { lerAbaPublica } from "./planilhaPublica";
+import {
+  lerAbaPublica,
+  type LeituraPublica,
+  type MotivoDeFalha,
+} from "./planilhaPublica";
 import { GRUPO_PADRAO, GRUPOS, type Grupo, type IdGrupo } from "./grupos";
 
 export { computeStatsFromBets };
@@ -349,21 +353,71 @@ export async function descobrirAbas(
   return encontradas;
 }
 
+/**
+ * Quantas vezes a sondagem tenta antes de desistir.
+ *
+ * A varredura dispara `LOTE_DE_SONDAGEM` requisições em paralelo, que é
+ * justamente a forma que mais provoca resposta 429 do gviz — falha isolada não
+ * é rara aqui. Uma segunda tentativa absorve a oscilação; o que sobrevive a
+ * duas é condição persistente, e aí merece virar erro.
+ */
+const TENTATIVAS_DE_SONDAGEM = 2;
+
+/** A frase que chega à tela, por causa. Nunca acusa o que não foi apurado. */
+function mensagemDeFalha(motivo?: MotivoDeFalha): string {
+  if (motivo === "nao-publica") {
+    return "A planilha não está compartilhada por link.";
+  }
+  return "Não foi possível ler a planilha agora.";
+}
+
+/**
+ * O núcleo da sondagem, sem rede: recebe o leitor por parâmetro, como
+ * `descobrirAbas` recebe a sondagem, para poder ser testado.
+ *
+ * Só devolve `false` quando tem resposta definitiva de que a aba não existe.
+ * Falha de leitura **lança**, e é de propósito: se virasse `false`, a varredura
+ * a contaria como mês vazio, e três delas seguidas truncariam o histórico sem
+ * nada na tela dizer por quê — a mesma perda silenciosa que a regra dos três
+ * meses vazios existe para evitar.
+ */
+export async function sondarAba(
+  aba: string,
+  ler: () => Promise<LeituraPublica>
+): Promise<boolean> {
+  let ultima: { motivo: MotivoDeFalha; detalhe?: string } | undefined;
+
+  for (let tentativa = 0; tentativa < TENTATIVAS_DE_SONDAGEM; tentativa++) {
+    const r = await ler();
+
+    if (r.ok) return r.linhas.length > 0;
+    // Resposta definitiva sobre a aba: ela não existe. Repetir não muda nada.
+    if (r.motivo === "outro-mes") return false;
+
+    ultima = { motivo: r.motivo, detalhe: r.detalhe };
+    // Também definitiva, do outro lado: o gviz devolveu a página de login, e
+    // a planilha vai continuar não compartilhada na segunda tentativa. Repetir
+    // só dobraria as requisições do lote inteiro.
+    if (r.motivo === "nao-publica") break;
+  }
+
+  console.error(
+    `Sondagem da aba "${aba}" falhou depois de ${TENTATIVAS_DE_SONDAGEM} tentativas ` +
+      `(${ultima?.motivo}): ${ultima?.detalhe ?? "sem detalhe"}`
+  );
+  throw new Error(mensagemDeFalha(ultima?.motivo));
+}
+
 /** Sondagem de verdade: a aba existe e tem linha do mês que deveria conter. */
 async function existeAbaPublica(planilha: string, aba: string): Promise<boolean> {
   const ordem = ordemDaAba(aba);
   if (ordem <= 0) return false;
   const mes = ordem % 100;
   const ano2 = Math.floor(ordem / 100) % 100;
-  try {
-    // O mês esperado não é zelo à toa: quando a aba não existe, o gviz devolve
-    // a PRIMEIRA aba da planilha em vez de erro. Sem a conferência, a varredura
-    // acharia que todos os meses existem.
-    const r = await lerAbaPublica(planilha, aba, { mes, ano2 });
-    return Boolean(r && r.linhas.length > 0);
-  } catch {
-    return false;
-  }
+  // O mês esperado não é zelo à toa: quando a aba não existe, o gviz devolve a
+  // PRIMEIRA aba da planilha em vez de erro. Sem a conferência, a varredura
+  // acharia que todos os meses existem.
+  return sondarAba(aba, () => lerAbaPublica(planilha, aba, { mes, ano2 }));
 }
 
 function getAvailableTabsPublico(planilha: string): Promise<string[]> {
@@ -379,12 +433,12 @@ export async function getAvailableTabs(grupo: IdGrupo = GRUPO_PADRAO): Promise<s
   }
 
   if (!temCredencial()) {
+    // Chegar aqui com lista vazia só é possível depois de toda sondagem ter
+    // respondido: as que falham lançam de dentro de `existeAbaPublica`. Então
+    // a planilha respondeu, é legível, e simplesmente não tem aba de mês.
     const publicas = await getAvailableTabsPublico(planilha);
     if (publicas.length === 0) {
-      throw new Error(
-        "Não foi possível ler a planilha publicamente. Confirme que ela está " +
-          "compartilhada por link, ou configure GOOGLE_SERVICE_ACCOUNT_JSON."
-      );
+      throw new Error("A planilha respondeu, mas não tem nenhuma aba de mês.");
     }
     publicas.sort((a, b) => ordemDaAba(b) - ordemDaAba(a));
     cacheTabs.set(planilha, { tabs: publicas, timestamp: now });
@@ -442,8 +496,17 @@ export async function getBetsFromTab(
       tab,
       ordem > 0 ? { mes: ordem % 100, ano2: Math.floor(ordem / 100) % 100 } : undefined
     );
-    if (!publica) {
-      throw new Error(`Aba "${tab}" não encontrada na planilha pública.`);
+    if (!publica.ok) {
+      // Mesma separação da sondagem: só "outro-mes" afirma algo sobre a aba.
+      // As outras duas são sobre a leitura, e dizer "não encontrada" nelas foi
+      // o que mandou procurar a aba quando o problema era o certificado.
+      if (publica.motivo === "outro-mes") {
+        throw new Error(`Aba "${tab}" não encontrada na planilha pública.`);
+      }
+      console.error(
+        `Leitura da aba "${tab}" falhou (${publica.motivo}): ${publica.detalhe ?? "sem detalhe"}`
+      );
+      throw new Error(mensagemDeFalha(publica.motivo));
     }
     // A leitura pública traz a linha inteira; recorta de B (índice 1) até L
     rows = publica.linhas.map((l) => l.slice(1, 12));
