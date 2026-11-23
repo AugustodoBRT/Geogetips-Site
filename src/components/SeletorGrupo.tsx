@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock3 } from "lucide-react";
-import { doISO } from "@/lib/date";
+import { doISO, isoDoTimestamp } from "@/lib/date";
 import { type Grupo, grupoDoId, type IdGrupo, ultimoDiaVisivel } from "@/lib/grupos";
 
 /**
@@ -57,8 +57,10 @@ export function AvisoAtraso({ grupo }: { grupo: IdGrupo }) {
   const { nome, atrasoDias } = grupoDoId(grupo);
   if (atrasoDias <= 0) return null;
 
-  const limite = new Date(ultimoDiaVisivel(atrasoDias));
-  const iso = `${limite.getFullYear()}-${String(limite.getMonth() + 1).padStart(2, "0")}-${String(limite.getDate()).padStart(2, "0")}`;
+  // `isoDoTimestamp` e não acessor local: `ultimoDiaVisivel` devolve meia-noite
+  // UTC, e `getDate()` aqui mostraria o dia anterior para quem lê a oeste de
+  // Greenwich. Ver a convenção no topo de lib/date.ts.
+  const iso = isoDoTimestamp(ultimoDiaVisivel(atrasoDias));
 
   return (
     <div

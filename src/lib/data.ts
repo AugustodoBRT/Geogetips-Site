@@ -1,3 +1,4 @@
+import { doISO, inicioDeHoje, isoDoTimestamp, MS_POR_DIA } from "./date";
 import type { BetItem } from "./types";
 
 // Dados de demonstração. Só são servidos quando NEXT_PUBLIC_USE_MOCK=1 —
@@ -235,11 +236,13 @@ export const MOCK_RESUMO_MESES = [
  * testes de tela conferem isso.
  */
 export function apostasDemonstracaoSigma(ref: Date = new Date()): BetItem[] {
-  const dia = (atras: number) => {
-    const d = new Date(ref);
-    d.setDate(d.getDate() - atras);
-    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-  };
+  // "Hoje" aqui tem de ser o mesmo "hoje" que o atraso do grupo usa para
+  // esconder — `ultimoDiaVisivel`, que sai de `inicioDeHoje`. Com o relógio do
+  // processo, entre 21h e meia-noite de São Paulo um servidor em UTC já virou o
+  // dia e `dia(0)` devolvia a data de amanhã: as duas apostas que existem para
+  // o atraso ter o que esconder caíam do outro lado da fronteira.
+  const dia = (atras: number) =>
+    doISO(isoDoTimestamp(inicioDeHoje(ref) - atras * MS_POR_DIA));
   const recentes: BetItem[] = [
     {
       id: "sigma-hoje",
