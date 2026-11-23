@@ -1,13 +1,59 @@
-/** Formatação pt-BR centralizada — evita o `.toFixed(2).replace(".", ",")` espalhado. */
+/**
+ * Formatação de número centralizada.
+ *
+ * ## A decisão mora aqui, e num lugar só
+ *
+ * `LOCALE_DOS_NUMEROS` decide separador decimal, separador de milhar e símbolo
+ * de moeda de tudo que o site **escreve**. Virar essa linha vira a página
+ * inteira — é para isso que ela existe, e é por isso que nenhum outro arquivo
+ * de `src` escreve locale literal.
+ *
+ * `DECIMAL` é **derivado** do locale, nunca escrito à mão: separador literal ao
+ * lado de um nome de locale é a forma mais fácil de os dois discordarem.
+ *
+ * ## Por que o `toFixed` continua aqui, em vez de virar `Intl`
+ *
+ * Parece melhoria óbvia trocar os `toFixed` abaixo pelo `Intl`, que já segue o
+ * locale. Medido antes de confiar: os dois arredondam diferente, porque o
+ * `toFixed` enxerga a representação binária e o `Intl` não. `0,015` vira "0,01"
+ * num e "0,02" no outro — 960 divergências em 200 mil valores.
+ *
+ * E não é caso de borda aqui: `stake.unidades` nasce de multiplicação crua em
+ * `calculadora.ts` e `mediaDeApostasPorDia` de divisão crua em `risco.ts`, então
+ * a troca mudaria dígito na tela da calculadora e do bloco de risco, sem nenhum
+ * teste de hoje reclamar. Fica como está.
+ *
+ * Onde o valor **já chega arredondado** o `Intl` é seguro, e aí ele é usado:
+ * `taxaDeAcerto` (stats.ts) devolve uma casa, e é o que `formatarTaxa` recebe.
+ */
 
-const BRL = new Intl.NumberFormat("pt-BR", {
+/** A única decisão: virar esta linha vira separador, milhar e símbolo de moeda. */
+export const LOCALE_DOS_NUMEROS = "pt-BR";
+
+/**
+ * O locale que os **campos** leem e escrevem, separado do de exibição de
+ * propósito.
+ *
+ * Ele vira junto com os três ramos de `lerNumeroBR`, nunca sozinho: hoje
+ * "1,000" vale 1 e "1.500,50" vale 1500,5, e trocar só o nome do locale
+ * deixaria a leitura mentindo em silêncio. O conserto da entrada é issue
+ * própria; esta constante existe para ela ter onde chegar.
+ */
+export const LOCALE_DE_ENTRADA = "pt-BR";
+
+const MOEDA = "BRL" as const;
+
+/** O separador decimal do locale, perguntado a ele: "1,1" sem os dígitos. */
+const DECIMAL = (1.1).toLocaleString(LOCALE_DOS_NUMEROS).replace(/\d/g, "");
+
+const BRL = new Intl.NumberFormat(LOCALE_DOS_NUMEROS, {
   style: "currency",
-  currency: "BRL",
+  currency: MOEDA,
 });
 
-const BRL_SINAL = new Intl.NumberFormat("pt-BR", {
+const BRL_SINAL = new Intl.NumberFormat(LOCALE_DOS_NUMEROS, {
   style: "currency",
-  currency: "BRL",
+  currency: MOEDA,
   signDisplay: "exceptZero",
 });
 
@@ -37,7 +83,7 @@ export function formatarReaisComSinal(valor: number): string {
  */
 export const FORMATO_REAIS_COM_SINAL = {
   style: "currency",
-  currency: "BRL",
+  currency: MOEDA,
   signDisplay: "exceptZero",
 } as const satisfies Intl.NumberFormatOptions;
 
@@ -76,11 +122,48 @@ export function varDoValor(valor: number): string {
   return valor > 0 ? "var(--green)" : "var(--red)";
 }
 
-const PORCENTAGEM = new Intl.NumberFormat("pt-BR", FORMATO_ROI);
+const PORCENTAGEM = new Intl.NumberFormat(LOCALE_DOS_NUMEROS, FORMATO_ROI);
 
 /** "+9,69%", "-9,17%" e "0,00%" — o zero sem sinal, como nos reais. */
 export function formatarPorcentagem(valor: number): string {
   return `${PORCENTAGEM.format(valor)}%`;
+}
+
+const TAXA = new Intl.NumberFormat(LOCALE_DOS_NUMEROS, FORMATO_TAXA);
+
+/**
+ * 68.2 -> "68,2%". O mesmo `FORMATO_TAXA` do KPI animado, para o número da
+ * tabela e o do cartão não discordarem na primeira casa.
+ *
+ * Aqui o `Intl` é seguro, ao contrário do resto do arquivo: `taxaDeAcerto`
+ * (stats.ts) já devolve o valor com uma casa, então não sobra meio caminho para
+ * arredondar de novo. Conferido contra o `toFixed(1)` que estava espalhado pelas
+ * telas, em 160.801 combinações de green e red: nenhuma divergência.
+ */
+export function formatarTaxa(valor: number): string {
+  return `${TAXA.format(valor)}%`;
+}
+
+/**
+ * Decimal sem separador de milhar, com o arredondamento do `toFixed` — que é o
+ * que a tela já mostrava. `(1.4, 1)` -> "1,4", `(2, 2)` -> "2,00".
+ *
+ * É o **único** lugar do módulo que escreve o separador, e ele vem de `DECIMAL`.
+ */
+export function formatarDecimal(valor: number, casas = 2): string {
+  return valor.toFixed(casas).replace(".", DECIMAL);
+}
+
+/**
+ * Quantas casas a odd pede: três quando a terceira existe, duas quando não.
+ *
+ * É regra de domínio, sem separador dentro — e é o que deixa a tela e o CSV
+ * compartilharem a decisão sem compartilharem o locale. O CSV sai em formato
+ * de Excel brasileiro por motivo próprio (ver csv.ts) e não pode virar de
+ * carona com a página.
+ */
+export function casasDaOdd(odd: number): 2 | 3 {
+  return odd.toFixed(3).endsWith("0") ? 2 : 3;
 }
 
 /**
@@ -92,7 +175,7 @@ export function ehZero(valor: number): boolean {
   return Math.abs(valor) < 0.005;
 }
 
-const INTEIRO = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
+const INTEIRO = new Intl.NumberFormat(LOCALE_DOS_NUMEROS, { maximumFractionDigits: 0 });
 
 /**
  * Contagem inteira com separador de milhar.
@@ -148,9 +231,25 @@ export function lerNumeroBR(texto: string): number | null {
   return n;
 }
 
+/**
+ * O par de escrita do `lerNumeroBR`: escreve a unidade como se escreve
+ * dinheiro, sem o "R$" que já está no campo. 1000 vira "1.000" e 1500.5 vira
+ * "1.500,50" — e não "1.500,5", que parece valor pela metade.
+ *
+ * Mora aqui, e não no componente do campo, porque é o inverso exato da função
+ * logo acima: as duas têm de virar juntas, e separadas uma esquece a outra.
+ * Por isso lê `LOCALE_DE_ENTRADA`, e não o locale de exibição.
+ */
+export function escreverUnidade(valor: number): string {
+  return valor.toLocaleString(LOCALE_DE_ENTRADA, {
+    minimumFractionDigits: Number.isInteger(valor) ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 /** 1.72 -> "1,72" */
 export function formatarOdd(odd: number): string {
-  return odd.toFixed(2).replace(".", ",");
+  return formatarDecimal(odd, 2);
 }
 
 /**
@@ -159,8 +258,7 @@ export function formatarOdd(odd: number): string {
  * calculadora, que aceita três casas: com duas, 1,875 viraria "1,88".
  */
 export function formatarOddExata(odd: number): string {
-  const tres = odd.toFixed(3);
-  return (tres.endsWith("0") ? odd.toFixed(2) : tres).replace(".", ",");
+  return formatarDecimal(odd, casasDaOdd(odd));
 }
 
 /**
@@ -172,13 +270,22 @@ export function formatarOddExata(odd: number): string {
  * acima de 2,78".
  */
 export function formatarOddJusta(odd: number): string {
-  return odd.toFixed(3).replace(".", ",");
+  return formatarDecimal(odd, 3);
 }
 
-/** 2.5 -> "+2,50u"  ·  -1.25 -> "-1,25u"  ·  0 -> "0,00u", sem sinal, como nos reais. */
+/**
+ * 2.5 -> "+2,50u"  ·  -1.25 -> "-1,25u"  ·  0 -> "0,00u", sem sinal, como nos reais.
+ *
+ * O zero é decidido por `ehZero`, e não comparando o texto contra "0,00" como
+ * antes: ali o separador estava no **fluxo de controle**, não só na saída, e
+ * bastava trocá-lo para o zero voltar a receber sinal — em silêncio, que é o
+ * pior jeito de "zero não é lucro" quebrar. As duas regras coincidem hoje
+ * (`abs.toFixed(2) === "0.00"` vale exatamente para `abs < 0,005`), então esta
+ * troca não muda nada na tela; ela só tira o literal do caminho.
+ */
 export function formatarUnidades(unidades: number): string {
-  const tamanho = Math.abs(unidades).toFixed(2).replace(".", ",");
-  if (tamanho === "0,00") return "0,00u";
+  const tamanho = formatarDecimal(Math.abs(unidades), 2);
+  if (ehZero(unidades)) return `${tamanho}u`;
   return `${unidades > 0 ? "+" : "-"}${tamanho}u`;
 }
 
@@ -187,7 +294,7 @@ export function formatarUnidades(unidades: number): string {
  * leva o sinal e a cor. "-R$ 935,00 (-9,35u)" diria o sinal duas vezes.
  */
 export function formatarUnidadesSemSinal(unidades: number): string {
-  return `${Math.abs(unidades).toFixed(2).replace(".", ",")}u`;
+  return `${formatarDecimal(Math.abs(unidades), 2)}u`;
 }
 
 /**

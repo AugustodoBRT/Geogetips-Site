@@ -1,5 +1,5 @@
 import { rotuloDaAba } from "./constants";
-import { formatarOddExata } from "./format";
+import { casasDaOdd } from "./format";
 import { GRUPO_PADRAO, type IdGrupo } from "./grupos";
 import type { BetItem } from "./types";
 
@@ -12,7 +12,23 @@ import type { BetItem } from "./types";
  */
 
 const BOM = "﻿";
-const SEPARADOR = ";";
+
+/**
+ * O formato do arquivo, que é do Excel brasileiro e **não** segue o
+ * `LOCALE_DOS_NUMEROS` da tela.
+ *
+ * Os dois valores são um só assunto: o ponto e vírgula separa coluna porque a
+ * vírgula já é o decimal. No dia em que a página virar o separador decimal,
+ * este arquivo não vira junto — quem abre a planilha baixada é o Excel de quem
+ * baixou, não a página. Por isso a constante mora aqui, e por isso a coluna
+ * Odd deixou de reusar `formatarOddExata`, que é formatação de tela.
+ */
+const FORMATO_DO_EXCEL = { decimal: ",", campo: ";" } as const;
+
+const SEPARADOR = FORMATO_DO_EXCEL.campo;
+
+/** Precisa de aspas: separador de coluna, aspas ou quebra de linha dentro. */
+const PRECISA_DE_ASPAS = new RegExp(`["${FORMATO_DO_EXCEL.campo}\\r\\n]`);
 
 /**
  * Uma célula de texto pronta para o CSV.
@@ -26,12 +42,12 @@ const SEPARADOR = ";";
  */
 export function celula(texto: string): string {
   const seguro = /^[=+\-@\t\r]/.test(texto) ? `'${texto}` : texto;
-  return /[";\r\n]/.test(seguro) ? `"${seguro.replace(/"/g, '""')}"` : seguro;
+  return PRECISA_DE_ASPAS.test(seguro) ? `"${seguro.replace(/"/g, '""')}"` : seguro;
 }
 
 /** Número com vírgula decimal e sem milhar, que o Excel em português lê como número. */
 export function numero(valor: number, casas = 2): string {
-  return valor.toFixed(casas).replace(".", ",");
+  return valor.toFixed(casas).replace(".", FORMATO_DO_EXCEL.decimal);
 }
 
 const CABECALHO = [
@@ -69,7 +85,7 @@ export function apostasParaCsv(
       celula(b.partida),
       celula(b.tip),
       celula(b.casa),
-      formatarOddExata(b.odd),
+      numero(b.odd, casasDaOdd(b.odd)),
       numero(converter(b.valor)),
       b.resultado,
       numero(converter(b.lucro)),

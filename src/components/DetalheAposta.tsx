@@ -10,6 +10,7 @@ import {
   formatarOddExata,
   formatarReais,
   formatarReaisComSinal,
+  formatarUnidadesSemSinal,
 } from "@/lib/format";
 
 interface DetalheApostaProps {
@@ -114,7 +115,7 @@ export function DetalheAposta({
               {formatarReais(converter(bet.valor))}
             </div>
             <div className="text-[10px] text-[var(--text-3)] mt-0.5">
-              {bet.unidades.toFixed(2).replace(".", ",")}u
+              {formatarUnidadesSemSinal(bet.unidades)}
             </div>
           </div>
 

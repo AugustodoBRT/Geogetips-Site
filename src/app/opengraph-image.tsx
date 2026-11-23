@@ -5,7 +5,7 @@ import { getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
 import { computeStatsFromBets } from "@/lib/stats";
 import { MOCK_BETS } from "@/lib/data";
 import { ABA_TODOS } from "@/lib/constants";
-import { ehZero, formatarInteiro, formatarUnidades } from "@/lib/format";
+import { ehZero, formatarInteiro, formatarTaxa, formatarUnidades } from "@/lib/format";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -73,7 +73,7 @@ export default async function OpenGraphImage() {
           },
           {
             rotulo: "TAXA DE ACERTO",
-            valor: `${stats.taxaAcerto.toFixed(1).replace(".", ",")}%`,
+            valor: formatarTaxa(stats.taxaAcerto),
             cor: CORES.text,
           },
           {

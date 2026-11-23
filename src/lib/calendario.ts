@@ -1,5 +1,6 @@
 import { ordemDaAba } from "./constants";
 import { inicioDeHoje, paraISO, parseDateTimestamp } from "./date";
+import { formatarDecimal } from "./format";
 import type { BetItem } from "./types";
 
 /**
@@ -166,6 +167,9 @@ export function compacto(valor: number): string {
   // célula: "+0", que diz lucro onde não houve.
   const sinal = inteiro === 0 ? "" : valor > 0 ? "+" : "-";
   if (inteiro < 1000) return `${sinal}${inteiro}`;
-  const mil = (Math.round(abs / 100) / 10).toString().replace(".", ",");
+  // Décimos de milhar, e a casa decimal só quando ela diz alguma coisa:
+  // 2300 vira "2,3k" e 12000 vira "12k", não "12,0k".
+  const decimos = Math.round(abs / 100);
+  const mil = formatarDecimal(decimos / 10, decimos % 10 === 0 ? 0 : 1);
   return `${sinal}${mil}k`;
 }

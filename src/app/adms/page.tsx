@@ -23,6 +23,8 @@ import {
   formatarPorcentagem,
   formatarReaisComSinal,
   formatarUnidades,
+  formatarOdd,
+  formatarTaxa,
 } from "@/lib/format";
 import { useUnidade } from "@/hooks/useUnidade";
 import { trechoDaAba } from "@/lib/constants";
@@ -204,7 +206,7 @@ export default function AdmsPage() {
                         Acerto
                       </div>
                       <div className="font-mono text-base font-bold text-[var(--text)] mt-0.5">
-                        {adm.taxaAcerto.toFixed(1).replace(".", ",")}%
+                        {formatarTaxa(adm.taxaAcerto)}
                       </div>
                     </div>
                     <div>
@@ -247,7 +249,7 @@ export default function AdmsPage() {
                       <span>Composição das tips</span>
                       {adm.oddMedia > 0 && (
                         <span className="font-normal">
-                          odd média {adm.oddMedia.toFixed(2).replace(".", ",")}
+                          odd média {formatarOdd(adm.oddMedia)}
                         </span>
                       )}
                     </div>
@@ -370,8 +372,7 @@ function Recorte({
                 {casa ? <BookieBadge bookie={i.nome} /> : <SportBadge sport={i.nome} />}
                 <div className="text-[10.5px] text-[var(--text-3)] whitespace-nowrap">
                   {formatarInteiro(i.apostas)} {i.apostas === 1 ? "aposta" : "apostas"} ·{" "}
-                  {i.taxaAcerto.toFixed(1).replace(".", ",")}% acerto · ROI{" "}
-                  {formatarPorcentagem(i.roi)}
+                  {formatarTaxa(i.taxaAcerto)} acerto · ROI {formatarPorcentagem(i.roi)}
                 </div>
               </div>
               <span

@@ -588,11 +588,7 @@ export default function ApostasPage() {
                   : "text-[var(--red)]"
             }`}
           >
-            <NumeroAnimado
-              value={resumo.lucro}
-              locales="pt-BR"
-              format={FORMATO_REAIS_COM_SINAL}
-            />
+            <NumeroAnimado value={resumo.lucro} format={FORMATO_REAIS_COM_SINAL} />
           </div>
         </div>
 
@@ -619,12 +615,7 @@ export default function ApostasPage() {
           </div>
           <div className="font-mono text-xl sm:text-2xl font-bold text-[var(--text)] mt-1 tracking-tight">
             {resumo.greens + resumo.reds > 0 ? (
-              <NumeroAnimado
-                value={resumo.taxa}
-                locales="pt-BR"
-                format={FORMATO_TAXA}
-                suffix="%"
-              />
+              <NumeroAnimado value={resumo.taxa} format={FORMATO_TAXA} suffix="%" />
             ) : (
               "—"
             )}
@@ -646,12 +637,7 @@ export default function ApostasPage() {
             }`}
           >
             {resumo.greens + resumo.reds > 0 ? (
-              <NumeroAnimado
-                value={resumo.roi}
-                locales="pt-BR"
-                format={FORMATO_ROI}
-                suffix="%"
-              />
+              <NumeroAnimado value={resumo.roi} format={FORMATO_ROI} suffix="%" />
             ) : (
               "—"
             )}

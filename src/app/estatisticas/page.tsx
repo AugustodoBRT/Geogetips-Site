@@ -27,6 +27,7 @@ import {
   formatarReais,
   formatarReaisComSinal,
   percentuaisRedondos,
+  formatarTaxa,
 } from "@/lib/format";
 import { rotuloDaAba, trechoDaAba } from "@/lib/constants";
 import { abaDoEndereco, abaParaEndereco } from "@/lib/endereco";
@@ -235,7 +236,7 @@ export default function EstatisticasPage() {
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="font-serif text-3xl text-[var(--text)] tracking-tight leading-none">
-                      <NumeroAnimado value={totalBets} locales="pt-BR" />
+                      <NumeroAnimado value={totalBets} />
                     </span>
                     <span className="text-[10.5px] uppercase tracking-wider text-[var(--text-3)] font-bold mt-1">
                       Apostas
@@ -356,7 +357,6 @@ export default function EstatisticasPage() {
                       {bloco.valor > 0 ? (
                         <NumeroAnimado
                           value={bloco.valor}
-                          locales="pt-BR"
                           format={{
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
@@ -573,7 +573,7 @@ export default function EstatisticasPage() {
                       {formatarInteiro(s.apostas)}
                     </td>
                     <td className="py-2.5 px-1.5 sm:px-3 text-right font-mono text-[var(--text-2)] hidden sm:table-cell">
-                      {s.taxaAcerto.toFixed(1).replace(".", ",")}%
+                      {formatarTaxa(s.taxaAcerto)}
                     </td>
                     <td
                       className={`py-2.5 px-1.5 sm:px-3 text-right font-mono font-bold ${corDoValor(

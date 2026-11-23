@@ -1,7 +1,12 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   UNIDADE_MAXIMA,
+  casasDaOdd,
+  formatarDecimal,
   formatarInteiro,
+  formatarTaxa,
   corDoValor,
   ehZero,
   formatarOdd,
@@ -237,5 +242,142 @@ describe("tamanhoDoValor compacto", () => {
 
   it("sem o modo compacto, nada muda", () => {
     expect(tamanhoDoValor("+R$ 12.212,95")).toBe("text-2xl sm:text-3xl");
+  });
+});
+
+/**
+ * A guarda da convenção (#126).
+ *
+ * O módulo promete uma coisa: a decisão de separador, milhar e moeda mora em
+ * `LOCALE_DOS_NUMEROS`, e nenhum outro arquivo de `src` escreve separador à
+ * mão. A promessa sozinha não basta — o comentário do topo do arquivo dizia
+ * exatamente isso desde o começo, e mesmo assim 22 sítios nasceram fora dele.
+ *
+ * O que estes testes **não** fazem: simular outro locale. Não dá para trocar
+ * uma constante do próprio módulo sob teste, e inventar um módulo só para
+ * tornar isso possível seria desenhar o código em função do teste. O que eles
+ * fazem é impedir a volta do padrão que criou o problema, e cada um diz o que
+ * prova.
+ */
+describe("a convenção de formatação", () => {
+  const CLASSIFICACAO = {
+    // Escrevem número para o visitante ler.
+    formatarReais: "escreve",
+    formatarReaisComSinal: "escreve",
+    formatarPorcentagem: "escreve",
+    formatarTaxa: "escreve",
+    formatarDecimal: "escreve",
+    formatarInteiro: "escreve",
+    formatarOdd: "escreve",
+    formatarOddExata: "escreve",
+    formatarOddJusta: "escreve",
+    formatarUnidades: "escreve",
+    formatarUnidadesSemSinal: "escreve",
+    escreverUnidade: "escreve",
+    // Lê o que o visitante digitou.
+    lerNumeroBR: "lê",
+    // Carregam a decisão de formato.
+    LOCALE_DOS_NUMEROS: "decide",
+    LOCALE_DE_ENTRADA: "decide",
+    FORMATO_REAIS_COM_SINAL: "decide",
+    FORMATO_ROI: "decide",
+    FORMATO_TAXA: "decide",
+    casasDaOdd: "decide",
+    // Não encostam em separador.
+    corDoValor: "não formata",
+    varDoValor: "não formata",
+    ehZero: "não formata",
+    UNIDADE_MINIMA: "não formata",
+    UNIDADE_MAXIMA: "não formata",
+    tamanhoDoValor: "não formata",
+    tempoRelativo: "não formata",
+    percentuaisRedondos: "não formata",
+  } as const;
+
+  it("todo export do módulo está classificado acima", async () => {
+    // Export novo sem classificação deixa isto vermelho ANTES de qualquer
+    // asserção de formato. É o que impede a guarda de envelhecer calada
+    // enquanto o módulo cresce — quem acrescenta função tem de dizer se ela
+    // escreve número, e aí esbarra nas regras.
+    const exportados = Object.keys(await import("./format")).sort();
+    expect(exportados).toEqual(Object.keys(CLASSIFICACAO).sort());
+  });
+
+  it("o separador derivado é o mesmo que o Intl usa", () => {
+    // `formatarDecimal` escreve com a constante derivada do locale;
+    // `formatarReais` vai pelo Intl direto. Se os dois discordassem, a mesma
+    // tela diria "1,50" num cartão e "R$ 1.50" no outro. Vale em qualquer
+    // locale, não só no de hoje — é comparação entre os dois caminhos, não
+    // contra um literal.
+    const doIntl = formatarReais(1.5).slice(-3, -2);
+    const daConstante = formatarDecimal(1.5, 2).slice(-3, -2);
+    expect(daConstante).toBe(doIntl);
+  });
+
+  it("nenhum arquivo de src escreve o separador à mão", () => {
+    // Varredura de texto, e vale dizer o que ela é: prova que ninguém voltou a
+    // escrever `.replace(".", "…")` com literal, não que uma função honre a
+    // constante. É modesto, e é exatamente a regressão que aconteceu 22 vezes.
+    //
+    // Os dois sítios legítimos passam porque não usam literal: o `DECIMAL`
+    // deste módulo e o `FORMATO_DO_EXCEL.decimal` do csv.ts, que é de
+    // propósito um formato à parte.
+    const culpados: string[] = [];
+    const andar = (dir: string) => {
+      for (const item of readdirSync(dir, { withFileTypes: true })) {
+        const caminho = join(dir, item.name);
+        if (item.isDirectory()) andar(caminho);
+        else if (/\.tsx?$/.test(item.name) && !item.name.includes(".test.")) {
+          if (readFileSync(caminho, "utf8").includes('replace(".", "')) {
+            culpados.push(caminho);
+          }
+        }
+      }
+    };
+    andar("src");
+    expect(culpados).toEqual([]);
+  });
+
+  it("formatarTaxa devolve o mesmo que o toFixed(1) que estava espalhado", () => {
+    // As dez telas que montavam a taxa à mão foram trocadas por esta função,
+    // que passou a usar Intl. A troca só é segura porque `taxaDeAcerto` já
+    // devolve uma casa — sem meio caminho, os dois arredondamentos coincidem.
+    // Esta é a asserção que prende essa condição: se alguém passar a chamar
+    // `formatarTaxa` com valor cru, a diferença aparece aqui.
+    for (let g = 0; g <= 60; g++) {
+      for (let r = 0; r <= 60; r++) {
+        const finalizadas = g + r;
+        const taxa =
+          finalizadas === 0 ? 0 : Number.parseFloat(((g / finalizadas) * 100).toFixed(1));
+        expect(formatarTaxa(taxa)).toBe(`${taxa.toFixed(1).replace(".", ",")}%`);
+      }
+    }
+  });
+
+  it("o zero das unidades é decidido por valor, não por texto", () => {
+    // Antes, `formatarUnidades` comparava o texto contra "0,00": o separador
+    // estava no fluxo de controle, e trocá-lo faria o zero voltar a receber
+    // sinal. As bordas abaixo são as mesmas de `ehZero`.
+    expect(formatarUnidades(0)).toBe("0,00u");
+    expect(formatarUnidades(-0)).toBe("0,00u");
+    expect(formatarUnidades(0.004)).toBe("0,00u");
+    expect(formatarUnidades(-0.004)).toBe("0,00u");
+    expect(formatarUnidades(0.005)).toBe("+0,01u");
+    expect(formatarUnidades(-0.005)).toBe("-0,01u");
+    for (const u of [0, -0, 0.0049, -0.0049, 0.005, -0.005, 1, -1, 1000, -1000]) {
+      expect(
+        formatarUnidades(u).startsWith("+") || formatarUnidades(u).startsWith("-")
+      ).toBe(!ehZero(u));
+    }
+  });
+
+  it("casasDaOdd é regra de domínio, sem separador dentro", () => {
+    // O CSV depende disto para decidir as casas da coluna Odd sem reusar a
+    // formatação da tela — era por aí que ele viraria de carona no dia em que
+    // a página mudasse de separador.
+    expect(casasDaOdd(2)).toBe(2);
+    expect(casasDaOdd(1.85)).toBe(2);
+    expect(casasDaOdd(1.875)).toBe(3);
+    expect(casasDaOdd(2.781)).toBe(3);
   });
 });

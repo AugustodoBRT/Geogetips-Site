@@ -19,6 +19,7 @@ import {
   formatarReais,
   formatarUnidadesSemSinal,
   lerNumeroBR,
+  formatarDecimal,
 } from "@/lib/format";
 import {
   BANCA_PADRAO_EM_UNIDADES,
@@ -106,7 +107,7 @@ const MAXIMO_DE_SELECOES = 10;
  * quem escreve os valores com sinal nesta tela.
  */
 function porcento(fracao: number, casas = 2): string {
-  return `${(fracao * 100).toFixed(casas).replace(".", ",")}%`;
+  return `${formatarDecimal(fracao * 100, casas)}%`;
 }
 
 /** Odd lida de um campo, e se o campo mostra erro: só quando há texto e ele não é odd. */

@@ -13,6 +13,7 @@ import {
   formatarInteiro,
   formatarReaisComSinal,
   formatarUnidadesSemSinal,
+  formatarDecimal,
 } from "@/lib/format";
 import { calcularRisco, type DiaFechado } from "@/lib/risco";
 import type { BetItem } from "@/lib/types";
@@ -265,7 +266,7 @@ export function BlocoDeRisco({
 
           <Medida
             rotulo="Apostas por dia"
-            valor={risco.mediaDeApostasPorDia.toFixed(1).replace(".", ",")}
+            valor={formatarDecimal(risco.mediaDeApostasPorDia, 1)}
           >
             média em {formatarInteiro(risco.diasComAposta)}{" "}
             {risco.diasComAposta === 1 ? "dia" : "dias"} com aposta

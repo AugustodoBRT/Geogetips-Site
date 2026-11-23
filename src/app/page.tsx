@@ -21,7 +21,11 @@ import {
   ehZero,
   formatarInteiro,
   formatarPorcentagem,
+  formatarReais,
   formatarReaisComSinal,
+  formatarDecimal,
+  formatarOdd,
+  formatarTaxa,
 } from "@/lib/format";
 import { BotaoTelegram, SecaoTelegram } from "@/components/Telegram";
 import { TextoQueCai, Revelar, EntradaSequencial } from "@/components/animacoes";
@@ -74,7 +78,7 @@ const FUNCIONALIDADES = [
   },
   {
     titulo: "Gestão de Banca",
-    texto: `Controle por unidades (1u = R$ ${VALOR_UNIDADE.toFixed(2).replace(".", ",")}), com travas de segurança e limites máximos. Ajuste a unidade para a sua banca e veja o histórico na sua escala.`,
+    texto: `Controle por unidades (1u = ${formatarReais(VALOR_UNIDADE)}), com travas de segurança e limites máximos. Ajuste a unidade para a sua banca e veja o histórico na sua escala.`,
     icone: <Landmark className="w-6 h-6" strokeWidth={1.75} />,
     corIcone: "bg-[var(--accent-soft)] text-[var(--accent)]",
   },
@@ -187,7 +191,7 @@ export default async function HomePage() {
           <div className="w-1 h-1 rounded-full bg-tinta/15 hidden sm:block" />
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-[var(--text-2)] text-sm">
-              {stats.taxaAcerto.toFixed(1).replace(".", ",")}%
+              {formatarTaxa(stats.taxaAcerto)}
             </span>
             taxa de acerto
           </div>
@@ -245,7 +249,7 @@ export default async function HomePage() {
                 )}
                 <span>
                   {temNumeros && stats
-                    ? `${stats.totalUnidades.toFixed(2).replace(".", ",")}u acumuladas`
+                    ? `${formatarDecimal(stats.totalUnidades, 2)}u acumuladas`
                     : "histórico completo"}
                 </span>
               </div>
@@ -256,9 +260,7 @@ export default async function HomePage() {
                 Taxa de Acerto
               </div>
               <div className="font-serif text-3xl text-[var(--text)] tracking-tight">
-                {temNumeros && stats
-                  ? `${stats.taxaAcerto.toFixed(1).replace(".", ",")}%`
-                  : "—"}
+                {temNumeros && stats ? formatarTaxa(stats.taxaAcerto) : "—"}
               </div>
               <div className="text-xs font-medium text-[var(--text-2)] mt-1.5">
                 {temNumeros && stats
@@ -286,7 +288,7 @@ export default async function HomePage() {
               </div>
               <div className="text-xs font-medium text-[var(--text-2)] mt-1.5">
                 {temNumeros && stats
-                  ? `odd média ${stats.oddMediaGeral.toFixed(2).replace(".", ",")}`
+                  ? `odd média ${formatarOdd(stats.oddMediaGeral)}`
                   : "lucro sobre o total apostado"}
               </div>
             </div>
