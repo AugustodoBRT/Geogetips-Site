@@ -35,6 +35,14 @@ export default defineConfig({
     baseURL: BASE,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
+
+    // Fuso e idioma do navegador declarados, e o fuso **não** é o de São Paulo
+    // de propósito (#124). O site tem de decidir o que já aconteceu pelo dia do
+    // grupo; se alguém voltar a decidir isso pelo relógio de quem lê, com o
+    // navegador aqui em Tóquio os números mudam e a suíte fica vermelha. Pinar
+    // em São Paulo deixaria essa regressão passar.
+    timezoneId: "Asia/Tokyo",
+    locale: "pt-BR",
   },
 
   webServer: {
@@ -49,6 +57,11 @@ export default defineConfig({
       NEXT_DIST_DIR: ".next-e2e",
       NEXT_PUBLIC_USE_MOCK: "1",
       NEXT_PUBLIC_SIGMA_URL: "https://prop.ag/exemplo-sigma",
+      // O servidor também num fuso que não é o do grupo, pelo mesmo motivo: as
+      // datas de demonstração saem de `inicioDeHoje`, e com o relógio do
+      // processo as duas apostas que o atraso do Sigma precisa esconder cairiam
+      // do outro lado da fronteira do dia.
+      TZ: "Asia/Tokyo",
     },
     reuseExistingServer: !process.env.CI,
     timeout: 5 * 60 * 1000,

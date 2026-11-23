@@ -1,4 +1,4 @@
-import { inicioDeHoje, parseDateTimestamp } from "./date";
+import { inicioDeHoje, MS_POR_DIA, parseDateTimestamp } from "./date";
 import type { BetItem } from "./types";
 
 /**
@@ -61,9 +61,7 @@ export function grupoDoId(id: IdGrupo): Grupo {
  * dias depois do jogo.
  */
 export function ultimoDiaVisivel(dias: number, ref: Date = new Date()): number {
-  const hoje = new Date(inicioDeHoje(ref));
-  hoje.setDate(hoje.getDate() - dias);
-  return hoje.getTime();
+  return inicioDeHoje(ref) - dias * MS_POR_DIA;
 }
 
 /**

@@ -20,7 +20,14 @@ import { useUnidade } from "@/hooks/useUnidade";
 import { SeletorUnidade } from "@/components/SeletorUnidade";
 import { FiltroPeriodo } from "@/components/FiltroPeriodo";
 import { CalendarioDeLucro } from "@/components/CalendarioDeLucro";
-import { paraISO, parseDateTimestamp, rotuloDoPeriodo, timestampDoISO } from "@/lib/date";
+import {
+  inicioDeHoje,
+  MS_POR_DIA,
+  paraISO,
+  parseDateTimestamp,
+  rotuloDoPeriodo,
+  timestampDoISO,
+} from "@/lib/date";
 import { ABA_TODOS, rotuloDaAba, trechoDaAba } from "@/lib/constants";
 import {
   abaDoEndereco,
@@ -150,13 +157,16 @@ export default function PainelPage() {
    * aba de setembro ganhava os botões 30D e 90D, que desenham o mesmo que Tudo.
    */
   const diasDaAba = useMemo(() => {
-    const fimDeHoje = new Date();
-    fimDeHoje.setHours(23, 59, 59, 999);
+    // O dia do grupo, não o do navegador de quem lê. Com `new Date()` aqui, a
+    // mesma aba media um dia a mais ou a menos conforme o fuso de onde a página
+    // fosse aberta — ver a convenção no topo de lib/date.ts.
+    const hoje = inicioDeHoje();
     const vividos = availableDays
       .map(parseDateTimestamp)
-      .filter((ts) => ts > 0 && ts <= fimDeHoje.getTime());
+      .filter((ts) => ts > 0 && ts <= hoje);
     if (vividos.length === 0) return 0;
-    return Math.round((vividos[0] - vividos[vividos.length - 1]) / 86_400_000) + 1;
+    // Divisão exata: os dois lados são meia-noite UTC.
+    return (vividos[0] - vividos[vividos.length - 1]) / MS_POR_DIA + 1;
   }, [availableDays]);
 
   /**
@@ -297,9 +307,8 @@ export default function PainelPage() {
     // A planilha traz apostas pendentes de jogos que ainda vão acontecer. Elas
     // não podem entrar na curva: têm lucro 0 e desenhariam uma reta plana no
     // futuro, como se a banca tivesse parado de crescer.
-    const fimDeHoje = new Date();
-    fimDeHoje.setHours(23, 59, 59, 999);
-    const ateHoje = allDailyPoints.filter((p) => p.timestamp <= fimDeHoje.getTime());
+    const hoje = inicioDeHoje();
+    const ateHoje = allDailyPoints.filter((p) => p.timestamp <= hoje);
 
     // Intervalo escolhido à mão vence a janela: são dois controles do mesmo
     // eixo, e deixar os dois valendo ao mesmo tempo é o que confunde. Por isso
@@ -317,16 +326,14 @@ export default function PainelPage() {
 
     // A janela termina hoje — mas numa aba de mês passado "hoje" está fora dos
     // dados e o gráfico ficaria vazio, então ela para no último dia da aba.
-    const fim = Math.min(fimDeHoje.getTime(), ateHoje[ateHoje.length - 1].timestamp);
+    const fim = Math.min(hoje, ateHoje[ateHoje.length - 1].timestamp);
 
     // Janela de calendário, não os N últimos registros: slice(-7) pegava os 7
     // últimos dias COM aposta, que em período parado alcançava semanas atrás
     // e, com pendentes no futuro, empurrava a janela para frente escondendo
     // dias que de fato aconteceram.
-    const inicio = new Date(fim);
-    inicio.setDate(inicio.getDate() - (dias - 1));
-    inicio.setHours(0, 0, 0, 0);
-    return ateHoje.filter((p) => p.timestamp >= inicio.getTime() && p.timestamp <= fim);
+    const inicio = fim - (dias - 1) * MS_POR_DIA;
+    return ateHoje.filter((p) => p.timestamp >= inicio && p.timestamp <= fim);
   }, [allDailyPoints, period, periodoAtivo, de, ate]);
 
   // Calculate coordinates for SVG rendering

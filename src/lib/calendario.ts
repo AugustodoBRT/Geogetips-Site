@@ -108,8 +108,10 @@ export function montarMes(
     porDia.set(d, dia);
   }
 
-  const primeiroDiaDaSemana = new Date(ano, mes - 1, 1).getDay();
-  const diasNoMes = new Date(ano, mes, 0).getDate();
+  // UTC dos dois lados: estas datas são comparadas com `hoje` e com o que
+  // `parseDateTimestamp` devolve. Ver a convenção no topo de lib/date.ts.
+  const primeiroDiaDaSemana = new Date(Date.UTC(ano, mes - 1, 1)).getUTCDay();
+  const diasNoMes = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
   const casas: (DiaDoCalendario | null)[] = Array(primeiroDiaDaSemana).fill(null);
 
   let lucro = 0;
@@ -117,7 +119,7 @@ export function montarMes(
   let diasComAposta = 0;
   for (let d = 1; d <= diasNoMes; d++) {
     const data = `${String(d).padStart(2, "0")}/${String(mes).padStart(2, "0")}/${ano}`;
-    const ts = new Date(ano, mes - 1, d).getTime();
+    const ts = Date.UTC(ano, mes - 1, d);
     const somado = porDia.get(d) ?? { lucro: 0, apostas: 0 };
     const futuro = ts > hoje;
     casas.push({

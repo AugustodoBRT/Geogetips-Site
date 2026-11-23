@@ -8,6 +8,13 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.test.ts"],
 
+    // Fuso fixo, e **não** o de São Paulo de propósito (#124). As funções de
+    // data devolvem meia-noite UTC justamente para não dependerem do relógio de
+    // quem roda; rodar a suíte em São Paulo faria um acessor local passar por
+    // coincidência, e rodar em UTC faria o mesmo. Tóquio não é nenhum dos dois,
+    // e sem horário de verão a conta não muda no meio do ano.
+    env: { TZ: "Asia/Tokyo" },
+
     coverage: {
       provider: "v8",
       reporter: ["text-summary", "text"],

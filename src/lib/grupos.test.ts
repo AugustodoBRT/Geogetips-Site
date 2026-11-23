@@ -53,7 +53,7 @@ describe("grupos", () => {
 
 describe("atraso público", () => {
   it("com três dias, no dia 21 aparece até o dia 18", () => {
-    expect(ultimoDiaVisivel(3, REF)).toBe(new Date(2026, 8, 18).getTime());
+    expect(ultimoDiaVisivel(3, REF)).toBe(Date.UTC(2026, 8, 18));
   });
 
   it("tira do recorte o que ainda está dentro do atraso", () => {
