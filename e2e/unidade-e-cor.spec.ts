@@ -112,14 +112,37 @@ async function zerosNaTela(page: Page) {
   });
 }
 
-/** Qualquer texto que escreva zero com sinal: "+R$ 0,00" ou "-R$ 0,00". */
+/**
+ * Qualquer texto que escreva zero com sinal: "+R$ 0,00" ou "-R$ 0,00".
+ *
+ * Duas correções que a irmã acima já tinha e esta não:
+ *
+ * Lê o **texto próprio** do elemento em vez de filtrar folhas. O motivo está
+ * escrito no comentário de `zerosNaTela`, e vale igual aqui: o span colorido de
+ * Estatísticas (`src/app/estatisticas/page.tsx:427-436`) carrega um `<span>` de
+ * ROI dentro, não é folha, e escapava desta varredura nas duas pontas — nem
+ * como folha, nem pelo `textContent`, que ali é "+R$ 0,00ROI 0,0%".
+ *
+ * O controle de volume não vem daqui: vem do `expect(zeros.length)` do irmão,
+ * na linha de cima de cada ponto de chamada. Ele já prova que a tela rendeu
+ * dinheiro zerado — e é por isso que a lista vazia aqui significa "nenhum
+ * desses zeros leva sinal", e não "não achei nada". Contar valores sinalizados
+ * aqui não serviria: no cenário destes testes a unidade está no piso e
+ * praticamente tudo encolhe para zero, que é justamente o ponto.
+ */
 async function zerosComSinal(page: Page) {
-  return page.evaluate(() =>
-    [...document.querySelectorAll("*")]
-      .filter((e) => e.children.length === 0)
-      .map((e) => (e.textContent ?? "").trim())
-      .filter((t) => /^[+-]R\$\s0,00$/.test(t))
-  );
+  return page.evaluate(() => {
+    const textoProprio = (e: Element) =>
+      [...e.childNodes]
+        .filter((n) => n.nodeType === Node.TEXT_NODE)
+        .map((n) => n.textContent)
+        .join("")
+        .trim();
+
+    return [...document.querySelectorAll("*")]
+      .map(textoProprio)
+      .filter((t) => /^[+-]R\$\s0,00$/.test(t));
+  });
 }
 
 /**

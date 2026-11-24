@@ -8,6 +8,47 @@ import { expect, type Page, test } from "@playwright/test";
  * rótulo que o VoiceOver ignora, e botões de filtro tinham 23 px de altura.
  */
 
+/**
+ * Marcas de língua: palavras que praticamente só aparecem num idioma.
+ *
+ * Em português vão acentuadas de propósito — "não" e "você" não acontecem por
+ * acaso num texto em inglês. Em inglês, "the" é o artigo mais comum da língua
+ * e quase não aparece em português fora de nome de marca.
+ */
+const MARCAS_DE_LINGUA: Record<string, RegExp> = {
+  pt: /\b(não|você|são|histórico)\b/,
+  en: /\b(the|your|month|bets)\b/,
+};
+
+test("o idioma declarado é o idioma do texto", async ({ page }) => {
+  await page.goto("/");
+  const lang = await page.locator("html").getAttribute("lang");
+  const texto = (await page.locator("main").innerText()).toLowerCase();
+
+  // Nada na suíte prendia o `lang` antes desta guarda, e era o pior buraco
+  // possível para a virada de idioma (#128): a bateria inteira ficaria verde
+  // com a página em inglês se anunciando como portuguesa. Ninguém veria —
+  // mas o leitor de tela leria inglês com fonética portuguesa, e o buscador
+  // indexaria a página na língua errada.
+  //
+  // A guarda não afirma QUAL é o idioma, e é de propósito: afirmar "pt-BR"
+  // aqui ficaria verde justamente no caso que importa. Ela afirma que os dois
+  // concordam, então continua valendo depois da virada, pelo outro ramo.
+  const base = (lang ?? "").split("-")[0];
+  const marca = MARCAS_DE_LINGUA[base];
+  expect(
+    marca,
+    `o <html> declara "${lang}", e esta guarda não sabe conferir esse idioma — acrescente a marca dele em MARCAS_DE_LINGUA`
+  ).toBeDefined();
+  expect(texto).toMatch(marca);
+
+  // E o texto não pode casar com a marca da OUTRA língua: sem isto, uma página
+  // meio traduzida passaria pelos dois lados.
+  for (const [outra, marca] of Object.entries(MARCAS_DE_LINGUA)) {
+    if (outra !== base) expect(texto).not.toMatch(marca);
+  }
+});
+
 test("os números animados se leem como número, e não dígito a dígito", async ({
   page,
 }) => {
