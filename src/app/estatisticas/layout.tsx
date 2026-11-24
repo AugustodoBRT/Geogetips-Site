@@ -1,9 +1,8 @@
 import { metadadosDaPagina } from "@/lib/metadados";
+import { textoDasRotas } from "@/texto/rotas";
 
 export const metadata = metadadosDaPagina({
-  titulo: "Estatísticas & Padrões",
-  descricao:
-    "Distribuição de resultados, médias de odd e lucro por esporte e por casa de apostas no GeogeTips.",
+  ...textoDasRotas().estatisticas,
   caminho: "/estatisticas",
 });
 

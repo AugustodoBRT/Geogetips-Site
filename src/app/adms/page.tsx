@@ -30,6 +30,7 @@ import { useUnidade } from "@/hooks/useUnidade";
 import { trechoDaAba } from "@/lib/constants";
 import { abaDoEndereco, abaParaEndereco } from "@/lib/endereco";
 import type { RecorteDoAdm } from "@/lib/types";
+import { textoDasRotas } from "@/texto/rotas";
 
 export default function AdmsPage() {
   const {
@@ -80,7 +81,7 @@ export default function AdmsPage() {
           )}
           <div className="flex items-center gap-2">
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
-              Performance dos Adms
+              {textoDasRotas().adms.titulo}
             </h1>
             {!erro && !isMock && !loading && (
               <span className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full">

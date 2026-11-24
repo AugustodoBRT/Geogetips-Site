@@ -1,6 +1,14 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  // O mesmo `@/` do tsconfig. Sem ele o vitest não consegue importar nada de
+  // `src/app`, porque esses módulos usam o alias por dentro — e é de lá que
+  // vem o sitemap, que `src/texto/rotas.test.ts` lê para cobrar que as duas
+  // listas de rota digam a mesma coisa.
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+  },
   test: {
     // Nenhum teste toca no DOM: o que está sob teste são as contas, e elas são
     // funções puras de propósito — `src/lib/stats.ts` existe separado da API

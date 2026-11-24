@@ -3,6 +3,7 @@ import { ArrowUpRight, Plus } from "lucide-react";
 import { LinkPlanilha } from "@/components/LinkPlanilha";
 import { SecaoTelegram } from "@/components/Telegram";
 import { metadadosDaPagina } from "@/lib/metadados";
+import { textoDasRotas } from "@/texto/rotas";
 import {
   type Acao,
   dadosEstruturados,
@@ -12,9 +13,7 @@ import {
 } from "@/lib/perguntas";
 
 export const metadata = metadadosDaPagina({
-  titulo: "Perguntas frequentes",
-  descricao:
-    "Como o lucro, o ROI, a taxa de acerto e a maior queda do GeogeTips são calculados, e o que perguntam antes de entrar no grupo.",
+  ...textoDasRotas().perguntas,
   caminho: "/perguntas",
 });
 
@@ -55,7 +54,7 @@ export default function PerguntasPage() {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12 animate-entrada">
       <header>
         <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
-          Perguntas frequentes
+          {textoDasRotas().perguntas.titulo}
         </h1>
         <p className="text-sm text-[var(--text-2)] mt-2 leading-relaxed max-w-2xl">
           Como cada número do site é calculado, e o que costumam perguntar antes de entrar

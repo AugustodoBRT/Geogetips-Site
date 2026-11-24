@@ -25,6 +25,7 @@ import { useUnidade } from "@/hooks/useUnidade";
 import Link from "next/link";
 import { abaCurta, abaDoMesAtual } from "@/lib/constants";
 import { comAba } from "@/lib/endereco";
+import { textoDasRotas } from "@/texto/rotas";
 import {
   corDoValor,
   ehZero,
@@ -96,7 +97,7 @@ export default function HistoricoPage() {
           )}
           <div className="flex items-center gap-2">
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
-              Histórico Mês a Mês
+              {textoDasRotas().historico.titulo}
             </h1>
             {!erro && !isMock && !loading && (
               <span className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full">
