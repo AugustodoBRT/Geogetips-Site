@@ -4,7 +4,7 @@ import { MarcaG } from "@/components/MarcaG";
 import { getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
 import { computeStatsFromBets } from "@/lib/stats";
 import { MOCK_BETS } from "@/lib/data";
-import { ABA_TODOS } from "@/lib/constants";
+import { ABA_TODOS, TITULO_DA_HOME } from "@/lib/constants";
 import { ehZero, formatarInteiro, formatarTaxa, formatarUnidades } from "@/lib/format";
 
 export const size = { width: 1200, height: 630 };
@@ -16,8 +16,8 @@ export const alt = "GeogeTips — análise e resultados de apostas esportivas";
 // número velho aqui dura no máximo esse tempo.
 export const revalidate = 300;
 
-const TITULO_1 = "Suas apostas merecem";
-const TITULO_2 = "matemática de verdade.";
+const TITULO_1 = TITULO_DA_HOME.primeira;
+const TITULO_2 = TITULO_DA_HOME.segunda;
 const RODAPE = "Registro, análise e controle de banca — em dados, não achismo.";
 
 /**

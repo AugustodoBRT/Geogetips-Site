@@ -68,6 +68,28 @@ export const TELEGRAM_URL = "https://t.me/vemproGeogeTips";
 export const X_URL = "https://x.com/GeogeTips";
 
 /**
+ * O título da home, em duas partes.
+ *
+ * Mora aqui, e não na página, porque sai em **dois lugares**: o h1 da home e a
+ * imagem de compartilhamento, que é desenhada no servidor e não tem como ler o
+ * componente. Estava escrito por extenso nos dois, e traduzir um lado faria o
+ * preview do link discordar da página que ele abre — num cartão que é, para
+ * quem recebe o link, o primeiro contato com o site.
+ *
+ * As duas partes são separadas porque têm papéis diferentes: a segunda cai
+ * depois na animação, sai em itálico e leva a cor de destaque. Juntá-las numa
+ * frase só tiraria isso. E a imagem pede a fonte ao Google recortada pelos
+ * caracteres que vai desenhar, uma chamada por parte — mais um motivo para as
+ * duas continuarem distintas.
+ *
+ * É o mesmo motivo que põe o texto do FAQ em `src/lib/perguntas.ts`.
+ */
+export const TITULO_DA_HOME = {
+  primeira: "Suas apostas merecem",
+  segunda: "matemática de verdade.",
+} as const;
+
+/**
  * Planilha pública de resultados, em modo somente-leitura.
  * É a prova de que o painel não maquia número: dá para conferir linha a linha.
  */
