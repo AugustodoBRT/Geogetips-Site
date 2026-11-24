@@ -1,4 +1,5 @@
 import { normalizarTexto } from "@/lib/texto";
+import { ESPORTE_PADRAO } from "@/lib/padroes";
 
 interface SportBadgeProps {
   sport?: string;
@@ -114,7 +115,7 @@ const REGRAS: RegraEsporte[] = [
   },
 ];
 
-export function SportBadge({ sport = "Futebol", className = "" }: SportBadgeProps) {
+export function SportBadge({ sport = ESPORTE_PADRAO, className = "" }: SportBadgeProps) {
   const nome = (sport || "").trim();
   if (!nome) return null;
 

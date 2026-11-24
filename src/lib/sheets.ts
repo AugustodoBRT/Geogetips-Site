@@ -16,6 +16,7 @@ import {
   type MotivoDeFalha,
 } from "./planilhaPublica";
 import { GRUPO_PADRAO, GRUPOS, type Grupo, type IdGrupo } from "./grupos";
+import { SEM_DATA, ESPORTE_PADRAO, ADM_GERAL, SEM_CASA } from "./padroes";
 
 export { computeStatsFromBets };
 
@@ -206,12 +207,12 @@ export function linhasParaBets(tab: string, rows: string[][]): BetItem[] {
 
     bets.push({
       id: (row[10] || "").trim() || `${tab}-${index + 4}`,
-      data: dataStr || "—",
-      esporte: (row[1] || "").trim() || "Futebol",
-      tipster: (row[2] || "").trim() || "Geral",
+      data: dataStr || SEM_DATA,
+      esporte: (row[1] || "").trim() || ESPORTE_PADRAO,
+      tipster: (row[2] || "").trim() || ADM_GERAL,
       partida: partida || "Aposta Registrada",
       tip: (row[4] || "").trim() || "Aposta",
-      casa: (row[5] || "").trim() || "Sem Casa",
+      casa: (row[5] || "").trim() || SEM_CASA,
       // Três casas: a planilha tem odds como 2,625, e duas as mostravam
       // "2,63" no feed, no detalhe e no CSV. A tela escreve a terceira só
       // quando ela existe (`formatarOddExata`).
