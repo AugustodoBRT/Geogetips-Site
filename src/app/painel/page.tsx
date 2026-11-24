@@ -52,6 +52,8 @@ import {
   tamanhoDoValor,
   tempoRelativo,
   varDoValor,
+  formatarDecimal,
+  formatarTaxa,
 } from "@/lib/format";
 import { calcularRoi, computeStatsFromBets, taxaDeAcerto } from "@/lib/stats";
 import { maiorQueda } from "@/lib/risco";
@@ -641,11 +643,7 @@ export default function PainelPage() {
                     : "text-[var(--red)]"
               }`}
             >
-              <NumeroAnimado
-                value={totalLucro}
-                locales="pt-BR"
-                format={FORMATO_REAIS_COM_SINAL}
-              />
+              <NumeroAnimado value={totalLucro} format={FORMATO_REAIS_COM_SINAL} />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
               {periodoAtivo
@@ -675,12 +673,7 @@ export default function PainelPage() {
                     : "text-[var(--red)]"
               }`}
             >
-              <NumeroAnimado
-                value={roi}
-                locales="pt-BR"
-                format={FORMATO_ROI}
-                suffix="%"
-              />
+              <NumeroAnimado value={roi} format={FORMATO_ROI} suffix="%" />
             </div>
             {/* O ROI daqui conta anuladas e pendentes no investido, como a
                 planilha. Quem compara com outro grupo precisa saber disso, e a
@@ -710,7 +703,7 @@ export default function PainelPage() {
                 true
               )} text-[var(--text)] tracking-tight leading-none`}
             >
-              <NumeroAnimado value={totalBets} locales="pt-BR" />
+              <NumeroAnimado value={totalBets} />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
               {formatarInteiro(greens)} Green · {formatarInteiro(reds)} Red
@@ -728,12 +721,7 @@ export default function PainelPage() {
               </div>
             </div>
             <div className="font-serif text-2xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
-              <NumeroAnimado
-                value={taxaAcerto}
-                locales="pt-BR"
-                format={FORMATO_TAXA}
-                suffix="%"
-              />
+              <NumeroAnimado value={taxaAcerto} format={FORMATO_TAXA} suffix="%" />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
               Das apostas finalizadas
@@ -760,7 +748,7 @@ export default function PainelPage() {
                 pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text)]"
               }`}
             >
-              <NumeroAnimado value={pendentes} locales="pt-BR" />
+              <NumeroAnimado value={pendentes} />
             </div>
             {/* Zero pendência é a situação boa, não um alerta — âmbar só quando há. */}
             <div
@@ -804,7 +792,6 @@ export default function PainelPage() {
                   >
                     <NumeroAnimado
                       value={chartData.periodGain}
-                      locales="pt-BR"
                       format={FORMATO_REAIS_COM_SINAL}
                     />{" "}
                     ({periodoAtivo ? periodo : period})
@@ -952,7 +939,7 @@ export default function PainelPage() {
                   className="text-[9.5px] font-mono fill-[var(--text-3)]"
                 >
                   {chartData.yMax >= 1000
-                    ? `R$ ${(chartData.yMax / 1000).toFixed(1).replace(".", ",")} mil`
+                    ? `R$ ${formatarDecimal(chartData.yMax / 1000, 1)} mil`
                     : `R$ ${Math.round(chartData.yMax)}`}
                 </text>
 
@@ -1169,7 +1156,7 @@ export default function PainelPage() {
                       <div className="text-[11px] text-[var(--text-3)]">
                         {formatarInteiro(sport.apostas)}{" "}
                         {sport.apostas === 1 ? "aposta" : "apostas"} ·{" "}
-                        {sport.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
+                        {formatarTaxa(sport.taxaAcerto)} acerto
                       </div>
                     </div>
                     <div
@@ -1466,7 +1453,7 @@ export default function PainelPage() {
                       <div className="text-[10.5px] text-[var(--text-3)]">
                         {formatarInteiro(t.totalApostas)}{" "}
                         {t.totalApostas === 1 ? "aposta" : "apostas"} ·{" "}
-                        {t.taxaAcerto.toFixed(1).replace(".", ",")}% acerto
+                        {formatarTaxa(t.taxaAcerto)} acerto
                       </div>
                     </div>
                   </div>

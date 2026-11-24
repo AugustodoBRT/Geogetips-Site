@@ -37,6 +37,8 @@ import {
   formatarReaisComSinal,
   formatarUnidades,
   tamanhoDoValor,
+  formatarDecimal,
+  formatarTaxa,
 } from "@/lib/format";
 
 export default function HistoricoPage() {
@@ -168,7 +170,6 @@ export default function HistoricoPage() {
                 >
                   <NumeroAnimado
                     value={lucroConsolidado}
-                    locales="pt-BR"
                     format={FORMATO_REAIS_COM_SINAL}
                   />
                 </div>
@@ -200,7 +201,6 @@ export default function HistoricoPage() {
                 >
                   <NumeroAnimado
                     value={consolidado.roi}
-                    locales="pt-BR"
                     format={FORMATO_ROI}
                     suffix="%"
                   />
@@ -224,7 +224,7 @@ export default function HistoricoPage() {
                     String(consolidado.apostas)
                   )} text-[var(--text)] tracking-tight leading-none`}
                 >
-                  <NumeroAnimado value={consolidado.apostas} locales="pt-BR" />
+                  <NumeroAnimado value={consolidado.apostas} />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
                   {formatarInteiro(consolidado.greens)} Green ·{" "}
@@ -246,7 +246,6 @@ export default function HistoricoPage() {
                 <div className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight leading-none">
                   <NumeroAnimado
                     value={consolidado.taxaAcerto}
-                    locales="pt-BR"
                     format={FORMATO_TAXA}
                     suffix="%"
                   />
@@ -279,10 +278,7 @@ export default function HistoricoPage() {
                 role="img"
                 aria-label={`Resultado de ${cronologico.length} meses: ${cronologico
                   .map(
-                    (m) =>
-                      `${abaCurta(m.aba)} ${m.unidades
-                        .toFixed(2)
-                        .replace(".", ",")} unidades`
+                    (m) => `${abaCurta(m.aba)} ${formatarDecimal(m.unidades, 2)} unidades`
                   )
                   .join(", ")}`}
               >
@@ -435,7 +431,7 @@ export default function HistoricoPage() {
                         {formatarInteiro(m.reds)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right text-[var(--text-2)]">
-                        {m.taxaAcerto.toFixed(1).replace(".", ",")}%
+                        {formatarTaxa(m.taxaAcerto)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right text-[var(--text-2)]">
                         {m.oddMedia > 0 ? formatarOdd(m.oddMedia) : "—"}
@@ -473,7 +469,7 @@ export default function HistoricoPage() {
                         {formatarInteiro(consolidado.reds)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right font-bold text-[var(--text)]">
-                        {consolidado.taxaAcerto.toFixed(1).replace(".", ",")}%
+                        {formatarTaxa(consolidado.taxaAcerto)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right font-bold text-[var(--text)]">
                         {consolidado.oddMedia > 0

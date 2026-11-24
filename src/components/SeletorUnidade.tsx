@@ -4,21 +4,15 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, Coins, RotateCcw } from "lucide-react";
 import { useUnidade } from "@/hooks/useUnidade";
 import { VALOR_UNIDADE } from "@/lib/constants";
-import { UNIDADE_MAXIMA, UNIDADE_MINIMA, formatarReais, lerNumeroBR } from "@/lib/format";
+import {
+  UNIDADE_MAXIMA,
+  UNIDADE_MINIMA,
+  escreverUnidade,
+  formatarReais,
+  lerNumeroBR,
+} from "@/lib/format";
 
 const SUGESTOES = [5, 10, 25, 50, 100];
-
-/**
- * Escreve a unidade como se escreve dinheiro, sem o "R$" que já está no campo:
- * 1000 vira "1.000" e 1500.5 vira "1.500,50" — e não "1.500,5", que parece
- * valor pela metade.
- */
-function escreverUnidade(valor: number): string {
-  return valor.toLocaleString("pt-BR", {
-    minimumFractionDigits: Number.isInteger(valor) ? 0 : 2,
-    maximumFractionDigits: 2,
-  });
-}
 
 /**
  * Deixa o visitante ver o histórico do grupo na banca dele.

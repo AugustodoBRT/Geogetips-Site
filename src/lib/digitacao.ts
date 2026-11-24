@@ -1,5 +1,5 @@
 import { lerOdd, lerPorcentagem } from "./calculadora";
-import { formatarOddExata, lerNumeroBR } from "./format";
+import { LOCALE_DE_ENTRADA, formatarOddExata, lerNumeroBR } from "./format";
 
 /**
  * O que se digita nos campos da calculadora, arrumado tecla a tecla (#82).
@@ -58,8 +58,8 @@ export function oddAoSair(texto: string): string {
   return odd === null ? texto : formatarOddExata(odd);
 }
 
-const CURTO = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
-const REAIS = new Intl.NumberFormat("pt-BR", {
+const CURTO = new Intl.NumberFormat(LOCALE_DE_ENTRADA, { maximumFractionDigits: 2 });
+const REAIS = new Intl.NumberFormat(LOCALE_DE_ENTRADA, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });

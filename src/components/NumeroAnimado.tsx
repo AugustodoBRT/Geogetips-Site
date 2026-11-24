@@ -1,6 +1,7 @@
 "use client";
 
 import NumberFlow, { type Format } from "@number-flow/react";
+import { LOCALE_DOS_NUMEROS } from "@/lib/format";
 
 interface NumeroAnimadoProps {
   value: number;
@@ -24,7 +25,7 @@ interface NumeroAnimadoProps {
  */
 export function NumeroAnimado({
   value,
-  locales = "pt-BR",
+  locales = LOCALE_DOS_NUMEROS,
   format,
   prefix = "",
   suffix = "",
