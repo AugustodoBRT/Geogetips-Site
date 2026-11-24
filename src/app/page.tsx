@@ -15,7 +15,7 @@ import { getBetsFromTab, USANDO_MOCK } from "@/lib/sheets";
 import { computeStatsFromBets, type BetStats } from "@/lib/stats";
 import { MOCK_BETS } from "@/lib/data";
 import { type PeriodoDoHistorico, periodoDoHistorico } from "@/lib/periodo";
-import { ABA_TODOS, VALOR_UNIDADE } from "@/lib/constants";
+import { ABA_TODOS, TITULO_DA_HOME, VALOR_UNIDADE } from "@/lib/constants";
 import {
   corDoValor,
   ehZero,
@@ -125,9 +125,9 @@ export default async function HomePage() {
 
         {/* Duas linhas separadas: a segunda cai depois e é a que carrega a ênfase */}
         <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl leading-[1.1] tracking-[-1.5px] text-[var(--text)] mb-5">
-          <TextoQueCai texto="Suas apostas merecem" atraso={0.3} className="block" />
+          <TextoQueCai texto={TITULO_DA_HOME.primeira} atraso={0.3} className="block" />
           <TextoQueCai
-            texto="matemática de verdade."
+            texto={TITULO_DA_HOME.segunda}
             atraso={0.75}
             intervalo={0.07}
             className="block italic text-[var(--accent)]"
