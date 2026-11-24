@@ -29,7 +29,11 @@ for (const tela of TELAS) {
     const resposta = await page.goto(tela.caminho);
     expect(resposta?.status()).toBe(200);
 
-    await expect(page.getByText(tela.marca).first()).toBeVisible();
+    // Dentro do `main`, e não na página inteira: a marca de /estatisticas é
+    // só "Estatísticas", que é também o rótulo do link no menu — e o menu vem
+    // antes no DOM, então o `.first()` casava com a moldura. O teste de fumaça
+    // dessa tela estava satisfeito sem a página ter renderizado nada.
+    await expect(page.locator("main").getByText(tela.marca).first()).toBeVisible();
 
     // O esqueleto tem de sair. Ele ficar para sempre foi defeito de verdade:
     // com `loading.tsx`, o Next marcava a fronteira de Suspense como adiada e

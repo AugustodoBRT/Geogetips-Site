@@ -552,12 +552,29 @@ describe("sondarAba", () => {
   it("não deixa nome de variável de ambiente chegar na mensagem", async () => {
     // O visitante lia "configure GOOGLE_SERVICE_ACCOUNT_JSON" dentro de uma
     // caixa vermelha. Não há conta de serviço configurada neste projeto.
+    //
+    // A afirmação é sobre a **mensagem**, e não sobre o erro, porque a forma
+    // anterior não guardava nada: `toThrow` com matcher assimétrico aplica o
+    // matcher ao objeto Error, e `stringContaining` responde falso para
+    // qualquer coisa que não seja string — falso que o `.not` transforma em
+    // passe. Conferido mutando: com a mensagem "configure
+    // GOOGLE_SERVICE_ACCOUNT_JSON" inteira, a asserção antiga passava.
+    const ESPERADA = {
+      falhou: "Não foi possível ler a planilha agora.",
+      "nao-publica": "A planilha não está compartilhada por link.",
+    } as const;
+
     vi.spyOn(console, "error").mockImplementation(() => {});
     for (const motivo of ["falhou", "nao-publica"] as const) {
       const ler = leitor({ ok: false, motivo });
-      await expect(sondarAba("Setembro26", ler)).rejects.toThrow(
-        expect.not.stringContaining("GOOGLE_SERVICE_ACCOUNT_JSON")
-      );
+      const erro = await sondarAba("Setembro26", ler).catch((e: unknown) => e);
+
+      // Controle positivo: a mensagem é exatamente a que o visitante deve ler.
+      // Sem ele, a negação não distingue "não vazou" de "não há mensagem".
+      expect(erro).toBeInstanceOf(Error);
+      expect((erro as Error).message).toBe(ESPERADA[motivo]);
+
+      expect((erro as Error).message).not.toContain("GOOGLE_SERVICE_ACCOUNT_JSON");
     }
   });
 });

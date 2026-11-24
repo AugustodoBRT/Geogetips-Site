@@ -49,7 +49,14 @@ test("grupo que não existe responde 404, e nunca os dados de outro", async ({
 }) => {
   const resposta = await request.get("/api/bets?grupo=vip");
   expect(resposta.status()).toBe(404);
-  expect((await resposta.json()).grupoIndisponivel).toBe(true);
+  const json = await resposta.json();
+  expect(json.grupoIndisponivel).toBe(true);
+  // A segunda metade do nome deste teste — "e nunca os dados de outro" — não
+  // estava no corpo. Hoje a rota responde antes de ler a planilha; se um dia
+  // ela passar a ler primeiro, ou a devolver o payload de reserva junto com o
+  // 404, as apostas do gratuito sairiam dentro de uma resposta de grupo
+  // inexistente e este teste não notaria.
+  expect(json.data).toBeUndefined();
 });
 
 test("escolher o Sigma no Painel põe o grupo no endereço e avisa do atraso", async ({

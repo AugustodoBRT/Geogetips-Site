@@ -60,6 +60,13 @@ test("no celular o diálogo das casas mostra o resultado sem arrastar", async ({
   const dialogo = page.getByRole("dialog");
   await expect(dialogo).toBeVisible();
 
+  // Com a tabela vazia tudo aqui embaixo é verdade por trivialidade: largura
+  // zero cabe em qualquer caixa, o cabeçalho aparece sem linhas, e o `if` do
+  // escudo não entra. Esta linha é o que faz as três asserções significarem
+  // alguma coisa — é a mesma guarda que sobreposicoes.spec.ts:102 já usa
+  // para este mesmo diálogo.
+  expect(await dialogo.locator("tbody tr").count()).toBeGreaterThan(0);
+
   // A tabela cabe na caixa do diálogo — nada de rolagem lateral escondendo a
   // última coluna, que é a que a pessoa veio ver.
   const cabe = await dialogo
@@ -90,6 +97,18 @@ test("a rosca de resultados soma 100%", async ({ page }) => {
   expect(soma).toBe(100);
 });
 
+/**
+ * O 404 do Next vem em inglês de fábrica. `src/app/not-found.tsx` existe para
+ * substituí-lo, e o comentário de lá diz por quê: num site que vive de parecer
+ * confiável, o endereço errado não pode responder noutra língua.
+ *
+ * A linha de baixo que procura "This page could not be found" é uma **guarda**,
+ * não um vazamento: ela afirma que a tela padrão não está aparecendo. Quando o
+ * site virar para o inglês (#128), ela precisa ser invertida ou apagada junto
+ * com o resto deste teste — não deixada aí, onde passaria a proibir exatamente
+ * o texto certo. Está escrito aqui para a decisão não depender de alguém se
+ * lembrar.
+ */
 test("o endereço errado responde em português", async ({ page }) => {
   const resposta = await page.goto("/pagina-que-nao-existe");
   expect(resposta?.status()).toBe(404);

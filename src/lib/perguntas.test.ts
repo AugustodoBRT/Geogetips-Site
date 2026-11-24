@@ -31,6 +31,18 @@ describe("perguntas", () => {
       .flatMap((p) => p.resposta)
       .join(" ")
       .toLowerCase();
+
+    // Controle positivo, antes da negação: o que vem abaixo é uma regex em
+    // português, e regex em português para de casar quando o texto vira outra
+    // língua. Sem esta linha, a tradução do FAQ (#127) deixaria a guarda verde
+    // protegendo nada — ela não falharia, emudeceria, que é pior.
+    //
+    // "não" é o próprio primeiro token da regex guardada: se ele sumir do
+    // texto, a negação abaixo é vazia por construção. Então esta asserção
+    // vermelha é exatamente o aviso de que a de baixo parou de significar algo,
+    // e obriga quem traduzir a reescrever as duas juntas.
+    expect(texto).toMatch(/\bnão\b/);
+
     expect(texto).not.toMatch(/não (existe|há|temos) (grupo|canal) pago/);
   });
 
