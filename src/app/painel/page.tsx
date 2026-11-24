@@ -69,6 +69,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { textoDasRotas } from "@/texto/rotas";
+import { SEM_DATA } from "@/lib/padroes";
 
 interface DayPoint {
   date: string;
@@ -145,7 +146,7 @@ export default function PainelPage() {
   // Extract unique available days for the current tab
   const availableDays = useMemo(() => {
     const dates = Array.from(new Set(allBets.map((b) => b.data))).filter(
-      (d) => d && d !== "—"
+      (d) => d && d !== SEM_DATA
     );
     dates.sort((a, b) => parseDateTimestamp(b) - parseDateTimestamp(a));
     return dates;
@@ -268,7 +269,7 @@ export default function PainelPage() {
     >();
 
     allBets.forEach((b) => {
-      if (!b.data || b.data === "—") return;
+      if (!b.data || b.data === SEM_DATA) return;
       const ts = parseDateTimestamp(b.data);
       const current = map.get(b.data) || {
         timestamp: ts,

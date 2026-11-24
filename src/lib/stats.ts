@@ -10,6 +10,7 @@ import type {
   TipsterStat,
 } from "./types";
 import { reaisParaUnidades } from "./constants";
+import { SEM_CASA, OUTROS_ESPORTES } from "./padroes";
 
 /**
  * Taxa de acerto sobre apostas FINALIZADAS.
@@ -143,8 +144,8 @@ export function computeStatsFromBets(bets: BetItem[]) {
       porCasa: new Map(),
       porEsporte: new Map(),
     };
-    somar(t.porCasa, b.casa || "Sem Casa", b);
-    somar(t.porEsporte, b.esporte || "Outros", b);
+    somar(t.porCasa, b.casa || SEM_CASA, b);
+    somar(t.porEsporte, b.esporte || OUTROS_ESPORTES, b);
     t.total += 1;
     t.lucro += b.lucro;
     if (b.esporte) t.esportes.add(b.esporte);
@@ -187,7 +188,7 @@ export function computeStatsFromBets(bets: BetItem[]) {
     { total: number; greens: number; reds: number; lucro: number; apostado: number }
   >();
   bets.forEach((b) => {
-    let cleanSport = (b.esporte || "Outros").trim() || "Outros";
+    let cleanSport = (b.esporte || OUTROS_ESPORTES).trim() || OUTROS_ESPORTES;
     cleanSport = cleanSport.charAt(0).toUpperCase() + cleanSport.slice(1);
     const s = sportMap.get(cleanSport) || {
       total: 0,

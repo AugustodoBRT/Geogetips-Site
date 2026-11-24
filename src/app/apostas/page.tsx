@@ -55,6 +55,7 @@ import {
   formatarReais,
   formatarReaisComSinal,
 } from "@/lib/format";
+import { ADM_GERAL, SEM_DATA } from "@/lib/padroes";
 
 /**
  * Quantas apostas a tela desenha de saída.
@@ -239,7 +240,7 @@ export default function ApostasPage() {
 
   const availableDays = useMemo(() => {
     const dates = Array.from(new Set(bets.map((b) => b.data))).filter(
-      (d) => d && d !== "—"
+      (d) => d && d !== SEM_DATA
     );
     dates.sort((a, b) => parseDateTimestamp(b) - parseDateTimestamp(a));
     return dates;
@@ -954,7 +955,7 @@ export default function ApostasPage() {
                                   {bet.tip}
                                 </span>
 
-                                {bet.tipster && bet.tipster !== "Geral" && (
+                                {bet.tipster && bet.tipster !== ADM_GERAL && (
                                   <span className="text-[10px] text-[var(--text-3)] px-1.5 py-0.5 bg-[var(--bg)] rounded shrink-0">
                                     {bet.tipster}
                                   </span>

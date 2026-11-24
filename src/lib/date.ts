@@ -25,12 +25,14 @@
  * alguma das três funções voltar a depender do fuso do processo.
  */
 
+import { SEM_DATA } from "./padroes";
+
 /** Um dia em milissegundos. Exato, porque os timestamps são meia-noite UTC. */
 export const MS_POR_DIA = 86_400_000;
 
 /** Converte "DD/MM/YYYY" em timestamp. Devolve 0 para entradas inválidas. */
 export function parseDateTimestamp(dateStr: string): number {
-  if (!dateStr || dateStr === "—") return 0;
+  if (!dateStr || dateStr === SEM_DATA) return 0;
   const parts = dateStr.split("/");
   if (parts.length !== 3) return 0;
 
@@ -47,7 +49,7 @@ export function parseDateTimestamp(dateStr: string): number {
  * Devolve "" para entradas inválidas.
  */
 export function paraISO(dateStr: string): string {
-  if (!dateStr || dateStr === "—") return "";
+  if (!dateStr || dateStr === SEM_DATA) return "";
   const [d, m, a] = dateStr.split("/");
   if (!d || !m || !a) return "";
   return `${a}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
