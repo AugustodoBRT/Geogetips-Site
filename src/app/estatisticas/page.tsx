@@ -31,6 +31,7 @@ import {
 } from "@/lib/format";
 import { rotuloDaAba, trechoDaAba } from "@/lib/constants";
 import { abaDoEndereco, abaParaEndereco } from "@/lib/endereco";
+import { textoDasRotas } from "@/texto/rotas";
 
 const RAIO = 48;
 const CIRCUNFERENCIA = 2 * Math.PI * RAIO;
@@ -141,7 +142,7 @@ export default function EstatisticasPage() {
           )}
           <div className="flex items-center gap-2">
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
-              Estatísticas &amp; Padrões
+              {textoDasRotas().estatisticas.titulo}
             </h1>
             {!erro && !isMock && !loading && (
               <span className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full">

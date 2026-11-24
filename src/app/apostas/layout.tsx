@@ -1,9 +1,8 @@
 import { metadadosDaPagina } from "@/lib/metadados";
+import { textoDasRotas } from "@/texto/rotas";
 
 export const metadata = metadadosDaPagina({
-  titulo: "Feed de Apostas",
-  descricao:
-    "Todas as apostas do GeogeTips em ordem cronológica, com odd, casa, valor e resultado. Filtre por data, esporte, casa e faixa de odd.",
+  ...textoDasRotas().apostas,
   caminho: "/apostas",
 });
 

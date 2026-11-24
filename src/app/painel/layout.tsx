@@ -1,9 +1,8 @@
 import { metadadosDaPagina } from "@/lib/metadados";
+import { textoDasRotas } from "@/texto/rotas";
 
 export const metadata = metadadosDaPagina({
-  titulo: "Painel de Performance",
-  descricao:
-    "Lucro, ROI, taxa de acerto e evolução da banca do GeogeTips, calculados a partir da planilha pública de apostas.",
+  ...textoDasRotas().painel,
   caminho: "/painel",
 });
 

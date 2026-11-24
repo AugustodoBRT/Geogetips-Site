@@ -68,6 +68,7 @@ import {
   Minus,
 } from "lucide-react";
 import Link from "next/link";
+import { textoDasRotas } from "@/texto/rotas";
 
 interface DayPoint {
   date: string;
@@ -524,7 +525,7 @@ export default function PainelPage() {
           )}
           <div className="flex items-center gap-2">
             <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
-              Painel de Performance
+              {textoDasRotas().painel.titulo}
             </h1>
             {/* Só afirma "ao vivo" quando a leitura realmente veio da planilha */}
             {/* Afirmar "ao vivo" sem dizer de quando é o dado era a única

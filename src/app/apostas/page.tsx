@@ -35,6 +35,7 @@ import { agruparPorDia, diasAbertosDeSaida } from "@/lib/dias";
 import { normalizarTexto } from "@/lib/texto";
 import { trechoDaAba, VALOR_UNIDADE } from "@/lib/constants";
 import { apostasParaCsv, nomeDoArquivo } from "@/lib/csv";
+import { textoDasRotas } from "@/texto/rotas";
 import {
   abaDoEndereco,
   abaParaEndereco,
@@ -486,7 +487,7 @@ export default function ApostasPage() {
             </div>
           )}
           <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
-            Feed de Apostas
+            {textoDasRotas().apostas.titulo}
           </h1>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
             Feed cronológico {trecho.prefixo}{" "}

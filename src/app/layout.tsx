@@ -1,5 +1,6 @@
 import { CORES, CORES_ESCURO } from "@/lib/cores";
 import { SITE_URL } from "@/lib/constants";
+import { textoDasRotas } from "@/texto/rotas";
 import { SCRIPT_TEMA_INICIAL } from "@/lib/tema";
 import type { Metadata, Viewport } from "next";
 import { Fragment } from "react";
@@ -30,10 +31,7 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
-const TITULO = "GeogeTips — Matemática para ganhar";
-const DESCRICAO =
-  "Histórico aberto de apostas esportivas: cada uma planilhada, com ROI, " +
-  "taxa de acerto e evolução da banca. Grupo gratuito no Telegram.";
+const { titulo: TITULO, descricao: DESCRICAO } = textoDasRotas().home;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
