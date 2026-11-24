@@ -25,6 +25,7 @@ import { useUnidade } from "@/hooks/useUnidade";
 import Link from "next/link";
 import { abaCurta, abaDoMesAtual } from "@/lib/constants";
 import { comAba } from "@/lib/endereco";
+import { textoDoHistorico } from "@/texto/historico";
 import { textoDasRotas } from "@/texto/rotas";
 import {
   corDoValor,
@@ -38,7 +39,6 @@ import {
   formatarReaisComSinal,
   formatarUnidades,
   tamanhoDoValor,
-  formatarDecimal,
   formatarTaxa,
 } from "@/lib/format";
 
@@ -85,6 +85,8 @@ export default function HistoricoPage() {
   const mesAtual = abaDoMesAtual();
   const emAndamento = meses.find((m) => m.aba === mesAtual);
 
+  const T = textoDoHistorico();
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <BarraDeProgresso ativo={loading} />
@@ -101,13 +103,12 @@ export default function HistoricoPage() {
             </h1>
             {!erro && !isMock && !loading && (
               <span className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full">
-                Consolidado
+                {T.selo}
               </span>
             )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans max-w-2xl">
-            Todos os meses da planilha lado a lado, incluindo os negativos. O ROI é
-            recalculado sobre a soma do período — não é a média dos ROIs mensais.
+            {T.escopo}
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
@@ -116,8 +117,8 @@ export default function HistoricoPage() {
           type="button"
           onClick={recarregar}
           disabled={loading}
-          aria-label="Recarregar dados"
-          title="Recarregar dados"
+          aria-label={T.recarregar}
+          title={T.recarregar}
           className="p-2 bg-[var(--bg-card)] border border-tinta/[0.12] rounded-full text-[var(--text-2)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all disabled:opacity-50 shrink-0 self-start sm:self-auto"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -134,7 +135,7 @@ export default function HistoricoPage() {
         <SkeletonCorpoHistorico />
       ) : erro ? null : meses.length === 0 ? (
         <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-16 text-center text-[var(--text-3)]">
-          <p className="text-sm font-medium">Nenhum mês encontrado na planilha.</p>
+          <p className="text-sm font-medium">{T.vazio}</p>
         </div>
       ) : (
         <>
@@ -144,7 +145,7 @@ export default function HistoricoPage() {
               <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
-                    Resultado Consolidado
+                    {T.consolidado.rotulo}
                   </span>
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -175,12 +176,14 @@ export default function HistoricoPage() {
                   />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
-                  {formatarUnidades(consolidado.unidades)} em {meses.length}{" "}
-                  {meses.length === 1 ? "mês" : "meses"}
+                  {T.consolidado.legenda({
+                    unidades: consolidado.unidades,
+                    meses: meses.length,
+                  })}
                   {emAndamento && (
                     <span className="text-[var(--amber)]">
                       {" "}
-                      · {abaCurta(emAndamento.aba)} em andamento
+                      {T.consolidado.emAndamento(abaCurta(emAndamento.aba))}
                     </span>
                   )}
                 </div>
@@ -189,7 +192,7 @@ export default function HistoricoPage() {
               <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
-                    ROI do Período
+                    {T.roi.rotulo}
                   </span>
                   <div className="w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center">
                     <Percent className="w-4 h-4" />
@@ -207,14 +210,14 @@ export default function HistoricoPage() {
                   />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
-                  Sobre a soma de tudo que foi apostado
+                  {T.roi.legenda}
                 </div>
               </div>
 
               <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
-                    Apostas
+                    {T.apostas.rotulo}
                   </span>
                   <div className="w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] flex items-center justify-center">
                     <Layers className="w-4 h-4" />
@@ -228,17 +231,18 @@ export default function HistoricoPage() {
                   <NumeroAnimado value={consolidado.apostas} />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
-                  {formatarInteiro(consolidado.greens)} Green ·{" "}
-                  {formatarInteiro(consolidado.reds)} Red
-                  {consolidado.voids > 0 &&
-                    ` · ${formatarInteiro(consolidado.voids)} Void`}
+                  {T.apostas.legenda({
+                    greens: consolidado.greens,
+                    reds: consolidado.reds,
+                    voids: consolidado.voids,
+                  })}
                 </div>
               </div>
 
               <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-[var(--text-3)]">
                   <span className="text-[11px] font-bold uppercase tracking-wider">
-                    Taxa de Acerto
+                    {T.taxa.rotulo}
                   </span>
                   <div className="w-8 h-8 rounded-lg bg-[var(--green-soft)] text-[var(--green)] flex items-center justify-center">
                     <Activity className="w-4 h-4" />
@@ -252,11 +256,7 @@ export default function HistoricoPage() {
                   />
                 </div>
                 <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
-                  {mesesNegativos === 0
-                    ? "Nenhum mês negativo"
-                    : `${mesesNegativos} ${
-                        mesesNegativos === 1 ? "mês negativo" : "meses negativos"
-                      }`}
+                  {T.taxa.legenda(mesesNegativos)}
                 </div>
               </div>
             </div>
@@ -266,22 +266,23 @@ export default function HistoricoPage() {
           <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm">
             <div className="mb-6">
               <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                Resultado por mês
+                {T.barras.titulo}
               </h2>
-              <p className="text-xs text-[var(--text-3)]">
-                Barras acima da linha são lucro, abaixo são prejuízo
-              </p>
+              <p className="text-xs text-[var(--text-3)]">{T.barras.sub}</p>
             </div>
 
             <div className="overflow-x-auto">
               <div
                 className="flex items-stretch gap-3 min-w-min"
                 role="img"
-                aria-label={`Resultado de ${cronologico.length} meses: ${cronologico
-                  .map(
-                    (m) => `${abaCurta(m.aba)} ${formatarDecimal(m.unidades, 2)} unidades`
-                  )
-                  .join(", ")}`}
+                aria-label={T.barras.aria.involucro({
+                  meses: cronologico.length,
+                  lista: cronologico
+                    .map((m) =>
+                      T.barras.aria.item({ mes: abaCurta(m.aba), unidades: m.unidades })
+                    )
+                    .join(T.barras.aria.separador),
+                })}
               >
                 {/* Altura aplicada direto no estilo, com transição em CSS.
                     Com initial/animate do framer a barra dependia de rAF para
@@ -349,7 +350,7 @@ export default function HistoricoPage() {
                         </div>
                         {parcial && (
                           <div className="text-[9.5px] font-semibold text-[var(--amber)] whitespace-nowrap">
-                            parcial
+                            {T.barras.parcial}
                           </div>
                         )}
                       </div>
@@ -364,34 +365,32 @@ export default function HistoricoPage() {
           <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <caption className="sr-only">
-                  Resultados por mês: apostas, greens, reds, resultado e ROI
-                </caption>
+                <caption className="sr-only">{T.tabela.legenda}</caption>
                 <thead className="bg-[var(--bg-soft)] border-b border-tinta/[0.06] text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                   <tr>
                     <th scope="col" className="py-3 px-4">
-                      Mês
+                      {T.tabela.colunas.mes}
                     </th>
                     <th scope="col" className="py-3 px-3 text-right">
-                      Apostas
+                      {T.tabela.colunas.apostas}
                     </th>
                     <th scope="col" className="py-3 px-3 text-right">
-                      Green
+                      {T.tabela.colunas.green}
                     </th>
                     <th scope="col" className="py-3 px-3 text-right">
-                      Red
+                      {T.tabela.colunas.red}
                     </th>
                     <th scope="col" className="py-3 px-3 text-right">
-                      Acerto
+                      {T.tabela.colunas.acerto}
                     </th>
                     <th scope="col" className="py-3 px-3 text-right">
-                      Odd méd.
+                      {T.tabela.colunas.odd}
                     </th>
                     <th scope="col" className="py-3 px-4 text-right">
-                      Resultado
+                      {T.tabela.colunas.resultado}
                     </th>
                     <th scope="col" className="py-3 px-4 text-right">
-                      ROI
+                      {T.tabela.colunas.roi}
                     </th>
                   </tr>
                 </thead>
@@ -412,13 +411,13 @@ export default function HistoricoPage() {
                         <Link
                           href={comAba("/painel", m.aba, grupo)}
                           className="inline-flex items-center gap-1.5 py-[5px] -my-[5px] hover:text-[var(--accent)] hover:underline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded"
-                          title={`Abrir o Painel de ${abaCurta(m.aba)}`}
+                          title={T.tabela.irParaPainel(abaCurta(m.aba))}
                         >
                           {abaCurta(m.aba)}
                         </Link>
                         {m.aba === mesAtual && (
                           <span className="ml-2 px-1.5 py-0.5 rounded-full bg-[var(--amber-soft)] text-[var(--amber)] text-[10px] font-semibold align-middle">
-                            em andamento
+                            {T.tabela.emAndamento}
                           </span>
                         )}
                       </th>
@@ -435,7 +434,7 @@ export default function HistoricoPage() {
                         {formatarTaxa(m.taxaAcerto)}
                       </td>
                       <td className="py-3 px-3 font-mono text-right text-[var(--text-2)]">
-                        {m.oddMedia > 0 ? formatarOdd(m.oddMedia) : "—"}
+                        {m.oddMedia > 0 ? formatarOdd(m.oddMedia) : T.tabela.semValor}
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${corDoValor(
@@ -458,7 +457,7 @@ export default function HistoricoPage() {
                   <tfoot className="bg-[var(--bg-soft)] border-t-2 border-tinta/[0.1]">
                     <tr>
                       <th scope="row" className="py-3 px-4 font-bold text-[var(--text)]">
-                        Total
+                        {T.tabela.total}
                       </th>
                       <td className="py-3 px-3 font-mono text-right font-bold text-[var(--text)]">
                         {formatarInteiro(consolidado.apostas)}
@@ -475,7 +474,7 @@ export default function HistoricoPage() {
                       <td className="py-3 px-3 font-mono text-right font-bold text-[var(--text)]">
                         {consolidado.oddMedia > 0
                           ? formatarOdd(consolidado.oddMedia)
-                          : "—"}
+                          : T.tabela.semValor}
                       </td>
                       <td
                         className={`py-3 px-4 font-mono text-right font-bold whitespace-nowrap ${corDoValor(
