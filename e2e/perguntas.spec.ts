@@ -71,7 +71,7 @@ test("menu, rodapé e home apontam para a página", async ({ page }) => {
     })
   ).toHaveAttribute("href", "/perguntas");
   await expect(
-    page.getByRole("contentinfo").getByRole("link", { name: "Perguntas frequentes" })
+    page.getByRole("contentinfo").getByRole("link", { name: "FAQ" })
   ).toHaveAttribute("href", "/perguntas");
   await expect(
     page.getByRole("link", { name: "Outras dúvidas frequentes" })

@@ -20,14 +20,19 @@ describe("texto da moldura", () => {
     expect(T.rotas.estatisticas).toBe("Estatísticas");
   });
 
-  it("perguntas ainda tem dois nomes, e isso está aqui de propósito", () => {
-    // A decisão de produto de 24/11 é um nome só, "FAQ". Aplicá-la muda o que
-    // o visitante lê no rodapé e no 404, e esta extração promete não mudar
-    // nada — então os dois continuam, e este teste é o que torna a unificação
-    // uma mudança deliberada em vez de um efeito colateral.
-    expect(T.rotas.perguntas.menu).toBe("FAQ");
-    expect(T.rotas.perguntas.lista).toBe("Perguntas frequentes");
-    expect(T.rotas.perguntas.menu).not.toBe(T.rotas.perguntas.lista);
+  it("perguntas tem um nome curto só, e é FAQ", () => {
+    // Era a única rota com dois: "FAQ" no menu e "Perguntas frequentes" no
+    // rodapé e no 404. Decisão de 24/11/2026.
+    expect(T.rotas.perguntas).toBe("FAQ");
+  });
+
+  it("nenhuma rota tem dois nomes curtos", () => {
+    // A forma do registro é o que impede a divergência de voltar: cada rota
+    // tem uma string, não um objeto com variantes. Se alguém precisar de uma
+    // segunda grafia, esbarra aqui antes de ela chegar à tela.
+    for (const [rota, nome] of Object.entries(T.rotas)) {
+      expect(typeof nome, `${rota} deixou de ser um nome só`).toBe("string");
+    }
   });
 
   it("os rótulos de navegação são os que o e2e cobra pelo papel", () => {

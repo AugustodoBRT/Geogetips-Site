@@ -22,7 +22,7 @@ const navItems = [
   { label: T.rotas.historico, href: "/historico" },
   { label: T.rotas.adms, href: "/adms" },
   { label: T.rotas.estatisticas, href: "/estatisticas" },
-  { label: T.rotas.perguntas.menu, href: "/perguntas" },
+  { label: T.rotas.perguntas, href: "/perguntas" },
 ];
 
 /**
