@@ -11,15 +11,18 @@ import { BotaoTelegram, IconeTelegram } from "@/components/Telegram";
 import { BotaoTema } from "@/components/BotaoTema";
 import { MarcaG } from "@/components/MarcaG";
 import { TELEGRAM_URL } from "@/lib/constants";
+import { textoDaMoldura } from "@/texto/moldura";
+
+const T = textoDaMoldura();
 
 const navItems = [
-  { label: "Início", href: "/" },
-  { label: "Painel", href: "/painel" },
-  { label: "Apostas", href: "/apostas" },
-  { label: "Histórico", href: "/historico" },
-  { label: "Adms", href: "/adms" },
-  { label: "Estatísticas", href: "/estatisticas" },
-  { label: "FAQ", href: "/perguntas" },
+  { label: T.rotas.home, href: "/" },
+  { label: T.rotas.painel, href: "/painel" },
+  { label: T.rotas.apostas, href: "/apostas" },
+  { label: T.rotas.historico, href: "/historico" },
+  { label: T.rotas.adms, href: "/adms" },
+  { label: T.rotas.estatisticas, href: "/estatisticas" },
+  { label: T.rotas.perguntas.menu, href: "/perguntas" },
 ];
 
 /**
@@ -108,7 +111,7 @@ function Navigation() {
   return (
     <>
       <nav
-        aria-label="Navegação principal"
+        aria-label={T.navegacao.principal}
         className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between bg-[color:color-mix(in_srgb,var(--bg)_90%,transparent)] backdrop-blur-md border-b border-tinta/[0.07]"
       >
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -174,7 +177,7 @@ function Navigation() {
               onClick={() => setAberto((v) => !v)}
               aria-expanded={aberto}
               aria-controls="menu-mobile"
-              aria-label={aberto ? "Fechar menu" : "Abrir menu"}
+              aria-label={aberto ? T.navegacao.fechar : T.navegacao.abrir}
               className="md:hidden p-2.5 -mr-1 rounded-full text-[var(--text)] hover:bg-tinta/[0.05] active:scale-95 transition-all"
             >
               {aberto ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -218,7 +221,7 @@ function Navigation() {
           >
             {/* O painel fica fora do <nav> do topo; sem este marco a lista
                 do celular não aparecia como navegação para leitor de tela. */}
-            <nav aria-label="Menu">
+            <nav aria-label={T.navegacao.menu}>
               <ul className="flex flex-col gap-0.5 list-none p-0 m-0">
                 {navItems.map((item, i) => {
                   const isActive = pathname === item.href;
