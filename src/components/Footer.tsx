@@ -3,14 +3,17 @@ import { LinkInterno } from "@/components/LinkInterno";
 import { MarcaG } from "@/components/MarcaG";
 import { IconeTelegram, IconeX } from "@/components/Telegram";
 import { TELEGRAM_URL, PLANILHA_URL, X_URL } from "@/lib/constants";
+import { textoDaMoldura } from "@/texto/moldura";
+
+const T = textoDaMoldura();
 
 const LINKS = [
-  { label: "Painel", href: "/painel" },
-  { label: "Apostas", href: "/apostas" },
-  { label: "Histórico", href: "/historico" },
-  { label: "Adms", href: "/adms" },
-  { label: "Estatísticas", href: "/estatisticas" },
-  { label: "Perguntas frequentes", href: "/perguntas" },
+  { label: T.rotas.painel, href: "/painel" },
+  { label: T.rotas.apostas, href: "/apostas" },
+  { label: T.rotas.historico, href: "/historico" },
+  { label: T.rotas.adms, href: "/adms" },
+  { label: T.rotas.estatisticas, href: "/estatisticas" },
+  { label: T.rotas.perguntas.lista, href: "/perguntas" },
 ];
 
 export function Footer() {

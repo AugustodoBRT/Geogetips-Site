@@ -1,5 +1,6 @@
 import { CORES, CORES_ESCURO } from "@/lib/cores";
 import { SITE_URL } from "@/lib/constants";
+import { textoDaMoldura } from "@/texto/moldura";
 import { textoDasRotas } from "@/texto/rotas";
 import { SCRIPT_TEMA_INICIAL } from "@/lib/tema";
 import type { Metadata, Viewport } from "next";
@@ -119,7 +120,7 @@ export default function RootLayout({
           href="#conteudo"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[var(--text)] focus:text-[var(--bg)] focus:rounded-full focus:text-xs focus:font-bold"
         >
-          Pular para o conteúdo
+          {textoDaMoldura().pularParaConteudo}
         </a>
         <ProvedorDeMovimento>
           <UnidadeProvider>
