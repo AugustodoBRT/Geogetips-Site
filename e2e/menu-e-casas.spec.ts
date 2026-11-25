@@ -159,7 +159,7 @@ test("a página que não existe oferece os seis destinos do menu", async ({ page
     .getByRole("link");
   await expect(atalhos).toHaveCount(6);
   await expect(atalhos.filter({ hasText: "Adms" })).toHaveAttribute("href", "/adms");
-  await expect(atalhos.filter({ hasText: "Perguntas frequentes" })).toHaveAttribute(
+  await expect(atalhos.filter({ hasText: "FAQ" })).toHaveAttribute(
     "href",
     "/perguntas"
   );

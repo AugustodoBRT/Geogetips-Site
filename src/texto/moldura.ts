@@ -24,22 +24,15 @@ const MOLDURA = {
     adms: "Adms",
     estatisticas: "Estatísticas",
     /**
-     * `/perguntas` é a única rota com **dois** nomes curtos: "FAQ" no menu e
-     * "Perguntas frequentes" no rodapé e nos atalhos do 404. Para as outras
-     * cinco, o nome curto é a mesma palavra em três cópias.
+     * Era a única rota com **dois** nomes curtos: "FAQ" no menu e "Perguntas
+     * frequentes" no rodapé e nos atalhos do 404. Decisão de 24/11/2026: fica
+     * um só, e é "FAQ".
      *
-     * Está preservado assim de propósito. A decisão de produto já foi tomada —
-     * em 24/11/2026, fica **um nome só, "FAQ"** —, mas aplicá-la muda o que o
-     * visitante lê em dois lugares, e esta extração promete não mudar nada.
-     * Sai em trabalho próprio, com as duas asserções de `e2e/` que prendem o
-     * texto de hoje mudando junto, como evidência.
-     *
-     * Quando isso acontecer, estes dois campos viram um.
+     * O **título** da página não muda — o `<h1>` e o metadado continuam
+     * "Perguntas frequentes", em `rotas.ts`. O que ficou com um nome só é o
+     * atalho: o que a moldura escreve quando lista destinos.
      */
-    perguntas: {
-      menu: "FAQ",
-      lista: "Perguntas frequentes",
-    },
+    perguntas: "FAQ",
   },
 
   /** O que o leitor de tela ouve da navegação, e o e2e cobra pelo papel. */

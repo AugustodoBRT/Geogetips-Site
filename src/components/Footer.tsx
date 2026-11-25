@@ -13,7 +13,7 @@ const LINKS = [
   { label: T.rotas.historico, href: "/historico" },
   { label: T.rotas.adms, href: "/adms" },
   { label: T.rotas.estatisticas, href: "/estatisticas" },
-  { label: T.rotas.perguntas.lista, href: "/perguntas" },
+  { label: T.rotas.perguntas, href: "/perguntas" },
 ];
 
 export function Footer() {
@@ -64,9 +64,22 @@ export function Footer() {
             <ul className="flex flex-wrap gap-x-5 gap-y-2 list-none p-0 m-0">
               {LINKS.map((l) => (
                 <li key={l.href}>
+                  {/* Os 24 px de alvo de toque da WCAG 2.5.8. O `py-1.5` dava a
+                      altura, e a largura vinha do texto — o que bastava
+                      enquanto o rótulo mais curto era "Adms". Com "FAQ" o link
+                      caiu para 22 px e o teste de alvo de toque acusou em cinco
+                      telas.
+
+                      Em pixel, e não na escala do Tailwind: a raiz deste site
+                      tem **15 px** de fonte (globals.css), então `min-w-6` vale
+                      1,5rem = 22,5 px e não alcança o mínimo. O limite da norma
+                      é em pixel, e a medida aqui também tem de ser.
+
+                      Como a lista é alinhada à esquerda e os outros rótulos já
+                      passam de 24 px, isto não move nada na tela. */}
                   <LinkInterno
                     href={l.href}
-                    className="inline-block py-1.5 text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] transition-colors"
+                    className="inline-block min-w-[24px] py-1.5 text-xs font-semibold text-[var(--text-2)] hover:text-[var(--accent)] transition-colors"
                   >
                     {l.label}
                   </LinkInterno>

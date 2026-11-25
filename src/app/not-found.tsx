@@ -20,7 +20,7 @@ const ATALHOS = [
   { href: "/historico", nome: T.rotas.historico, texto: N.atalhos.historico },
   { href: "/adms", nome: T.rotas.adms, texto: N.atalhos.adms },
   { href: "/estatisticas", nome: T.rotas.estatisticas, texto: N.atalhos.estatisticas },
-  { href: "/perguntas", nome: T.rotas.perguntas.lista, texto: N.atalhos.perguntas },
+  { href: "/perguntas", nome: T.rotas.perguntas, texto: N.atalhos.perguntas },
 ];
 
 /**
