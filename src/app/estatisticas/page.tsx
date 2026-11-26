@@ -31,6 +31,7 @@ import {
 } from "@/lib/format";
 import { rotuloDaAba, trechoDaAba } from "@/lib/constants";
 import { abaDoEndereco, abaParaEndereco } from "@/lib/endereco";
+import { textoDasEstatisticas } from "@/texto/estatisticas";
 import { textoDasRotas } from "@/texto/rotas";
 
 const RAIO = 48;
@@ -96,6 +97,8 @@ export default function EstatisticasPage() {
   const bookies = casas.slice(0, 8);
   const trecho = trechoDaAba(activeTab);
 
+  const T = textoDasEstatisticas();
+
   /** Qual diálogo de detalhe está aberto, se algum. */
   const [detalhe, setDetalhe] = useState<"esportes" | "casas" | null>(null);
 
@@ -146,14 +149,24 @@ export default function EstatisticasPage() {
             </h1>
             {!erro && !isMock && !loading && (
               <span className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full">
-                Análises
+                {T.selo}
               </span>
             )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Distribuição de resultados, médias de odd e lucro por esporte e por casa{" "}
-            {trecho.prefixo}{" "}
-            <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>.
+            {T.escopo(trecho).map((parte, i) =>
+              typeof parte === "string" ? (
+                parte
+              ) : (
+                <span
+                  // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+                  key={i}
+                  className="font-semibold text-[var(--text)]"
+                >
+                  {parte.forte}
+                </span>
+              )
+            )}
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
@@ -184,12 +197,10 @@ export default function EstatisticasPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                    Distribuição de Resultados ({rotuloDaAba(activeTab)})
+                    {T.distribuicao.titulo(rotuloDaAba(activeTab))}
                   </h2>
                   <p className="text-xs text-[var(--text-3)]">
-                    {voids > 0
-                      ? "Proporção entre Green, Red, Pendentes e Anuladas"
-                      : "Proporção entre Green, Red e Pendentes"}
+                    {T.distribuicao.descricao(voids > 0)}
                   </p>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-[var(--green-soft)] text-[var(--green)] flex items-center justify-center">
@@ -203,7 +214,13 @@ export default function EstatisticasPage() {
                     viewBox="0 0 120 120"
                     className="w-full h-full -rotate-90"
                     role="img"
-                    aria-label={`${formatarInteiro(greens)} green, ${formatarInteiro(reds)} red, ${formatarInteiro(pendings)} pendentes, ${formatarInteiro(voids)} anuladas, de ${formatarInteiro(totalBets)} apostas`}
+                    aria-label={T.distribuicao.aria({
+                      greens: formatarInteiro(greens),
+                      reds: formatarInteiro(reds),
+                      pendentes: formatarInteiro(pendings),
+                      anuladas: formatarInteiro(voids),
+                      total: formatarInteiro(totalBets),
+                    })}
                   >
                     <circle
                       cx="60"
@@ -240,7 +257,7 @@ export default function EstatisticasPage() {
                       <NumeroAnimado value={totalBets} />
                     </span>
                     <span className="text-[10.5px] uppercase tracking-wider text-[var(--text-3)] font-bold mt-1">
-                      Apostas
+                      {T.distribuicao.total}
                     </span>
                   </div>
                 </div>
@@ -248,14 +265,19 @@ export default function EstatisticasPage() {
                 <div className="space-y-3 w-full sm:w-auto">
                   {[
                     {
-                      rotulo: "Green (Vitórias)",
+                      rotulo: T.distribuicao.legenda.green,
                       n: greens,
                       pct: pctGreen,
                       cor: "var(--green)",
                     },
-                    { rotulo: "Red (Perdas)", n: reds, pct: pctRed, cor: "var(--red)" },
                     {
-                      rotulo: "Pendente",
+                      rotulo: T.distribuicao.legenda.red,
+                      n: reds,
+                      pct: pctRed,
+                      cor: "var(--red)",
+                    },
+                    {
+                      rotulo: T.distribuicao.legenda.pendente,
                       n: pendings,
                       pct: pctPendente,
                       cor: "var(--amber)",
@@ -263,7 +285,7 @@ export default function EstatisticasPage() {
                     ...(voids > 0
                       ? [
                           {
-                            rotulo: "Void (anulada)",
+                            rotulo: T.distribuicao.legenda.void,
                             n: voids,
                             pct: pctVoid,
                             cor: "var(--text-3)",
@@ -290,7 +312,7 @@ export default function EstatisticasPage() {
                         className="font-mono font-bold text-xs"
                         style={{ color: linha.cor }}
                       >
-                        {formatarInteiro(linha.n)} ({linha.pct}%)
+                        {T.distribuicao.linha(formatarInteiro(linha.n), linha.pct)}
                       </span>
                     </div>
                   ))}
@@ -303,11 +325,9 @@ export default function EstatisticasPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                    Médias de Odd ({rotuloDaAba(activeTab)})
+                    {T.odds.titulo(rotuloDaAba(activeTab))}
                   </h2>
-                  <p className="text-xs text-[var(--text-3)]">
-                    Comparativo entre apostas ganhas e perdidas
-                  </p>
+                  <p className="text-xs text-[var(--text-3)]">{T.odds.descricao}</p>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] flex items-center justify-center">
                   <Hash className="w-4 h-4" />
@@ -317,20 +337,20 @@ export default function EstatisticasPage() {
               <div className="space-y-3">
                 {[
                   {
-                    titulo: "Apostas com GREEN",
-                    sub: `${formatarInteiro(greens)} ${greens === 1 ? "tip acertada" : "tips acertadas"}`,
+                    titulo: T.odds.green,
+                    sub: T.odds.greenSub(greens),
                     valor: stats?.oddMediaGreen ?? 0,
                     cor: "var(--green)",
                   },
                   {
-                    titulo: "Apostas com RED",
-                    sub: `${formatarInteiro(reds)} ${reds === 1 ? "tip perdida" : "tips perdidas"}`,
+                    titulo: T.odds.red,
+                    sub: T.odds.redSub(reds),
                     valor: stats?.oddMediaRed ?? 0,
                     cor: "var(--red)",
                   },
                   {
-                    titulo: "Média Geral",
-                    sub: `${formatarInteiro(totalBets)} ${totalBets === 1 ? "tip no total" : "tips no total"}`,
+                    titulo: T.odds.geral,
+                    sub: T.odds.geralSub(totalBets),
                     valor: stats?.oddMediaGeral ?? 0,
                     cor: "var(--accent)",
                   },
@@ -364,7 +384,7 @@ export default function EstatisticasPage() {
                           }}
                         />
                       ) : (
-                        "—"
+                        T.odds.semValor
                       )}
                     </div>
                   </div>
@@ -385,7 +405,7 @@ export default function EstatisticasPage() {
             <button
               type="button"
               onClick={() => setDetalhe("esportes")}
-              aria-label="Ver todos os esportes em detalhe"
+              aria-label={T.esportes.aria}
               className={
                 "w-full h-full flex flex-col items-stretch text-left bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
               }
@@ -393,10 +413,10 @@ export default function EstatisticasPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                    Top Esportes
+                    {T.esportes.titulo}
                   </h2>
                   <p className="text-xs text-[var(--text-3)]">
-                    Rentabilidade por esporte {trecho.prefixo} {trecho.nome}
+                    {T.esportes.descricao(trecho)}
                   </p>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center">
@@ -406,9 +426,7 @@ export default function EstatisticasPage() {
 
               <div className="space-y-4">
                 {sports.length === 0 ? (
-                  <p className="text-xs text-[var(--text-3)]">
-                    Sem dados de categoria neste período.
-                  </p>
+                  <p className="text-xs text-[var(--text-3)]">{T.esportes.vazio}</p>
                 ) : (
                   sports.map((sport) => {
                     // A cor do valor e a barra leem o MESMO número que a linha
@@ -432,7 +450,7 @@ export default function EstatisticasPage() {
                           >
                             {formatarReaisComSinal(lucroExibido)}
                             <span className="text-[10.5px] text-[var(--text-3)] font-medium">
-                              ROI {formatarPorcentagem(sport.roi)}
+                              {T.esportes.roi(formatarPorcentagem(sport.roi))}
                             </span>
                           </span>
                         </div>
@@ -458,7 +476,7 @@ export default function EstatisticasPage() {
             <button
               type="button"
               onClick={() => setDetalhe("casas")}
-              aria-label="Ver todas as casas em detalhe"
+              aria-label={T.casas.aria}
               className={
                 "w-full h-full flex flex-col items-stretch text-left bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm space-y-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
               }
@@ -466,11 +484,9 @@ export default function EstatisticasPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-                    Top Casas
+                    {T.casas.titulo}
                   </h2>
-                  <p className="text-xs text-[var(--text-3)]">
-                    Lucro e ROI por casa — a barra mostra o volume
-                  </p>
+                  <p className="text-xs text-[var(--text-3)]">{T.casas.descricao}</p>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] flex items-center justify-center">
                   <Layers className="w-4 h-4" />
@@ -479,9 +495,7 @@ export default function EstatisticasPage() {
 
               <div className="space-y-3.5">
                 {bookies.length === 0 ? (
-                  <p className="text-xs text-[var(--text-3)]">
-                    Sem dados de casas neste período.
-                  </p>
+                  <p className="text-xs text-[var(--text-3)]">{T.casas.vazio}</p>
                 ) : (
                   bookies.map((b) => (
                     <div key={b.casa} className="space-y-1.5">
@@ -492,9 +506,10 @@ export default function EstatisticasPage() {
                             {formatarReaisComSinal(converter(b.lucro))}
                           </span>
                           <span className="text-[10.5px] text-[var(--text-3)] font-medium">
-                            {formatarInteiro(b.apostas)}{" "}
-                            {b.apostas === 1 ? "aposta" : "apostas"} · ROI{" "}
-                            {formatarPorcentagem(b.roi)}
+                            {T.casas.linha({
+                              apostas: b.apostas,
+                              roi: formatarPorcentagem(b.roi),
+                            })}
                           </span>
                         </span>
                       </div>
@@ -515,18 +530,16 @@ export default function EstatisticasPage() {
       {detalhe === "esportes" && (
         <Dialogo
           key="detalhe-esportes"
-          rotulo={`Todos os esportes ${trecho.prefixo} ${trecho.nome}`}
+          rotulo={T.detalheDosEsportes.rotulo(trecho)}
           onFechar={() => setDetalhe(null)}
           largura="max-w-2xl"
         >
           <div className="pb-3 border-b border-tinta/[0.06]">
             <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-              Todos os esportes
+              {T.detalheDosEsportes.titulo}
             </h2>
             <p className="text-xs text-[var(--text-3)]">
-              {formatarInteiro(sports.length)}{" "}
-              {sports.length === 1 ? "modalidade" : "modalidades"} {trecho.prefixo}{" "}
-              {trecho.nome}
+              {T.detalheDosEsportes.resumo(sports.length, trecho)}
             </p>
           </div>
 
@@ -535,15 +548,13 @@ export default function EstatisticasPage() {
               <thead className="text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                 <tr>
                   <th scope="col" className="py-2 pr-1.5 sm:pr-3 whitespace-nowrap">
-                    Esporte
+                    {T.detalheDosEsportes.esporte}
                   </th>
-                  {/* "Tips" no celular: o cabeçalho por extenso mandava na
-                      largura da coluna, e a tabela precisa caber na caixa do
-                      diálogo sem rolagem lateral. É a palavra que o resto do
-                      site já usa para a mesma coisa. */}
+                  {/* Duas palavras para a mesma coluna, por largura: o porquê
+                      está em `tabela.apostasCurto`, no dicionário. */}
                   <th scope="col" className="py-2 px-1.5 sm:px-3 text-right">
-                    <span className="sm:hidden">Tips</span>
-                    <span className="hidden sm:inline">Apostas</span>
+                    <span className="sm:hidden">{T.tabela.apostasCurto}</span>
+                    <span className="hidden sm:inline">{T.tabela.apostas}</span>
                   </th>
                   {/* Some no celular: com cinco colunas em 375px a tabela
                       passava da largura do diálogo e o Resultado — o número que
@@ -554,13 +565,13 @@ export default function EstatisticasPage() {
                     scope="col"
                     className="py-2 px-1.5 sm:px-3 text-right hidden sm:table-cell"
                   >
-                    Acerto
+                    {T.detalheDosEsportes.acerto}
                   </th>
                   <th scope="col" className="py-2 px-1.5 sm:px-3 text-right">
-                    ROI
+                    {T.tabela.roi}
                   </th>
                   <th scope="col" className="py-2 pl-1.5 sm:pl-3 text-right">
-                    Resultado
+                    {T.tabela.resultado}
                   </th>
                 </tr>
               </thead>
@@ -601,7 +612,7 @@ export default function EstatisticasPage() {
             onClick={() => setDetalhe(null)}
             className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors active:transform-none"
           >
-            Fechar
+            {T.tabela.fechar}
           </button>
         </Dialogo>
       )}
@@ -609,17 +620,16 @@ export default function EstatisticasPage() {
       {detalhe === "casas" && (
         <Dialogo
           key="detalhe-casas"
-          rotulo={`Todas as casas ${trecho.prefixo} ${trecho.nome}`}
+          rotulo={T.detalheDasCasas.rotulo(trecho)}
           onFechar={() => setDetalhe(null)}
           largura="max-w-2xl"
         >
           <div className="pb-3 border-b border-tinta/[0.06]">
             <h2 className="text-base font-bold text-[var(--text)] tracking-tight">
-              Todas as casas
+              {T.detalheDasCasas.titulo}
             </h2>
             <p className="text-xs text-[var(--text-3)]">
-              {formatarInteiro(casas.length)} {casas.length === 1 ? "casa" : "casas"}{" "}
-              {trecho.prefixo} {trecho.nome}
+              {T.detalheDasCasas.resumo(casas.length, trecho)}
             </p>
           </div>
 
@@ -628,27 +638,25 @@ export default function EstatisticasPage() {
               <thead className="text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                 <tr>
                   <th scope="col" className="py-2 pr-1.5 sm:pr-3 whitespace-nowrap">
-                    Casa
+                    {T.detalheDasCasas.casa}
                   </th>
-                  {/* "Tips" no celular: o cabeçalho por extenso mandava na
-                      largura da coluna, e a tabela precisa caber na caixa do
-                      diálogo sem rolagem lateral. É a palavra que o resto do
-                      site já usa para a mesma coisa. */}
+                  {/* Duas palavras para a mesma coluna, por largura: o porquê
+                      está em `tabela.apostasCurto`, no dicionário. */}
                   <th scope="col" className="py-2 px-1.5 sm:px-3 text-right">
-                    <span className="sm:hidden">Tips</span>
-                    <span className="hidden sm:inline">Apostas</span>
+                    <span className="sm:hidden">{T.tabela.apostasCurto}</span>
+                    <span className="hidden sm:inline">{T.tabela.apostas}</span>
                   </th>
                   <th
                     scope="col"
                     className="py-2 px-1.5 sm:px-3 text-right hidden sm:table-cell"
                   >
-                    Apostado
+                    {T.detalheDasCasas.apostado}
                   </th>
                   <th scope="col" className="py-2 px-1.5 sm:px-3 text-right">
-                    ROI
+                    {T.tabela.roi}
                   </th>
                   <th scope="col" className="py-2 pl-1.5 sm:pl-3 text-right">
-                    Resultado
+                    {T.tabela.resultado}
                   </th>
                 </tr>
               </thead>
@@ -689,7 +697,7 @@ export default function EstatisticasPage() {
             onClick={() => setDetalhe(null)}
             className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors active:transform-none"
           >
-            Fechar
+            {T.tabela.fechar}
           </button>
         </Dialogo>
       )}
