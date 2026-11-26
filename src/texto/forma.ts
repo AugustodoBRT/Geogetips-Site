@@ -35,3 +35,29 @@ import { formatarInteiro } from "@/lib/format";
 export function contagem(n: number, uma: string, varias: string): string {
   return `${formatarInteiro(n)} ${n === 1 ? uma : varias}`;
 }
+
+/**
+ * Uma frase com marcação no meio, como **dado**.
+ *
+ * Nasceu em `/adms`, onde o escopo é "Assertividade e lucro por unidade de
+ * **todos os meses**. A taxa considera apenas apostas finalizadas." — com o
+ * nome do período em negrito no meio da frase.
+ *
+ * ## Por que não partir a frase em "antes" e "depois"
+ *
+ * Porque trava a ordem das palavras. Em português o período vem depois da
+ * preposição; noutro idioma pode vir antes, ou a frase pode se reorganizar
+ * inteira. Duas entradas chamadas "antes" e "depois" obrigam a tradução a
+ * caber na gramática do português, que é exatamente o que esta issue existe
+ * para desfazer.
+ *
+ * ## Por que dado, e não JSX
+ *
+ * Para o dicionário continuar `.ts` e cair no `include: ["src/**\/*.test.ts"]`
+ * do vitest. Entrada com JSX dentro mudaria a extensão do arquivo e o tiraria
+ * da suíte de unidade — e é na suíte de unidade que mora a trava que prova
+ * que a frase não mudou.
+ *
+ * Quem decide **como** o trecho forte aparece é a tela, não o dicionário.
+ */
+export type Trecho = string | { forte: string };
