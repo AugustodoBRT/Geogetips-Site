@@ -30,6 +30,7 @@ import { useUnidade } from "@/hooks/useUnidade";
 import { trechoDaAba } from "@/lib/constants";
 import { abaDoEndereco, abaParaEndereco } from "@/lib/endereco";
 import type { RecorteDoAdm } from "@/lib/types";
+import { textoDosAdms } from "@/texto/adms";
 import { textoDasRotas } from "@/texto/rotas";
 
 export default function AdmsPage() {
@@ -69,6 +70,8 @@ export default function AdmsPage() {
   const detalhe = adms.find((a) => a.nome === aberto) ?? null;
   const trecho = trechoDaAba(activeTab);
 
+  const T = textoDosAdms();
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <BarraDeProgresso ativo={loading} />
@@ -85,14 +88,24 @@ export default function AdmsPage() {
             </h1>
             {!erro && !isMock && !loading && (
               <span className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full">
-                Ranking
+                {T.selo}
               </span>
             )}
           </div>
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Assertividade e lucro por unidade {trecho.prefixo}{" "}
-            <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>. A
-            taxa considera apenas apostas finalizadas.
+            {T.escopo(trecho).map((parte, i) =>
+              typeof parte === "string" ? (
+                parte
+              ) : (
+                <span
+                  // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+                  key={i}
+                  className="font-semibold text-[var(--text)]"
+                >
+                  {parte.forte}
+                </span>
+              )
+            )}
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
@@ -115,9 +128,7 @@ export default function AdmsPage() {
         <SkeletonCorpoAdms />
       ) : erro ? null : adms.length === 0 ? (
         <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-16 text-center text-[var(--text-3)]">
-          <p className="text-sm font-medium">
-            Nenhum adm com dados {trecho.prefixo} {trecho.nome}.
-          </p>
+          <p className="text-sm font-medium">{T.vazio(trecho)}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-entrada">
@@ -128,10 +139,14 @@ export default function AdmsPage() {
             const isProfitable = adm.lucroUnidades > 0;
             const total = adm.totalApostas || 1;
             const fatias = [
-              { rotulo: "green", n: adm.greens, cor: "var(--green)" },
-              { rotulo: "red", n: adm.reds, cor: "var(--red)" },
-              { rotulo: "void", n: adm.voids, cor: "var(--text-3)" },
-              { rotulo: "pendente", n: adm.pendentes, cor: "var(--accent)" },
+              { rotulo: T.cartao.fatias.green, n: adm.greens, cor: "var(--green)" },
+              { rotulo: T.cartao.fatias.red, n: adm.reds, cor: "var(--red)" },
+              { rotulo: T.cartao.fatias.void, n: adm.voids, cor: "var(--text-3)" },
+              {
+                rotulo: T.cartao.fatias.pendente,
+                n: adm.pendentes,
+                cor: "var(--accent)",
+              },
             ].filter((f) => f.n > 0);
             return (
               // A entrada em cascata mora no invólucro, e não no botão.
@@ -153,7 +168,7 @@ export default function AdmsPage() {
                 <button
                   type="button"
                   onClick={() => setAberto(adm.nome)}
-                  aria-label={`Ver o desempenho de ${adm.nome} por casa e por esporte`}
+                  aria-label={T.cartao.aria(adm.nome)}
                   className="w-full h-full text-left bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-6 shadow-sm space-y-5 flex flex-col justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] hover:-translate-y-1 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150"
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -168,7 +183,7 @@ export default function AdmsPage() {
                           adm.totalApostas >= 3 &&
                           adm.lucroUnidades > 0 && (
                             <span className="px-2 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-[10.5px] font-bold rounded-full flex items-center gap-1">
-                              <Award className="w-3 h-3" /> Top #1
+                              <Award className="w-3 h-3" /> {T.cartao.topo}
                             </span>
                           )}
                       </div>
@@ -196,7 +211,7 @@ export default function AdmsPage() {
                         {formatarUnidades(adm.lucroUnidades)}
                       </span>
                       <div className="text-[10px] text-[var(--text-3)] uppercase tracking-wider font-semibold">
-                        Lucro Líquido
+                        {T.cartao.lucro}
                       </div>
                     </div>
                   </div>
@@ -204,7 +219,7 @@ export default function AdmsPage() {
                   <div className="grid grid-cols-3 gap-2 bg-[var(--bg-soft)] p-3 rounded-xl border border-tinta/[0.04] text-center">
                     <div>
                       <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)] font-semibold">
-                        Acerto
+                        {T.cartao.acerto}
                       </div>
                       <div className="font-mono text-base font-bold text-[var(--text)] mt-0.5">
                         {formatarTaxa(adm.taxaAcerto)}
@@ -212,16 +227,15 @@ export default function AdmsPage() {
                     </div>
                     <div>
                       <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)] font-semibold">
-                        Volume
+                        {T.cartao.volume}
                       </div>
                       <div className="font-mono text-base font-bold text-[var(--text)] mt-0.5">
-                        {formatarInteiro(adm.totalApostas)}{" "}
-                        {adm.totalApostas === 1 ? "aposta" : "apostas"}
+                        {T.cartao.apostas(adm.totalApostas)}
                       </div>
                     </div>
                     <div>
                       <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)] font-semibold">
-                        ROI
+                        {T.cartao.roi}
                       </div>
                       <div
                         className={`font-mono text-base font-bold mt-0.5 ${corDoValor(
@@ -247,10 +261,10 @@ export default function AdmsPage() {
                 */}
                   <div className="space-y-1.5 pt-1">
                     <div className="flex items-center justify-between text-[11px] font-semibold text-[var(--text-3)]">
-                      <span>Composição das tips</span>
+                      <span>{T.cartao.composicao}</span>
                       {adm.oddMedia > 0 && (
                         <span className="font-normal">
-                          odd média {formatarOdd(adm.oddMedia)}
+                          {T.cartao.oddMedia(formatarOdd(adm.oddMedia))}
                         </span>
                       )}
                     </div>
@@ -258,13 +272,14 @@ export default function AdmsPage() {
                     <div
                       className="h-2 bg-[var(--bg-tinted)] rounded-full overflow-hidden flex origin-left animate-surgir-x"
                       role="img"
-                      aria-label={`${adm.nome}: ${formatarInteiro(adm.greens)} green, ${formatarInteiro(
-                        adm.reds
-                      )} red, ${formatarInteiro(adm.voids)} anuladas e ${formatarInteiro(
-                        adm.pendentes
-                      )} pendentes, de ${formatarInteiro(adm.totalApostas)} ${
-                        adm.totalApostas === 1 ? "aposta" : "apostas"
-                      }`}
+                      aria-label={T.cartao.ariaDaBarra({
+                        adm: adm.nome,
+                        greens: formatarInteiro(adm.greens),
+                        reds: formatarInteiro(adm.reds),
+                        anuladas: formatarInteiro(adm.voids),
+                        pendentes: formatarInteiro(adm.pendentes),
+                        total: adm.totalApostas,
+                      })}
                     >
                       {fatias.map((f) => (
                         <div
@@ -283,8 +298,7 @@ export default function AdmsPage() {
                             style={{ background: f.cor }}
                             aria-hidden="true"
                           />
-                          {formatarInteiro(f.n)} {f.rotulo}
-                          {f.n > 1 ? "s" : ""}
+                          {T.cartao.fatia(f.n, f.rotulo)}
                         </span>
                       ))}
                     </div>
@@ -298,7 +312,7 @@ export default function AdmsPage() {
       {detalhe && (
         <Dialogo
           key="detalhe-adm"
-          rotulo={`Desempenho de ${detalhe.nome} por casa e por esporte`}
+          rotulo={T.detalhe.rotulo(detalhe.nome)}
           onFechar={() => setAberto(null)}
           largura="max-w-2xl"
         >
@@ -307,9 +321,11 @@ export default function AdmsPage() {
               {detalhe.nome}
             </h2>
             <p className="text-xs text-[var(--text-3)]">
-              {formatarInteiro(detalhe.totalApostas)}{" "}
-              {detalhe.totalApostas === 1 ? "aposta" : "apostas"} {trecho.prefixo}{" "}
-              {trecho.nome} · {formatarUnidades(detalhe.lucroUnidades)}
+              {T.detalhe.resumo({
+                apostas: detalhe.totalApostas,
+                periodo: trecho,
+                unidades: detalhe.lucroUnidades,
+              })}
             </p>
           </div>
 
@@ -318,13 +334,13 @@ export default function AdmsPage() {
                 e concentração numa só é risco que o número total esconde. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <Recorte
-              titulo="Por casa"
+              titulo={T.detalhe.porCasa}
               itens={detalhe.porCasa}
               converter={converter}
               casa
             />
             <Recorte
-              titulo="Por esporte"
+              titulo={T.detalhe.porEsporte}
               itens={detalhe.porEsporte}
               converter={converter}
             />
@@ -335,7 +351,7 @@ export default function AdmsPage() {
             onClick={() => setAberto(null)}
             className="w-full py-2 bg-[var(--bg)] hover:bg-[var(--bg-tinted)] text-[var(--text)] text-xs font-semibold rounded-xl transition-colors active:transform-none"
           >
-            Fechar
+            {T.detalhe.fechar}
           </button>
         </Dialogo>
       )}
@@ -364,7 +380,7 @@ function Recorte({
         {titulo}
       </h3>
       {itens.length === 0 ? (
-        <p className="text-xs text-[var(--text-3)]">Nada neste período.</p>
+        <p className="text-xs text-[var(--text-3)]">{textoDosAdms().detalhe.vazio}</p>
       ) : (
         <div className="divide-y divide-tinta/[0.05]">
           {itens.map((i) => (
@@ -372,8 +388,11 @@ function Recorte({
               <div className="min-w-0 space-y-0.5">
                 {casa ? <BookieBadge bookie={i.nome} /> : <SportBadge sport={i.nome} />}
                 <div className="text-[10.5px] text-[var(--text-3)] whitespace-nowrap">
-                  {formatarInteiro(i.apostas)} {i.apostas === 1 ? "aposta" : "apostas"} ·{" "}
-                  {formatarTaxa(i.taxaAcerto)} acerto · ROI {formatarPorcentagem(i.roi)}
+                  {textoDosAdms().detalhe.linha({
+                    apostas: i.apostas,
+                    acerto: formatarTaxa(i.taxaAcerto),
+                    roi: formatarPorcentagem(i.roi),
+                  })}
                 </div>
               </div>
               <span
