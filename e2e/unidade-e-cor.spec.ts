@@ -73,7 +73,26 @@ async function comMesQueZera(page: Page) {
   );
 }
 
-/** Todo elemento cujo próprio texto é exatamente "R$ 0,00", com a cor que ele exibe. */
+/**
+ * Todo elemento cujo próprio texto é exatamente "R$ 0,00", com a cor que ele
+ * exibe — e, junto, a prova de que a varredura soube ler a paleta (#135).
+ *
+ * A cor do token é resolvida pelo próprio navegador, num elemento de prova, e
+ * comparada com a cor computada do elemento. Os dois lados saem do mesmo
+ * caminho, então a comparação não depende da sintaxe da paleta: hexadecimal
+ * hoje, `color-mix()` ou `oklch()` amanhã.
+ *
+ * A versão anterior lia o texto cru de `--green` no `:root` e convertia a cor
+ * computada do elemento para hexadecimal na mão. Bastava a paleta deixar de ser
+ * `#RRGGBB` para nenhuma cor computada igualar aquela string: `mente` nunca
+ * mais seria verdade e os quatro testes que medem cor ficariam verdes para
+ * sempre — inclusive com o guarda de volume passando, porque ele conta zeros
+ * por **texto**, não por cor.
+ *
+ * `padrao` é o controle: um token que não existe cai na cor herdada. Se `ganho`
+ * ou `perda` saírem iguais a ele, a varredura não leu a paleta, e lista vazia
+ * ali não quer dizer nada.
+ */
 async function zerosNaTela(page: Page) {
   return page.evaluate(() => {
     // O texto que o elemento escreve ELE MESMO, sem o dos filhos. Não dá para
@@ -86,30 +105,52 @@ async function zerosNaTela(page: Page) {
         .map((n) => n.textContent)
         .join("")
         .trim();
-    const paraHex = (cor: string) => {
-      const n = cor.match(/\d+/g);
-      return n
-        ? `#${n
-            .slice(0, 3)
-            .map((x) => Number(x).toString(16).padStart(2, "0"))
-            .join("")}`
-        : cor;
-    };
-    const raiz = getComputedStyle(document.documentElement);
-    const ganho = raiz.getPropertyValue("--green").trim().toLowerCase();
-    const perda = raiz.getPropertyValue("--red").trim().toLowerCase();
 
-    return [...document.querySelectorAll("*")]
+    /** A cor que o navegador dá a `color: var(token)`, já computada. */
+    const resolver = (token: string) => {
+      const prova = document.createElement("span");
+      prova.style.color = `var(${token})`;
+      document.body.appendChild(prova);
+      const cor = getComputedStyle(prova).color;
+      prova.remove();
+      return cor;
+    };
+
+    const paleta = {
+      ganho: resolver("--green"),
+      perda: resolver("--red"),
+      padrao: resolver("--token-que-nao-existe"),
+    };
+
+    const zeros = [...document.querySelectorAll("*")]
       .filter((e) => /^R\$\s0,00$/.test(textoProprio(e)))
       .map((e) => {
-        const cor = paraHex(getComputedStyle(e).color).toLowerCase();
+        const cor = getComputedStyle(e).color;
         return {
           cor,
-          mente: cor === ganho || cor === perda,
+          mente: cor === paleta.ganho || cor === paleta.perda,
           onde: e.parentElement?.textContent?.replace(/\s+/g, " ").trim().slice(0, 60) ?? "",
         };
       });
+
+    return { zeros, paleta };
   });
+}
+
+/**
+ * Antes de acreditar na varredura, conferir que ela tinha com o que comparar.
+ *
+ * É o guarda que falta do outro lado do `expect(zeros.length)`: aquele prova
+ * que a tela rendeu dinheiro zerado, este prova que a cor do token foi lida.
+ * Sem os dois, lista vazia de mentiras não distingue "nenhuma mente" de "não
+ * consegui medir cor nenhuma".
+ */
+function conferirQueLeuAPaleta(paleta: { ganho: string; perda: string; padrao: string }) {
+  expect(paleta.ganho, "--green não resolveu na página").not.toBe(paleta.padrao);
+  expect(paleta.perda, "--red não resolveu na página").not.toBe(paleta.padrao);
+  expect(paleta.ganho, "--green e --red resolveram para a mesma cor").not.toBe(
+    paleta.perda
+  );
 }
 
 /**
@@ -166,7 +207,8 @@ for (const { rota, ancora } of TELAS) {
     await page.goto(rota);
     await expect(page.getByText(ancora).first()).toBeVisible({ timeout: 15_000 });
 
-    const zeros = await zerosNaTela(page);
+    const { zeros, paleta } = await zerosNaTela(page);
+    conferirQueLeuAPaleta(paleta);
     // Sem este guarda o teste passaria numa tela sem nenhum zero para conferir,
     // e ninguém notaria que ele parou de testar.
     expect(zeros.length).toBeGreaterThan(0);
@@ -185,7 +227,8 @@ test('no Histórico, o mês que encolheu até "R$ 0,00" não sai colorido', asyn
   // cartão consolidado e as barras já estão na página.
   await expect(page.getByRole("table")).toBeVisible({ timeout: 15_000 });
 
-  const zeros = await zerosNaTela(page);
+  const { zeros, paleta } = await zerosNaTela(page);
+  conferirQueLeuAPaleta(paleta);
   expect(zeros.length).toBeGreaterThan(0);
   expect(zeros.filter((z) => z.mente)).toEqual([]);
   expect(await zerosComSinal(page)).toEqual([]);
