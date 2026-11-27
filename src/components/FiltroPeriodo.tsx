@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeftRight, X } from "lucide-react";
+import { textoDosControles } from "@/texto/controles";
 
 interface FiltroPeriodoProps {
   /** Datas em "YYYY-MM-DD" — o formato que input[type=date] fala. */
@@ -39,12 +40,13 @@ export function FiltroPeriodo({
 }: FiltroPeriodoProps) {
   const ativo = de !== "" || ate !== "";
   const invertido = de !== "" && ate !== "" && de > ate;
+  const T = textoDosControles().periodo;
 
   return (
     <div className={`flex flex-wrap items-center gap-1.5 ${className}`}>
-      <span className="text-[11px] font-medium text-[var(--text-3)]">De</span>
+      <span className="text-[11px] font-medium text-[var(--text-3)]">{T.de}</span>
       <label htmlFor="periodo-de" className="sr-only">
-        Data inicial
+        {T.dataInicial}
       </label>
       <input
         id="periodo-de"
@@ -56,9 +58,9 @@ export function FiltroPeriodo({
         className={CAMPO}
       />
 
-      <span className="text-[11px] font-medium text-[var(--text-3)]">até</span>
+      <span className="text-[11px] font-medium text-[var(--text-3)]">{T.ate}</span>
       <label htmlFor="periodo-ate" className="sr-only">
-        Data final
+        {T.dataFinal}
       </label>
       <input
         id="periodo-ate"
@@ -76,8 +78,8 @@ export function FiltroPeriodo({
           onClick={() => onChange(ate, de)}
           className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-[color:color-mix(in_srgb,var(--amber)_45%,transparent)] bg-[var(--amber-soft)] text-[10.5px] font-semibold text-[var(--amber)] hover:border-[var(--amber)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
         >
-          <ArrowLeftRight className="w-3 h-3" aria-hidden="true" />A data inicial está
-          depois da final — trocar
+          <ArrowLeftRight className="w-3 h-3" aria-hidden="true" />
+          {T.invertido}
         </button>
       )}
 
@@ -85,8 +87,8 @@ export function FiltroPeriodo({
         <button
           type="button"
           onClick={() => onChange("", "")}
-          aria-label="Limpar intervalo de datas"
-          title="Limpar intervalo de datas"
+          aria-label={T.limpar}
+          title={T.limpar}
           className="w-[24px] h-[24px] rounded-full border border-tinta/[0.1] text-[var(--text-2)] hover:text-[var(--red)] hover:border-[color:color-mix(in_srgb,var(--red)_40%,transparent)] flex items-center justify-center transition-colors"
         >
           <X className="w-3 h-3" aria-hidden="true" />

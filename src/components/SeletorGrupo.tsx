@@ -3,6 +3,7 @@
 import { Clock3 } from "lucide-react";
 import { doISO, isoDoTimestamp } from "@/lib/date";
 import { type Grupo, grupoDoId, type IdGrupo, ultimoDiaVisivel } from "@/lib/grupos";
+import { textoDosControles } from "@/texto/controles";
 
 /**
  * Qual grupo a tela mostra: o gratuito ou o GeogeTips - Sigma (#72).
@@ -24,7 +25,7 @@ export function SeletorGrupo({
     // biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que traz borda, margem e padding do navegador; aqui é uma barra de botões, como a de visualização ao lado.
     <div
       role="group"
-      aria-label="Grupo"
+      aria-label={textoDosControles().grupo.aria}
       className="inline-flex items-center bg-[var(--bg-card)] border border-tinta/[0.12] rounded-full p-0.5 shadow-sm"
     >
       {grupos.map((g) => (
@@ -71,13 +72,22 @@ export function AvisoAtraso({ grupo }: { grupo: IdGrupo }) {
         className="w-4 h-4 text-[var(--accent)] mt-0.5 shrink-0"
         aria-hidden="true"
       />
+      {/* Dois destaques com o mesmo desenho, e por isso sem papel: o
+          dicionário diz quais trechos são fortes, e esta tela os desenha
+          igual. */}
       <p className="text-[13px] text-[var(--text-2)] leading-relaxed">
-        <strong className="text-[var(--text)]">
-          Resultados do {nome} com {atrasoDias} dias de atraso.
-        </strong>{" "}
-        Cada aposta aparece aqui {atrasoDias} dias depois da data do jogo, para as
-        entradas do grupo não circularem de graça. Hoje o site mostra as apostas até{" "}
-        <strong className="text-[var(--text)]">{doISO(iso)}</strong>.
+        {textoDosControles()
+          .grupo.atraso({ grupo: nome, dias: atrasoDias, ate: doISO(iso) })
+          .map((parte, i) =>
+            typeof parte === "string" ? (
+              parte
+            ) : (
+              // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+              <strong key={i} className="text-[var(--text)]">
+                {parte.forte}
+              </strong>
+            )
+          )}
       </p>
     </div>
   );

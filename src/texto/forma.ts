@@ -81,12 +81,18 @@ export function contagem(n: number, uma: string, varias: string): string {
  * - `perda`: um valor que a frase diz que se perde. Nasceu na calculadora, na
  *   frase que tem dois números destacados — a soma das probabilidades, que sai
  *   neutra, e o dinheiro que se perderia, que sai em vermelho.
+ * - `aviso`: a abertura de um aviso, que a tela pinta em âmbar. Nasceu no
+ *   seletor de unidade, na frase que diz que o recálculo é simulação: ela
+ *   abre com "Simulação aproximada, não resultado exato." em âmbar e tem, no
+ *   meio, um segundo destaque com a ênfase comum. Dois destaques, duas cores.
  *
  * Frase com um destaque só não precisa de papel: quem desenha é o ponto de
  * chamada, e ele decide sozinho. O papel existe para a frase que tem **dois**
  * destaques e os desenha diferente.
  */
-export type Trecho = string | { forte: string; papel?: "recorte" | "valor" | "perda" };
+export type Trecho =
+  | string
+  | { forte: string; papel?: "recorte" | "valor" | "perda" | "aviso" };
 
 /**
  * O período que a tela está olhando, do jeito que `trechoDaAba` o devolve.
