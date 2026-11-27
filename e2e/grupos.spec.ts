@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { textosSemContraste } from "./ajudantes";
+import { conferirQueMediu, textosSemContraste } from "./ajudantes";
 
 /**
  * Os dois grupos: o gratuito e o GeogeTips - Sigma (#72).
@@ -141,7 +141,9 @@ for (const tema of ["claro", "escuro"] as const) {
     await page.addInitScript((v) => localStorage.setItem("geogetips-tema", v), tema);
     await page.goto("/painel?grupo=sigma", { waitUntil: "networkidle" });
     await expect(page.getByText(/com 3 dias de atraso/)).toBeVisible();
-    expect(await textosSemContraste(page)).toEqual([]);
+    const varredura = await textosSemContraste(page);
+    conferirQueMediu(varredura, `painel do Sigma no tema ${tema}`);
+    expect(varredura.falhas).toEqual([]);
     await contexto.close();
   });
 }

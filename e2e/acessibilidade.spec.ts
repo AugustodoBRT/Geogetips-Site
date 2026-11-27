@@ -81,39 +81,108 @@ test("o título da home se lê inteiro, sem depender de aria-label em span", asy
   await expect(titulo.locator("span[aria-label]")).toHaveCount(0);
 });
 
+/** O conjunto de alvos de toque. Contado por dois caminhos independentes (#136). */
+const SELETOR_DE_ALVOS = "a[href], button, input, select, [role=button]";
+
+/** O alvo que a varredura planta em si mesma para provar que ainda reprova. */
+const PROVA_DE_ALVO = "__prova-de-alvo__";
+
+/**
+ * Os alvos de toque menores que 24 px, e a prova de que a varredura os viu.
+ *
+ * ## Por que não basta devolver a lista (#136)
+ *
+ * Lista vazia não distinguia "nenhum alvo é pequeno" de "não achei alvo nenhum
+ * para medir". O caso concreto: `/adms` rende `null` no estado de erro, e a
+ * varredura passaria numa tela sem a grade de cartões.
+ *
+ * Um piso do tipo `medidos > 0` **não** resolveria isso, e foi medido: o erro
+ * apaga só a grade; cabeçalho, menu, botão de tema e rodapé continuam na
+ * página, e o piso seria pago pela moldura com uma ordem de grandeza de folga.
+ *
+ * Por isso aqui vão duas provas que não dependem de escolher número nenhum:
+ *
+ * **Contagem independente.** O mesmo conjunto é contado por fora, pelo
+ * Playwright, e por dentro, no `evaluate`. Nenhum número é escolhido por
+ * ninguém: ele é lido duas vezes, por caminhos diferentes. Discordarem
+ * significa que o coletor parou de alcançar a página.
+ *
+ * **Controle positivo.** A varredura planta um botão de 10 px, mede pelo mesmo
+ * caminho dos outros, e confere que ele saiu na lista. Sem isso, afrouxar o
+ * limiar de 24 px deixaria os cinco testes verdes com a lista vazia.
+ *
+ * É o mesmo par de `unidade-e-cor.spec.ts`, onde um token que não existe prova
+ * que a leitura da paleta ainda responde.
+ */
 async function alvosPequenos(page: Page) {
-  return page.evaluate(() => {
-    const pequenos: string[] = [];
-    for (const el of document.querySelectorAll<HTMLElement>(
-      "a[href], button, input, select, [role=button]"
-    )) {
-      const r = el.getBoundingClientRect();
-      if (!r.width || !r.height || getComputedStyle(el).visibility === "hidden") continue;
-      // Exceções da própria norma (WCAG 2.2, 2.5.8): o atalho "pular para o
-      // conteúdo", que só aparece com o foco, e link no meio de uma frase.
-      if (el.getAttribute("href") === "#conteudo") continue;
-      const pai = el.parentElement;
-      const noMeioDaFrase =
-        el.tagName === "A" &&
-        pai !== null &&
-        (pai.textContent ?? "").trim().length >
-          (el.textContent ?? "").trim().length + 10 &&
-        getComputedStyle(pai).display !== "flex";
-      if (noMeioDaFrase) continue;
-      if (r.width < 24 || r.height < 24) {
-        pequenos.push(
-          `${el.tagName} "${(el.getAttribute("aria-label") ?? el.textContent ?? "").trim().slice(0, 30)}" ${Math.round(r.width)}x${Math.round(r.height)}`
-        );
+  // Esta contagem não passa pelo `evaluate` cujo alcance está em dúvida, e é
+  // tirada ANTES de plantar a prova.
+  const porFora = await page.locator(SELETOR_DE_ALVOS).count();
+
+  const dentro = await page.evaluate(
+    ({ seletor, prova }) => {
+      const plantado = document.createElement("button");
+      plantado.type = "button";
+      plantado.textContent = prova;
+      plantado.style.cssText =
+        "position:fixed;left:0;top:0;width:10px;height:10px;padding:0;overflow:hidden";
+      document.body.appendChild(plantado);
+
+      const pequenos: string[] = [];
+      let candidatos = 0;
+      for (const el of document.querySelectorAll<HTMLElement>(seletor)) {
+        candidatos += 1;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height || getComputedStyle(el).visibility === "hidden")
+          continue;
+        // Exceções da própria norma (WCAG 2.2, 2.5.8): o atalho "pular para o
+        // conteúdo", que só aparece com o foco, e link no meio de uma frase.
+        if (el.getAttribute("href") === "#conteudo") continue;
+        const pai = el.parentElement;
+        const noMeioDaFrase =
+          el.tagName === "A" &&
+          pai !== null &&
+          (pai.textContent ?? "").trim().length >
+            (el.textContent ?? "").trim().length + 10 &&
+          getComputedStyle(pai).display !== "flex";
+        if (noMeioDaFrase) continue;
+        if (r.width < 24 || r.height < 24) {
+          pequenos.push(
+            `${el.tagName} "${(el.getAttribute("aria-label") ?? el.textContent ?? "").trim().slice(0, 30)}" ${Math.round(r.width)}x${Math.round(r.height)}`
+          );
+        }
       }
-    }
-    return pequenos;
-  });
+
+      plantado.remove();
+      const provaReprovou = pequenos.some((p) => p.includes(prova));
+      return {
+        pequenos: pequenos.filter((p) => !p.includes(prova)),
+        // A prova é do teste, não da tela: sai da contagem para as duas
+        // fontes falarem do mesmo conjunto.
+        candidatos: candidatos - 1,
+        provaReprovou,
+      };
+    },
+    { seletor: SELETOR_DE_ALVOS, prova: PROVA_DE_ALVO }
+  );
+
+  return { ...dentro, porFora };
 }
 
 for (const rota of ["/painel", "/apostas", "/historico", "/estatisticas", "/adms"]) {
   test(`nenhum alvo de toque abaixo de 24 px em ${rota}`, async ({ page }) => {
     await page.goto(rota);
     await expect(page.locator(".animate-shimmer")).toHaveCount(0, { timeout: 15_000 });
-    expect(await alvosPequenos(page)).toEqual([]);
+
+    const v = await alvosPequenos(page);
+    expect(
+      v.provaReprovou,
+      `${rota}: a prova de 10 px não reprovou — a varredura parou de medir alvo`
+    ).toBe(true);
+    expect(
+      v.candidatos,
+      `${rota}: o Playwright achou ${v.porFora} alvos e a varredura achou ${v.candidatos} — ela parou de alcançar a página`
+    ).toBe(v.porFora);
+    expect(v.pequenos).toEqual([]);
   });
 }
