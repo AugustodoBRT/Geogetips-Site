@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { textosSemContraste } from "./ajudantes";
+import { conferirQueMediu, textosSemContraste } from "./ajudantes";
 
 /**
  * A calculadora de valor esperado (#71).
@@ -403,16 +403,22 @@ for (const tema of ["claro", "escuro"] as const) {
       "Odd encontrada": "2,10",
     });
     await page.getByText("Como usar").click();
-    expect(await textosSemContraste(page)).toEqual([]);
+    const comoUsar = await textosSemContraste(page);
+    conferirQueMediu(comoUsar, "calculadora [como usar]");
+    expect(comoUsar.falhas).toEqual([]);
 
     await preencher(page, { "Odd encontrada": "1,80" });
     await expect(resultado(page)).toContainText("Sem valor");
     await preencher(page, { "Odd analisada": "0,5" });
-    expect(await textosSemContraste(page)).toEqual([]);
+    const semValor = await textosSemContraste(page);
+    conferirQueMediu(semValor, "calculadora [sem valor]");
+    expect(semValor.falhas).toEqual([]);
 
     await page.getByRole("button", { name: "Surebet", exact: true }).click();
     await preencher(page, { "Odd do resultado 1": "2,10", "Odd do resultado 2": "2,10" });
-    expect(await textosSemContraste(page)).toEqual([]);
+    const surebet = await textosSemContraste(page);
+    conferirQueMediu(surebet, "calculadora [surebet]");
+    expect(surebet.falhas).toEqual([]);
     await contexto.close();
   });
 }

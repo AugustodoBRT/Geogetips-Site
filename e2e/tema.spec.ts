@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { textosSemContraste } from "./ajudantes";
+import { problemasDoMedidor, textosSemContraste } from "./ajudantes";
 
 /**
  * Tema claro e escuro (#62).
@@ -142,7 +142,13 @@ for (const nome of ["escuro", "claro"] as const) {
       await page.goto(tela, { waitUntil: "networkidle" });
       await expect.poll(() => tema(page)).toBe(nome);
       await page.waitForTimeout(400);
-      falhas.push(...(await textosSemContraste(page)).map((f) => `${tela} ${f}`));
+      const daTela = await textosSemContraste(page);
+      // As queixas sobre o MEDIDOR entram na mesma lista das queixas sobre a
+      // TELA, de propósito: assim uma vacuidade em /painel não aborta o laço e
+      // suprime o relatório das outras seis telas. É o que o checar-cores.mjs
+      // faz — junta tudo e sai uma vez.
+      falhas.push(...problemasDoMedidor(daTela, tela));
+      falhas.push(...daTela.falhas.map((f) => `${tela} ${f}`));
 
       // O que só aparece com clique: diálogo e lista suspensa.
       if (tela === "/apostas") {
@@ -151,17 +157,17 @@ for (const nome of ["escuro", "claro"] as const) {
           .first()
           .click();
         await expect(page.getByRole("dialog")).toBeVisible();
-        falhas.push(
-          ...(await textosSemContraste(page)).map((f) => `${tela} [detalhe] ${f}`)
-        );
+        const doDetalhe = await textosSemContraste(page);
+        falhas.push(...problemasDoMedidor(doDetalhe, `${tela} [detalhe]`));
+        falhas.push(...doDetalhe.falhas.map((f) => `${tela} [detalhe] ${f}`));
         await page.keyboard.press("Escape");
       }
       if (tela === "/estatisticas") {
         await page.getByRole("button", { name: "Ver todas as casas em detalhe" }).click();
         await expect(page.getByRole("dialog")).toBeVisible({ timeout: 15_000 });
-        falhas.push(
-          ...(await textosSemContraste(page)).map((f) => `${tela} [casas] ${f}`)
-        );
+        const dasCasas = await textosSemContraste(page);
+        falhas.push(...problemasDoMedidor(dasCasas, `${tela} [casas]`));
+        falhas.push(...dasCasas.falhas.map((f) => `${tela} [casas] ${f}`));
         await page.keyboard.press("Escape");
       }
     }

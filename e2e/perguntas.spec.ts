@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { textosSemContraste } from "./ajudantes";
+import { conferirQueMediu, textosSemContraste } from "./ajudantes";
 
 /**
  * Perguntas frequentes e o método dos números (#66).
@@ -93,7 +93,9 @@ for (const tema of ["claro", "escuro"] as const) {
     await page.goto("/perguntas", { waitUntil: "networkidle" });
     await abrirTodas(page);
     await page.waitForTimeout(300);
-    expect(await textosSemContraste(page)).toEqual([]);
+    const varredura = await textosSemContraste(page);
+    conferirQueMediu(varredura, "/perguntas com tudo aberto");
+    expect(varredura.falhas).toEqual([]);
     await contexto.close();
   });
 }
