@@ -11,6 +11,7 @@ import {
   formatarReais,
   lerNumeroBR,
 } from "@/lib/format";
+import { textoDosControles } from "@/texto/controles";
 
 const SUGESTOES = [5, 10, 25, 50, 100];
 
@@ -50,6 +51,8 @@ export function SeletorUnidade() {
     definirUnidade(n);
   }
 
+  const T = textoDosControles().unidade;
+
   return (
     <section
       aria-labelledby="titulo-unidade"
@@ -65,22 +68,17 @@ export function SeletorUnidade() {
               id="titulo-unidade"
               className="text-sm font-bold text-[var(--text)] tracking-tight"
             >
-              Quanto vale 1 unidade para você?
+              {T.titulo}
             </h2>
             <p className="text-xs text-[var(--text-2)] mt-0.5">
-              A unidade do grupo é {formatarReais(VALOR_UNIDADE)}. Coloque a sua e todos
-              os valores passam para a sua banca — o ROI e a taxa de acerto não mudam.
+              {T.explicacao(formatarReais(VALOR_UNIDADE))}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap shrink-0">
           {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que traz borda, margem e padding do navegador e existe para agrupar campo de formulário — não uma barra de botões. */}
-          <div
-            className="flex items-center gap-1"
-            role="group"
-            aria-label="Valores sugeridos"
-          >
+          <div className="flex items-center gap-1" role="group" aria-label={T.sugeridos}>
             {SUGESTOES.map((v) => (
               <button
                 key={v}
@@ -100,14 +98,14 @@ export function SeletorUnidade() {
 
           <div className="flex items-center gap-2">
             <label htmlFor="campo-unidade" className="sr-only">
-              Valor de 1 unidade em reais
+              {T.rotuloDoCampo}
             </label>
             <div className="relative">
               <span
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--text-3)] pointer-events-none"
                 aria-hidden="true"
               >
-                R$
+                {T.moeda}
               </span>
               {/* type="text" com teclado decimal: um type="number" descarta o
                   valor inteiro ao receber vírgula em parte dos navegadores, e o
@@ -140,8 +138,8 @@ export function SeletorUnidade() {
               <button
                 type="button"
                 onClick={restaurarPadrao}
-                title="Voltar para a unidade do grupo"
-                aria-label="Voltar para a unidade do grupo"
+                title={T.restaurar}
+                aria-label={T.restaurar}
                 className="p-1.5 min-h-[24px] min-w-[24px] rounded-full text-[var(--text-2)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -159,8 +157,10 @@ export function SeletorUnidade() {
           role="status"
           className="mt-3 text-[11.5px] font-medium text-[var(--amber)]"
         >
-          Valor não aceito. Use algo entre {formatarReais(UNIDADE_MINIMA)} e{" "}
-          {formatarReais(UNIDADE_MAXIMA)} — o ponto pode separar o milhar, como em 1.000.
+          {T.recusado({
+            minimo: formatarReais(UNIDADE_MINIMA),
+            maximo: formatarReais(UNIDADE_MAXIMA),
+          })}
         </p>
       )}
 
@@ -170,19 +170,28 @@ export function SeletorUnidade() {
             className="w-3.5 h-3.5 text-[var(--amber)] mt-0.5 shrink-0"
             aria-hidden="true"
           />
+          {/* Dois destaques, duas cores: a abertura do aviso em âmbar e, no
+              meio, a ênfase comum. O dicionário diz qual é qual pelo `papel`;
+              quem pinta é esta tela. */}
           <p className="text-[11.5px] text-[var(--text-2)] leading-relaxed">
-            <strong className="text-[var(--amber)] font-bold">
-              Simulação aproximada, não resultado exato.
-            </strong>{" "}
-            O histórico real foi operado a {formatarReais(VALOR_UNIDADE)} por unidade, e o
-            recálculo para {formatarReais(unidade)} apenas escala os valores
-            proporcionalmente. Ele{" "}
-            <strong className="text-[var(--text)]">
-              não considera limites de aposta nem a liquidez
-            </strong>{" "}
-            de cada mercado: em stakes maiores a casa pode não aceitar o valor cheio, e
-            odds altas costumam cair conforme o volume entra. Trate como ordem de
-            grandeza.
+            {T.simulacao({
+              original: formatarReais(VALOR_UNIDADE),
+              escolhida: formatarReais(unidade),
+            }).map((parte, i) =>
+              typeof parte === "string" ? (
+                parte
+              ) : parte.papel === "aviso" ? (
+                // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+                <strong key={i} className="text-[var(--amber)] font-bold">
+                  {parte.forte}
+                </strong>
+              ) : (
+                // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+                <strong key={i} className="text-[var(--text)]">
+                  {parte.forte}
+                </strong>
+              )
+            )}
           </p>
         </div>
       )}

@@ -4,6 +4,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, X } from "lucide-react";
 import { DURACAO, SAIDA_SUAVE } from "@/lib/movimento";
+import { textoDosControles } from "@/texto/controles";
 
 /** Largura de `w-60`, em pixels. Usada para decidir de que lado a lista abre. */
 const LARGURA_DA_LISTA = 240;
@@ -89,9 +90,15 @@ export function SeletorMultiplo({
     );
   }
 
+  const T = textoDosControles().multiplo;
+
   const n = selecionadas.length;
   const rotulo =
-    n === 0 ? rotuloVazio : n === 1 ? selecionadas[0] : `${n} ${substantivo}`;
+    n === 0
+      ? rotuloVazio
+      : n === 1
+        ? selecionadas[0]
+        : T.varios({ quantas: n, substantivo });
 
   return (
     <div ref={caixa} className={`relative ${className}`}>
@@ -117,8 +124,8 @@ export function SeletorMultiplo({
         <button
           type="button"
           onClick={() => onChange([])}
-          aria-label={`Limpar filtro de ${substantivo}`}
-          title={`Limpar filtro de ${substantivo}`}
+          aria-label={T.limpar(substantivo)}
+          title={T.limpar(substantivo)}
           className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[var(--bg-card)] border border-tinta/[0.12] text-[var(--text-2)] hover:text-[var(--red)] flex items-center justify-center shadow-sm"
         >
           <X className="w-2.5 h-2.5" aria-hidden="true" />
@@ -144,9 +151,7 @@ export function SeletorMultiplo({
             }`}
           >
             {opcoes.length === 0 ? (
-              <p className="text-xs text-[var(--text-3)] px-3 py-2">
-                Nada para filtrar neste período.
-              </p>
+              <p className="text-xs text-[var(--text-3)] px-3 py-2">{T.vazio}</p>
             ) : (
               opcoes.map((op) => {
                 const marcada = selecionadas.includes(op);

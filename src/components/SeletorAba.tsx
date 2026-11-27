@@ -2,6 +2,7 @@
 
 import { RefreshCw } from "lucide-react";
 import { ABA_TODOS, ordemDaAba } from "@/lib/constants";
+import { textoDosControles } from "@/texto/controles";
 
 interface SeletorAbaProps {
   tabs: string[];
@@ -21,10 +22,12 @@ export function SeletorAba({
   loading,
   id = "seletor-aba",
 }: SeletorAbaProps) {
+  const T = textoDosControles().aba;
+
   return (
     <div className="flex items-center gap-2.5">
       <label htmlFor={id} className="sr-only">
-        Selecionar mês
+        {T.rotulo}
       </label>
       <select
         id={id}
@@ -32,7 +35,7 @@ export function SeletorAba({
         onChange={(e) => onChange(e.target.value)}
         className="bg-[var(--bg-card)] border border-tinta/[0.12] rounded-full px-4 py-2 text-xs font-bold text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer shadow-sm hover:border-[color:color-mix(in_srgb,var(--accent)_60%,transparent)] transition-all"
       >
-        <option value={ABA_TODOS}>Todos os Meses (Geral)</option>
+        <option value={ABA_TODOS}>{T.todas}</option>
         {[...tabs]
           .sort((a, b) => ordemDaAba(b) - ordemDaAba(a))
           .map((tab) => (
@@ -46,8 +49,8 @@ export function SeletorAba({
         type="button"
         onClick={onRecarregar}
         disabled={loading}
-        aria-label="Recarregar dados"
-        title="Recarregar dados"
+        aria-label={T.recarregar}
+        title={T.recarregar}
         className="p-2 bg-[var(--bg-card)] border border-tinta/[0.12] rounded-full text-[var(--text-2)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all disabled:opacity-50"
       >
         <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
