@@ -4,10 +4,10 @@ import { contagem, type Periodo, type Trecho } from "./forma";
 /**
  * O texto da tela de Adms.
  *
- * A mais densa do site: 26 entradas em 392 linhas, dez delas montadas. É
- * também a primeira que precisa do `Trecho` — a frase de escopo leva o nome do
- * período em negrito **no meio**, e partir isso em pedaços travaria a ordem das
- * palavras.
+ * Vinte e cinco entradas, dez delas montadas, tiradas das 411 linhas de
+ * `src/app/adms/page.tsx`. É a primeira que precisa do `Trecho` — a frase de
+ * escopo leva o nome do período em negrito **no meio**, e partir isso em
+ * pedaços travaria a ordem das palavras.
  *
  * ## Duas inconsistências preservadas de propósito
  *
