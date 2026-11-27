@@ -35,6 +35,7 @@ import { agruparPorDia, diasAbertosDeSaida } from "@/lib/dias";
 import { normalizarTexto } from "@/lib/texto";
 import { trechoDaAba, VALOR_UNIDADE } from "@/lib/constants";
 import { apostasParaCsv, nomeDoArquivo } from "@/lib/csv";
+import { textoDasApostas } from "@/texto/apostas";
 import { textoDasRotas } from "@/texto/rotas";
 import {
   abaDoEndereco,
@@ -406,6 +407,8 @@ export default function ApostasPage() {
 
   const trecho = trechoDaAba(activeTab);
 
+  const T = textoDasApostas();
+
   // O feed em dias, sobre tudo o que o filtro deixa passar — e não só sobre o
   // que já está desenhado. Antes o último dia da tela podia aparecer com metade
   // da contagem até alguém clicar em "Mostrar mais"; com o dia recolhível, o
@@ -490,10 +493,20 @@ export default function ApostasPage() {
           <h1 className="font-serif text-3xl sm:text-4xl text-[var(--text)] tracking-tight">
             {textoDasRotas().apostas.titulo}
           </h1>
+          {/* Um destaque só, e por isso sem `papel`: o nome do período. O
+              parêntese com o intervalo sai sem destaque nenhum — é o contrário
+              do Painel, e a divergência está escrita nos dois dicionários. */}
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Feed cronológico {trecho.prefixo}{" "}
-            <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>
-            {periodo && <span> ({periodo})</span>}.
+            {T.escopo(trecho, periodo).map((parte, i) =>
+              typeof parte === "string" ? (
+                parte
+              ) : (
+                // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+                <span key={i} className="font-semibold text-[var(--text)]">
+                  {parte.forte}
+                </span>
+              )
+            )}
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
@@ -506,24 +519,24 @@ export default function ApostasPage() {
             type="button"
             onClick={baixarCsv}
             disabled={mostrarEsqueleto || Boolean(erro) || filteredBets.length === 0}
-            title={`Baixar as ${formatarInteiro(filteredBets.length)} apostas do filtro, para abrir no Excel ou no Google Sheets`}
+            title={T.csv.titulo(formatarInteiro(filteredBets.length))}
             className="flex items-center gap-1.5 px-3 py-1.5 min-h-[30px] bg-[var(--bg-card)] border border-tinta/[0.12] rounded-full shadow-sm text-xs font-semibold text-[var(--text-2)] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-40 disabled:pointer-events-none transition-colors"
           >
             <Download className="w-3.5 h-3.5" aria-hidden="true" />
-            Baixar CSV
+            {T.csv.rotulo}
           </button>
 
           {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que traz borda, margem e padding do navegador e existe para agrupar campo de formulário — não uma barra de botões. */}
           <div
             className="flex items-center bg-[var(--bg-card)] border border-tinta/[0.12] rounded-full p-0.5 shadow-sm"
             role="group"
-            aria-label="Modo de visualização"
+            aria-label={T.vista.aria}
           >
             <button
               type="button"
               onClick={() => setViewMode("cards")}
               aria-pressed={viewMode === "cards"}
-              aria-label="Visualizar em cartões"
+              aria-label={T.vista.cartoes}
               className={`p-1.5 rounded-full transition-all ${
                 viewMode === "cards"
                   ? "bg-[var(--accent)] text-[var(--sobre-cor)]"
@@ -536,7 +549,7 @@ export default function ApostasPage() {
               type="button"
               onClick={() => setViewMode("table")}
               aria-pressed={viewMode === "table"}
-              aria-label="Visualizar em tabela"
+              aria-label={T.vista.tabela}
               className={`p-1.5 rounded-full transition-all ${
                 viewMode === "table"
                   ? "bg-[var(--accent)] text-[var(--sobre-cor)]"
@@ -579,7 +592,7 @@ export default function ApostasPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
-            Lucro do Filtro
+            {T.resumo.lucro}
           </div>
           <div
             className={`font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight ${
@@ -596,7 +609,7 @@ export default function ApostasPage() {
 
         <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
-            Green / Red
+            {T.resumo.greenRed}
           </div>
           <div className="font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight">
             <span className="text-[var(--green)]">{formatarInteiro(resumo.greens)}</span>{" "}
@@ -604,8 +617,7 @@ export default function ApostasPage() {
             <span className="text-[var(--red)]">{formatarInteiro(resumo.reds)}</span>
             {resumo.voids > 0 && (
               <span className="text-[var(--text-2)] text-sm font-normal">
-                {" "}
-                · {formatarInteiro(resumo.voids)} void
+                {T.resumo.voids(formatarInteiro(resumo.voids))}
               </span>
             )}
           </div>
@@ -613,20 +625,20 @@ export default function ApostasPage() {
 
         <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
-            Taxa de Acerto
+            {T.resumo.acerto}
           </div>
           <div className="font-mono text-xl sm:text-2xl font-bold text-[var(--text)] mt-1 tracking-tight">
             {resumo.greens + resumo.reds > 0 ? (
               <NumeroAnimado value={resumo.taxa} format={FORMATO_TAXA} suffix="%" />
             ) : (
-              "—"
+              T.resumo.semValor
             )}
           </div>
         </div>
 
         <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-xl p-4 shadow-sm">
           <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider">
-            ROI do Filtro
+            {T.resumo.roi}
           </div>
           <div
             className={`font-mono text-xl sm:text-2xl font-bold mt-1 tracking-tight ${
@@ -641,11 +653,13 @@ export default function ApostasPage() {
             {resumo.greens + resumo.reds > 0 ? (
               <NumeroAnimado value={resumo.roi} format={FORMATO_ROI} suffix="%" />
             ) : (
-              "—"
+              T.resumo.semValor
             )}
           </div>
           <div className="text-[10.5px] text-[var(--text-3)] mt-0.5">
-            odd média {resumo.odd > 0 ? formatarOdd(resumo.odd) : "—"}
+            {T.resumo.oddMedia(
+              resumo.odd > 0 ? formatarOdd(resumo.odd) : T.resumo.semValor
+            )}
           </div>
         </div>
       </div>
@@ -660,12 +674,12 @@ export default function ApostasPage() {
                 aria-hidden="true"
               />
               <label htmlFor="busca-apostas" className="sr-only">
-                Buscar apostas
+                {T.busca.rotulo}
               </label>
               <input
                 id="busca-apostas"
                 type="search"
-                placeholder="Buscar partida, mercado, casa, adm..."
+                placeholder={T.busca.dica}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full bg-[var(--bg)] border border-tinta/[0.06] rounded-full pl-9 pr-3.5 py-1.5 text-xs text-[var(--text)] placeholder:text-[var(--text-3)] outline-none focus:border-[var(--accent)] transition-colors"
@@ -680,17 +694,10 @@ export default function ApostasPage() {
             <div
               className="flex items-center gap-1 flex-wrap"
               role="group"
-              aria-label="Filtrar por resultado"
+              aria-label={T.resultado.aria}
             >
               {(["TODAS", "GREEN", "RED", "VOID", "PENDENTE"] as const).map((status) => {
                 const isActive = statusFilter === status;
-                const rotulos = {
-                  TODAS: "Todas",
-                  GREEN: "Green",
-                  RED: "Red",
-                  VOID: "Void",
-                  PENDENTE: "Pendente",
-                } as const;
                 return (
                   <button
                     key={status}
@@ -703,7 +710,7 @@ export default function ApostasPage() {
                         : "bg-[var(--bg-card)] text-[var(--text-2)] border-tinta/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
                     }`}
                   >
-                    {rotulos[status]}
+                    {T.resultado.rotulos[status]}
                   </button>
                 );
               })}
@@ -724,8 +731,8 @@ export default function ApostasPage() {
               />
 
               <SeletorMultiplo
-                rotuloVazio="Todos os Esportes"
-                substantivo="esportes"
+                rotuloVazio={T.filtros.esportes.vazio}
+                substantivo={T.filtros.esportes.substantivo}
                 opcoes={sports}
                 selecionadas={sportsFilter}
                 onChange={setSportsFilter}
@@ -733,8 +740,8 @@ export default function ApostasPage() {
               />
 
               <SeletorMultiplo
-                rotuloVazio="Todas as Casas"
-                substantivo="casas"
+                rotuloVazio={T.filtros.casas.vazio}
+                substantivo={T.filtros.casas.substantivo}
                 opcoes={bookies}
                 selecionadas={bookiesFilter}
                 onChange={setBookiesFilter}
@@ -742,8 +749,8 @@ export default function ApostasPage() {
               />
 
               <SeletorMultiplo
-                rotuloVazio="Todos os Adms"
-                substantivo="adms"
+                rotuloVazio={T.filtros.adms.vazio}
+                substantivo={T.filtros.adms.substantivo}
                 opcoes={adms}
                 selecionadas={admsFilter}
                 onChange={setAdmsFilter}
@@ -760,31 +767,27 @@ export default function ApostasPage() {
               <div
                 className="flex items-center gap-1"
                 role="group"
-                aria-label="Filtrar por faixa de odd"
+                aria-label={T.odd.aria}
               >
                 <span className="text-[11px] font-medium text-[var(--text-3)] mr-1">
-                  Odd:
+                  {T.odd.rotulo}
                 </span>
-                {(
-                  [
-                    { label: "Todas", val: "TODAS" },
-                    { label: "< 1,8", val: "BAIXA" },
-                    { label: "1,8 – 3,0", val: "MEDIA" },
-                    { label: "> 3,0", val: "ALTA" },
-                  ] as const
-                ).map((range) => (
+                {/* A ordem dos botões é desta lista, e não do mapa de rótulos:
+                    é ela que decide o que a pessoa lê da esquerda para a
+                    direita, e isso é decisão de tela. */}
+                {(["TODAS", "BAIXA", "MEDIA", "ALTA"] as const).map((faixa) => (
                   <button
-                    key={range.val}
+                    key={faixa}
                     type="button"
-                    onClick={() => setOddRangeFilter(range.val)}
-                    aria-pressed={oddRangeFilter === range.val}
+                    onClick={() => setOddRangeFilter(faixa)}
+                    aria-pressed={oddRangeFilter === faixa}
                     className={`px-2 py-0.5 min-h-[24px] text-[10.5px] font-semibold rounded-full border transition-all ${
-                      oddRangeFilter === range.val
+                      oddRangeFilter === faixa
                         ? "bg-[var(--accent)] text-[var(--sobre-cor)] border-[var(--accent)]"
                         : "bg-[var(--bg-card)] text-[var(--text-2)] border-tinta/[0.08] hover:border-[var(--accent)] hover:text-[var(--accent)]"
                     }`}
                   >
-                    {range.label}
+                    {T.odd.faixas[faixa]}
                   </button>
                 ))}
               </div>
@@ -804,7 +807,7 @@ export default function ApostasPage() {
                   ) : (
                     <ChevronsDownUp className="w-3 h-3" aria-hidden="true" />
                   )}
-                  {expandirEhAProxima ? "Expandir tudo" : "Recolher tudo"}
+                  {expandirEhAProxima ? T.dias.expandir : T.dias.recolher}
                 </button>
               )}
             </div>
@@ -817,9 +820,7 @@ export default function ApostasPage() {
         ) : erro ? null : filteredBets.length === 0 ? (
           <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-16 text-center">
             <p className="text-sm font-medium text-[var(--text-3)]">
-              {bets.length === 0
-                ? `Nenhuma aposta registrada ${trecho.prefixo} ${trecho.nome}.`
-                : "Nenhuma aposta corresponde aos filtros."}
+              {bets.length === 0 ? T.vazio.naAba(trecho) : T.vazio.nosFiltros}
             </p>
           </div>
         ) : viewMode === "cards" ? (
@@ -872,8 +873,7 @@ export default function ApostasPage() {
                         {dia.data}
                       </span>
                       <span className="text-[11px] text-[var(--text-3)]">
-                        ({formatarInteiro(dia.apostas.length)}{" "}
-                        {dia.apostas.length === 1 ? "aposta" : "apostas"})
+                        {T.dias.contagem(dia.apostas.length)}
                       </span>
                       <span className="flex-1 h-px bg-tinta/[0.06]" aria-hidden="true" />
                       {/* Zero é neutro: o dia de hoje, só com pendentes, saía
@@ -922,7 +922,7 @@ export default function ApostasPage() {
                             key={bet.id}
                             type="button"
                             onClick={() => setSelectedBet(bet)}
-                            aria-label={`Ver detalhes: ${bet.partida}, ${bet.tip}`}
+                            aria-label={T.linha.aria(bet)}
                             className="w-full text-left bg-[var(--bg-card)] border border-tinta/[0.07] rounded-xl overflow-hidden shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--accent)] cursor-pointer hover:-translate-y-0.5 hover:shadow-card active:translate-y-0 transition-[transform,box-shadow] duration-150 grid grid-cols-[5px_1fr] group animate-aparecer [content-visibility:auto] [contain-intrinsic-size:auto_5.8rem] max-sm:[contain-intrinsic-size:auto_8.5rem]"
                           >
                             <div
@@ -962,7 +962,7 @@ export default function ApostasPage() {
                                 )}
 
                                 <span className="text-xs font-mono font-bold text-[var(--text)] bg-[var(--bg)] px-2 py-0.5 rounded border border-tinta/[0.04] shrink-0">
-                                  @{formatarOddExata(bet.odd)}
+                                  {T.linha.odd(formatarOddExata(bet.odd))}
                                 </span>
 
                                 <span className="text-xs font-mono text-[var(--text-2)] shrink-0">
@@ -993,7 +993,7 @@ export default function ApostasPage() {
                                   }`}
                                 >
                                   {bet.resultado === "PENDENTE" || isVoid
-                                    ? "—"
+                                    ? T.linha.semLucro
                                     : formatarReaisComSinal(converter(bet.lucro))}
                                 </span>
                               </div>
@@ -1011,34 +1011,32 @@ export default function ApostasPage() {
           <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto animate-entrada">
               <table className="w-full text-left text-xs">
-                <caption className="sr-only">
-                  Apostas registradas {trecho.prefixo} {trecho.nome}
-                </caption>
+                <caption className="sr-only">{T.tabela.legenda(trecho)}</caption>
                 <thead className="bg-[var(--bg-soft)] border-b border-tinta/[0.06] text-[var(--text-3)] uppercase tracking-wider text-[10px] font-bold">
                   <tr>
                     <th scope="col" className="py-3 px-4">
-                      Data
+                      {T.tabela.data}
                     </th>
                     <th scope="col" className="py-3 px-3">
-                      Esporte
+                      {T.tabela.esporte}
                     </th>
                     <th scope="col" className="py-3 px-4">
-                      Partida / Mercado
+                      {T.tabela.partida}
                     </th>
                     <th scope="col" className="py-3 px-3">
-                      Casa
+                      {T.tabela.casa}
                     </th>
                     <th scope="col" className="py-3 px-3 text-right">
-                      Odd
+                      {T.tabela.odd}
                     </th>
                     <th scope="col" className="py-3 px-3 text-right">
-                      Valor
+                      {T.tabela.valor}
                     </th>
                     <th scope="col" className="py-3 px-3 text-center">
-                      Status
+                      {T.tabela.status}
                     </th>
                     <th scope="col" className="py-3 px-4 text-right">
-                      Lucro
+                      {T.tabela.lucro}
                     </th>
                   </tr>
                 </thead>
@@ -1111,7 +1109,7 @@ export default function ApostasPage() {
                           }`}
                         >
                           {bet.resultado === "PENDENTE" || isVoid
-                            ? "—"
+                            ? T.linha.semLucro
                             : formatarReaisComSinal(converter(bet.lucro))}
                         </td>
                       </tr>
@@ -1130,11 +1128,13 @@ export default function ApostasPage() {
               onClick={() => setVisiveis((v) => v + APOSTAS_POR_BLOCO)}
               className="px-6 py-2.5 bg-[var(--accent)] text-[var(--sobre-cor)] text-sm font-bold rounded-full hover:bg-[var(--accent-hover)] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all"
             >
-              Mostrar mais {Math.min(restantes, APOSTAS_POR_BLOCO)}
+              {T.mais.rotulo(Math.min(restantes, APOSTAS_POR_BLOCO))}
             </button>
             <p className="text-[11px] text-[var(--text-3)]">
-              Exibindo {formatarInteiro(betsVisiveis.length)} de{" "}
-              {formatarInteiro(filteredBets.length)} apostas
+              {T.mais.quantos({
+                exibindo: formatarInteiro(betsVisiveis.length),
+                total: formatarInteiro(filteredBets.length),
+              })}
             </p>
           </div>
         )}
