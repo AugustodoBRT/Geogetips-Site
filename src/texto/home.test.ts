@@ -141,7 +141,7 @@ describe("texto da home", () => {
       if (typeof valor === "string") {
         if (valor !== valor.trim()) sobrando.push(`${caminho}: ${JSON.stringify(valor)}`);
       } else if (Array.isArray(valor)) {
-        valor.forEach((v, i) => varrer(v, `${caminho}[${i}]`));
+        for (const [i, v] of valor.entries()) varrer(v, `${caminho}[${i}]`);
       } else if (valor && typeof valor === "object") {
         for (const [k, v] of Object.entries(valor)) varrer(v, `${caminho}.${k}`);
       }
