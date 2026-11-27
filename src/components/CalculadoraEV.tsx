@@ -38,15 +38,21 @@ import {
   stakeDeKelly,
 } from "@/lib/calculadora";
 import { DIGITACAO, type TipoDeCampo } from "@/lib/digitacao";
+import { textoDaCalculadora } from "@/texto/calculadora";
+import type { Trecho } from "@/texto/forma";
 
-const MODOS = [
-  { id: "justa", rotulo: "Odd justa" },
-  { id: "hold", rotulo: "Hold" },
-  { id: "surebet", rotulo: "Surebet" },
-  { id: "multipla", rotulo: "Múltiplas" },
-] as const;
+const T = textoDaCalculadora();
 
-type Modo = (typeof MODOS)[number]["id"];
+/**
+ * Os quatro modos, só os valores.
+ *
+ * O `id` vai ao endereço (`?modo=hold`) e volta dele; o rótulo mora no
+ * dicionário, em `modos`, num mapa indexado por este tipo — modo sem rótulo
+ * não compila.
+ */
+const MODOS = ["justa", "hold", "surebet", "multipla"] as const;
+
+type Modo = (typeof MODOS)[number];
 
 /**
  * Quantos resultados um mercado pode ter em cada modo (#82). Odd justa e cada
@@ -192,12 +198,35 @@ function useDigitacao(
   };
 }
 
-const ERRO_PADRAO: Record<TipoDeCampo, string> = {
-  odd: "Use um número maior que 1, como 1,85.",
-  porcentagem: "Use uma porcentagem entre 0 e 100, como 4 ou 4,5.",
-  reais: "Use um valor em reais, como 100 ou 1.000.",
-  unidades: "Use um número de unidades maior que zero.",
-};
+/**
+ * Uma frase do dicionário, com os trechos destacados dentro de `<strong>`.
+ *
+ * `forte` é a classe do destaque comum desta frase; o papel `perda` ganha
+ * vermelho, porque é o único caso em que a mesma frase tem dois destaques
+ * desenhados diferente. Ver `Trecho`, em texto/forma.ts.
+ */
+function Frase({
+  partes,
+  forte = "text-[var(--text)]",
+}: {
+  partes: readonly Trecho[];
+  forte?: string;
+}) {
+  return (
+    <>
+      {partes.map((parte, i) => {
+        if (typeof parte === "string") return parte;
+        const classe = parte.papel === "perda" ? "text-[var(--red)]" : forte;
+        return (
+          // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+          <strong key={i} className={classe || undefined}>
+            {parte.forte}
+          </strong>
+        );
+      })}
+    </>
+  );
+}
 
 function Campo({
   id,
@@ -237,7 +266,7 @@ function Campo({
         <input
           id={id}
           {...campo}
-          placeholder={`ex.: ${exemplo}`}
+          placeholder={T.campo.exemplo(exemplo)}
           aria-invalid={erro || undefined}
           aria-describedby={erro ? idErro : undefined}
           className={`${CLASSE_CAMPO} ${sufixo ? "pr-8" : ""} ${
@@ -262,7 +291,7 @@ function Campo({
           id={idErro}
           className="text-[11.5px] leading-snug text-[var(--red)] font-semibold"
         >
-          {ERRO_PADRAO[tipo]}
+          {T.campo.erro[tipo]}
         </p>
       )}
     </div>
@@ -293,7 +322,7 @@ function SeletorDeResultados({
     >
       {Array.from({ length: maximo - 1 }, (_, i) => i + 2).map((n) => (
         <option key={n} value={n}>
-          {n} resultados
+          {T.mercado.quantos(n)}
         </option>
       ))}
     </select>
@@ -350,7 +379,7 @@ function OddsDoMercado({
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 items-start">
       <Campo
         id={`${prefixo}-analisada`}
-        rotulo="Odd analisada"
+        rotulo={T.mercado.analisada}
         exemplo="1,90"
         destaque
         valor={selecao.analisada}
@@ -362,7 +391,11 @@ function OddsDoMercado({
           // biome-ignore lint/suspicious/noArrayIndexKey: a posição é a identidade do campo, e a lista só cresce e encolhe pelo fim.
           key={i}
           id={`${prefixo}-contraria-${i + 1}`}
-          rotulo={selecao.resultados === 2 ? "Odd contrária" : `Odd contrária ${i + 1}`}
+          rotulo={
+            selecao.resultados === 2
+              ? T.mercado.contraria
+              : T.mercado.contrariaNumerada(i + 1)
+          }
           exemplo={selecao.resultados === 2 ? "1,90" : "3,60"}
           valor={selecao.contrarias[i]}
           erro={c.erro}
@@ -393,7 +426,7 @@ function OddDeComparacao({ rotulo, odd }: { rotulo: string; odd: number | null }
         {odd !== null ? (
           formatarOddJusta(odd)
         ) : (
-          <span className="text-[var(--text-3)]">—</span>
+          <span className="text-[var(--text-3)]">{T.campo.semOdd}</span>
         )}
       </div>
     </div>
@@ -411,7 +444,7 @@ function ComoUsar({
   return (
     <details className="group rounded-xl border border-tinta/[0.07] bg-[var(--bg-soft)]">
       <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden text-xs font-bold text-[var(--text)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent)] rounded-xl transition-colors">
-        Como usar
+        {T.ajuda.titulo}
         <Plus
           className="w-3.5 h-3.5 text-[var(--text-3)] transition-transform duration-200 group-open:rotate-45"
           aria-hidden="true"
@@ -424,7 +457,7 @@ function ComoUsar({
           onClick={onExemplo}
           className="mt-1 inline-flex items-center px-3 py-1.5 rounded-full border border-tinta/[0.1] bg-[var(--bg-card)] text-xs font-bold text-[var(--accent)] hover:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
         >
-          Preencher com o exemplo
+          {T.ajuda.exemplo}
         </button>
       </div>
     </details>
@@ -460,7 +493,7 @@ function Veredito({
             : "bg-[var(--red-soft)] text-[var(--red)]"
         }`}
       >
-        {temValor ? "Aposta de valor" : "Sem valor"}
+        {temValor ? T.veredito.comValor : T.veredito.semValor}
       </span>
       <div
         className={`font-serif text-5xl tracking-tight leading-none ${
@@ -470,13 +503,13 @@ function Veredito({
         {formatarPorcentagem(valorEsperado * 100)}
       </div>
       <p className="text-xs text-[var(--text-2)] leading-relaxed">
-        Valor esperado. A cada {formatarReais(100)} apostados nessa odd, o retorno médio é
-        de{" "}
-        <strong className="text-[var(--text)]">
-          {formatarReais(100 * (1 + valorEsperado))}
-        </strong>
-        . Tem valor qualquer odd acima de{" "}
-        <strong className="text-[var(--text)]">{formatarOddJusta(oddJusta)}</strong>.
+        <Frase
+          partes={T.veredito.frase({
+            aposta: formatarReais(100),
+            retorno: formatarReais(100 * (1 + valorEsperado)),
+            oddJusta: formatarOddJusta(oddJusta),
+          })}
+        />
       </p>
     </div>
   );
@@ -534,34 +567,32 @@ function StakeRecomendada({
     <div className="rounded-xl border border-tinta/[0.07] bg-[var(--bg-soft)] p-4 space-y-3">
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="text-[10.5px] font-bold uppercase tracking-wider text-[var(--text-3)]">
-          Stake recomendada
+          {T.stake.titulo}
         </h3>
         <span className="text-[10.5px] font-bold text-[var(--text-3)]">
-          Kelly {fracao?.rotulo.toLowerCase()}
+          {T.stake.kelly(fracao?.rotulo.toLowerCase() ?? "")}
         </span>
       </div>
 
       {!bancaValida ? (
-        <p className="text-xs text-[var(--text-2)]">
-          Informe o tamanho da banca em unidades para ver a stake.
-        </p>
+        <p className="text-xs text-[var(--text-2)]">{T.stake.semBanca}</p>
       ) : stake.unidades > 0 ? (
         <div className="space-y-1.5">
           <p className="font-mono text-3xl font-bold leading-none text-[var(--text)]">
             {formatarUnidadesSemSinal(stake.unidades)}
           </p>
           <p className="text-xs text-[var(--text-2)] leading-relaxed">
-            {porcento(stake.fracaoDaBanca)} da banca ·{" "}
-            <strong className="text-[var(--text)]">
-              {formatarReais(stake.unidades * unidade)}
-            </strong>{" "}
-            com 1u = {formatarReais(unidade)}
+            <Frase
+              partes={T.stake.linha({
+                daBanca: porcento(stake.fracaoDaBanca),
+                emReais: formatarReais(stake.unidades * unidade),
+                unidade: formatarReais(unidade),
+              })}
+            />
           </p>
           {stake.fracaoDaBanca > STAKE_ALTA && (
             <p className="text-[11.5px] leading-snug font-semibold text-[var(--red)]">
-              Mais de {porcento(STAKE_ALTA, 0)} da banca numa aposta só. Valor esperado
-              desse tamanho costuma ser odd digitada errada ou mercado que a casa ainda
-              vai corrigir: confira antes.
+              {T.stake.alta(porcento(STAKE_ALTA, 0))}
             </p>
           )}
         </div>
@@ -570,9 +601,7 @@ function StakeRecomendada({
           <p className="font-mono text-3xl font-bold leading-none text-[var(--text)]">
             0u
           </p>
-          <p className="text-xs text-[var(--text-2)] leading-relaxed">
-            Sem valor esperado positivo, o Kelly manda não apostar.
-          </p>
+          <p className="text-xs text-[var(--text-2)] leading-relaxed">{T.stake.zero}</p>
         </div>
       )}
 
@@ -582,7 +611,7 @@ function StakeRecomendada({
             id="rotulo-fracao-kelly"
             className="block text-[11px] font-bold text-[var(--text-2)]"
           >
-            Fração do Kelly
+            {T.stake.fracao}
           </span>
           {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que chega com borda, margem e padding do navegador; aqui é uma barra de botões, como as outras do site. */}
           <div
@@ -612,7 +641,7 @@ function StakeRecomendada({
             htmlFor="kelly-banca"
             className="block text-[11px] font-bold text-[var(--text-2)]"
           >
-            Banca
+            {T.stake.banca}
           </label>
           <div className="relative">
             <input
@@ -628,24 +657,19 @@ function StakeRecomendada({
               aria-hidden="true"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--text-3)] pointer-events-none"
             >
-              u
+              {T.stake.sufixoDaBanca}
             </span>
           </div>
         </div>
       </div>
       <p id="kelly-banca-ajuda" className="text-[11px] text-[var(--text-3)] leading-snug">
-        Banca em unidades. Com 100u, 1u é 1% da banca. Um quarto do Kelly é o mais usado:
-        a probabilidade é estimada, e o Kelly inteiro faz a banca oscilar demais.
+        {T.stake.ajudaDaBanca}
       </p>
     </div>
   );
 }
 
-function Espera({
-  texto = "Preencha as odds para ver o resultado.",
-}: {
-  texto?: string;
-}) {
+function Espera({ texto = T.resultado.espera }: { texto?: string }) {
   return (
     <p className="text-sm text-[var(--text-3)] text-center py-10 px-4 border border-dashed border-tinta/[0.12] rounded-xl">
       {texto}
@@ -661,7 +685,7 @@ function Espera({
  */
 function FaltaAEncontrada({
   oddJusta,
-  campo = "a odd encontrada",
+  campo = T.faltaAOdd.aEncontrada,
 }: {
   oddJusta: number;
   campo?: string;
@@ -669,15 +693,15 @@ function FaltaAEncontrada({
   return (
     <div className="space-y-2">
       <span className="block text-[10.5px] font-bold uppercase tracking-wider text-[var(--text-3)]">
-        Odd justa
+        {T.faltaAOdd.titulo}
       </span>
       <div className="font-mono text-4xl font-bold leading-none text-[var(--text)]">
         {formatarOddJusta(oddJusta)}
       </div>
       <p className="text-xs text-[var(--text-2)] leading-relaxed">
-        Falta {campo}. Qualquer odd acima de{" "}
-        <strong className="text-[var(--text)]">{formatarOddJusta(oddJusta)}</strong> tem
-        valor.
+        <Frase
+          partes={T.faltaAOdd.frase({ campo, oddJusta: formatarOddJusta(oddJusta) })}
+        />
       </p>
     </div>
   );
@@ -702,7 +726,7 @@ function Resumo({ tom, children }: { tom: "verde" | "vermelho"; children: ReactN
     >
       <span>{children}</span>
       <span className="shrink-0 inline-flex items-center gap-1">
-        Ver resultado
+        {T.resumo.ver}
         <ArrowDown className="w-3.5 h-3.5" aria-hidden="true" />
       </span>
     </button>
@@ -726,10 +750,11 @@ function ResumoDeValor({
   return (
     <Resumo tom={valorEsperado > 0 ? "verde" : "vermelho"}>
       {valorEsperado > 0
-        ? `${formatarPorcentagem(valorEsperado * 100)} de valor${
-            banca ? ` · ${formatarUnidadesSemSinal(stake.unidades)}` : ""
-          }`
-        : `Sem valor: ${porcento(valorEsperado, 2)}`}
+        ? T.resumo.comValor({
+            valor: formatarPorcentagem(valorEsperado * 100),
+            unidades: banca ? formatarUnidadesSemSinal(stake.unidades) : "",
+          })
+        : T.resumo.semValor(porcento(valorEsperado, 2))}
     </Resumo>
   );
 }
@@ -751,15 +776,16 @@ function ResultadoDaSurebet({
     return (
       <div className="space-y-2">
         <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[var(--red-soft)] text-[var(--red)]">
-          Surebet sem lucro
+          {T.surebet.selo.semLucro}
         </span>
         <p className="text-sm text-[var(--text-2)] leading-relaxed">
-          As odds somam{" "}
-          <strong className="text-[var(--text)]">{porcento(1 + margem(odds))}</strong> de
-          probabilidade, então a surebet existe. Mas, com {formatarReais(investimento)}
-          {arredondado ? " e as apostas arredondadas" : ""}, o arredondamento come o lucro
-          inteiro. Aumente o investimento
-          {arredondado ? " ou arredonde ao centavo" : ""}.
+          <Frase
+            partes={T.surebet.semLucro({
+              soma: porcento(1 + margem(odds)),
+              investimento: formatarReais(investimento),
+              arredondado,
+            })}
+          />
         </p>
       </div>
     );
@@ -768,17 +794,15 @@ function ResultadoDaSurebet({
     return (
       <div className="space-y-2">
         <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[var(--red-soft)] text-[var(--red)]">
-          Não há surebet
+          {T.surebet.selo.naoHa}
         </span>
         <p className="text-sm text-[var(--text-2)] leading-relaxed">
-          As odds somam{" "}
-          <strong className="text-[var(--text)]">{porcento(1 + margem(odds))}</strong> de
-          probabilidade. Para existir surebet, a soma precisa ficar abaixo de 100%.
-          Dividindo o valor entre os resultados, você perderia{" "}
-          <strong className="text-[var(--red)]">
-            {formatarReais(Math.abs(r.lucro))}
-          </strong>{" "}
-          saia o que sair.
+          <Frase
+            partes={T.surebet.naoHa({
+              soma: porcento(1 + margem(odds)),
+              perda: formatarReais(Math.abs(r.lucro)),
+            })}
+          />
         </p>
       </div>
     );
@@ -787,51 +811,39 @@ function ResultadoDaSurebet({
     <div className="space-y-5">
       <div className="space-y-2">
         <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[var(--green-soft)] text-[var(--green)]">
-          Surebet
+          {T.surebet.selo.existe}
         </span>
         <div className="font-serif text-5xl tracking-tight leading-none text-[var(--green)]">
           {formatarPorcentagem(r.roi * 100)}
         </div>
         <p className="text-xs text-[var(--text-2)] leading-relaxed">
-          Lucro garantido de{" "}
-          <strong className="text-[var(--text)]">{formatarReais(r.lucro)}</strong>, saia o
-          que sair
-          {arredondado && r.lucroMaximo > r.lucro && (
-            <>
-              , e de até{" "}
-              <strong className="text-[var(--text)]">
-                {formatarReais(r.lucroMaximo)}
-              </strong>
-              , conforme o resultado
-            </>
-          )}
-          .
-          {r.investido !== investimento && (
-            <>
-              {" "}
-              Com o arredondamento, o total apostado é de{" "}
-              <strong className="text-[var(--text)]">{formatarReais(r.investido)}</strong>
-              .
-            </>
-          )}
+          <Frase
+            partes={T.surebet.lucro({
+              lucro: formatarReais(r.lucro),
+              maximo: formatarReais(r.lucroMaximo),
+              temMaximo: arredondado && r.lucroMaximo > r.lucro,
+              investido: formatarReais(r.investido),
+              temInvestido: r.investido !== investimento,
+            })}
+          />
         </p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <caption className="sr-only">Quanto apostar em cada resultado</caption>
+          <caption className="sr-only">{T.surebet.tabela.legenda}</caption>
           <thead className="text-[10.5px] uppercase tracking-wider text-[var(--text-3)]">
             <tr>
               <th scope="col" className="text-left font-bold pb-2">
-                Resultado
+                {T.surebet.tabela.resultado}
               </th>
               <th scope="col" className="text-right font-bold pb-2">
-                Odd
+                {T.surebet.tabela.odd}
               </th>
               <th scope="col" className="text-right font-bold pb-2">
-                Apostar
+                {T.surebet.tabela.apostar}
               </th>
               <th scope="col" className="text-right font-bold pb-2">
-                Retorno
+                {T.surebet.tabela.retorno}
               </th>
             </tr>
           </thead>
@@ -876,10 +888,7 @@ export function CalculadoraEV() {
   const [modo, setModo] = useState<Modo>("justa");
 
   useEstadoNaUrl({ modo: modo === "justa" ? "" : modo }, (lidos) => {
-    const lido = escolher(
-      lidos.modo,
-      MODOS.map((m) => m.id)
-    );
+    const lido = escolher(lidos.modo, MODOS);
     if (lido) setModo(lido);
   });
 
@@ -943,12 +952,12 @@ export function CalculadoraEV() {
     campos = (
       <>
         <Bloco
-          titulo="Casa de referência"
-          descricao="As odds de todos os resultados do mercado numa casa de margem baixa. A primeira é a do resultado em que você quer apostar."
+          titulo={T.referencia.titulo}
+          descricao={T.referencia.descricaoDaJusta}
           acao={
             <SeletorDeResultados
               id="justa-resultados"
-              rotulo="Resultados do mercado"
+              rotulo={T.mercado.aria}
               valor={justa.resultados}
               maximo={MAXIMO_DE_RESULTADOS}
               onChange={(resultados) => setJusta({ ...justa, resultados })}
@@ -962,21 +971,18 @@ export function CalculadoraEV() {
             onChange={(s) => setJusta({ ...justa, ...s })}
           />
         </Bloco>
-        <Bloco
-          titulo="Onde você vai apostar"
-          descricao="A odd que outra casa paga pelo mesmo resultado. Tem valor quando passa da odd justa."
-        >
+        <Bloco titulo={T.onde.titulo} descricao={T.onde.descricao}>
           <div className="grid grid-cols-2 gap-3 sm:max-w-sm items-start">
             <Campo
               id="justa-encontrada"
-              rotulo="Odd encontrada"
+              rotulo={T.mercado.encontrada}
               exemplo="2,10"
               destaque
               valor={justa.encontrada}
               erro={encontrada.erro}
               onChange={(v) => setJusta({ ...justa, encontrada: v })}
             />
-            <OddDeComparacao rotulo="Odd justa" odd={lida.oddJusta} />
+            <OddDeComparacao rotulo={T.mercado.oddJusta} odd={lida.oddJusta} />
           </div>
         </Bloco>
       </>
@@ -991,18 +997,10 @@ export function CalculadoraEV() {
         }
       >
         <p>
-          Pegue as odds de <strong>todos</strong> os resultados de um mercado numa casa de
-          margem baixa, que serve de referência. A calculadora tira a margem dela e chega
-          à probabilidade real de cada resultado.
+          <Frase partes={T.justa.ajuda1()} forte="" />
         </p>
-        <p>
-          Depois compare com a odd que você achou em outra casa. Se ela pagar mais que a
-          odd justa, a aposta tem valor.
-        </p>
-        <p>
-          Exemplo com 1X2: casa de referência com 2,00 / 3,40 / 3,60 e 2,50 encontrada
-          para o mandante.
-        </p>
+        <p>{T.justa.ajuda2}</p>
+        <p>{T.justa.ajuda3}</p>
       </ComoUsar>
     );
 
@@ -1022,10 +1020,13 @@ export function CalculadoraEV() {
             onGestao={mudarGestao}
           />
           <dl className="grid grid-cols-2 gap-2">
-            <Detalhe rotulo="Odd justa" valor={formatarOddJusta(r.oddJusta)} />
-            <Detalhe rotulo="Probabilidade" valor={porcento(r.probabilidadeJusta, 1)} />
-            <Detalhe rotulo="Margem da casa" valor={porcento(r.margem)} />
-            <Detalhe rotulo="Payout" valor={porcento(r.payout, 1)} />
+            <Detalhe rotulo={T.detalhes.oddJusta} valor={formatarOddJusta(r.oddJusta)} />
+            <Detalhe
+              rotulo={T.detalhes.probabilidade}
+              valor={porcento(r.probabilidadeJusta, 1)}
+            />
+            <Detalhe rotulo={T.detalhes.margem} valor={porcento(r.margem)} />
+            <Detalhe rotulo={T.detalhes.payout} valor={porcento(r.payout, 1)} />
           </dl>
         </div>
       );
@@ -1052,14 +1053,11 @@ export function CalculadoraEV() {
 
     campos = (
       <>
-        <Bloco
-          titulo="Casa de referência"
-          descricao="Para quando você só tem a odd de um lado: a odd do resultado e a margem que essa casa costuma cobrar no mercado."
-        >
+        <Bloco titulo={T.referencia.titulo} descricao={T.referencia.descricaoDoHold}>
           <div className="grid grid-cols-2 gap-3 sm:max-w-sm items-start">
             <Campo
               id="hold-base"
-              rotulo="Odd de referência"
+              rotulo={T.hold.base}
               exemplo="1,90"
               destaque
               valor={hold.base}
@@ -1068,31 +1066,28 @@ export function CalculadoraEV() {
             />
             <Campo
               id="hold-margem"
-              rotulo="Hold (margem da casa)"
+              rotulo={T.hold.margem}
               exemplo="4"
               tipo="porcentagem"
-              sufixo="%"
+              sufixo={T.hold.sufixo}
               valor={hold.margem}
               erro={erroMargem}
               onChange={(v) => setHold({ ...hold, margem: v })}
             />
           </div>
         </Bloco>
-        <Bloco
-          titulo="Onde você vai apostar"
-          descricao="A odd que outra casa paga pelo mesmo resultado. Tem valor quando passa da odd justa."
-        >
+        <Bloco titulo={T.onde.titulo} descricao={T.onde.descricao}>
           <div className="grid grid-cols-2 gap-3 sm:max-w-sm items-start">
             <Campo
               id="hold-encontrada"
-              rotulo="Odd encontrada"
+              rotulo={T.mercado.encontrada}
               exemplo="2,10"
               destaque
               valor={hold.encontrada}
               erro={encontrada.erro}
               onChange={(v) => setHold({ ...hold, encontrada: v })}
             />
-            <OddDeComparacao rotulo="Odd justa" odd={oddJusta} />
+            <OddDeComparacao rotulo={T.mercado.oddJusta} odd={oddJusta} />
           </div>
         </Bloco>
       </>
@@ -1101,12 +1096,8 @@ export function CalculadoraEV() {
       <ComoUsar
         onExemplo={() => setHold({ base: "1,90", margem: "4", encontrada: "2,10" })}
       >
-        <p>
-          A odd justa é a odd de referência mais a margem da casa. A margem que o modo
-          “Odd justa” mostra pode ser digitada aqui: com a mesma odd, as duas contas
-          chegam à mesma odd justa.
-        </p>
-        <p>Exemplo: odd de referência 1,90 com hold de 4% e 2,10 encontrada.</p>
+        <p>{T.hold.ajuda1}</p>
+        <p>{T.hold.ajuda2}</p>
       </ComoUsar>
     );
 
@@ -1122,10 +1113,16 @@ export function CalculadoraEV() {
             onGestao={mudarGestao}
           />
           <dl className="grid grid-cols-2 gap-2">
-            <Detalhe rotulo="Odd justa" valor={formatarOddJusta(r.oddJusta)} />
-            <Detalhe rotulo="Probabilidade" valor={porcento(r.probabilidadeJusta, 1)} />
-            <Detalhe rotulo="Margem da casa" valor={porcento(margemLida / 100)} />
-            <Detalhe rotulo="Payout" valor={porcento(1 / (1 + margemLida / 100), 1)} />
+            <Detalhe rotulo={T.detalhes.oddJusta} valor={formatarOddJusta(r.oddJusta)} />
+            <Detalhe
+              rotulo={T.detalhes.probabilidade}
+              valor={porcento(r.probabilidadeJusta, 1)}
+            />
+            <Detalhe rotulo={T.detalhes.margem} valor={porcento(margemLida / 100)} />
+            <Detalhe
+              rotulo={T.detalhes.payout}
+              valor={porcento(1 / (1 + margemLida / 100), 1)}
+            />
           </dl>
         </div>
       );
@@ -1148,12 +1145,12 @@ export function CalculadoraEV() {
     campos = (
       <>
         <Bloco
-          titulo="Odds do mercado"
-          descricao="Uma odd por resultado, cada uma da casa que paga mais por ele."
+          titulo={T.surebet.odds.titulo}
+          descricao={T.surebet.odds.descricao}
           acao={
             <SeletorDeResultados
               id="surebet-resultados"
-              rotulo="Resultados do mercado"
+              rotulo={T.mercado.aria}
               valor={surebet.resultados}
               maximo={MAXIMO_DE_RESULTADOS_NA_SUREBET}
               onChange={(resultados) => setSurebet({ ...surebet, resultados })}
@@ -1166,7 +1163,7 @@ export function CalculadoraEV() {
                 // biome-ignore lint/suspicious/noArrayIndexKey: a posição é a identidade do campo, e a lista só cresce e encolhe pelo fim.
                 key={i}
                 id={`surebet-odd-${i + 1}`}
-                rotulo={`Odd do resultado ${i + 1}`}
+                rotulo={T.surebet.odd(i + 1)}
                 exemplo={["2,08", "2,02", "3,60", "4,50"][i]}
                 valor={surebet.odds[i]}
                 erro={o.erro}
@@ -1180,14 +1177,14 @@ export function CalculadoraEV() {
           </div>
         </Bloco>
         <Bloco
-          titulo="Quanto investir"
-          descricao="O total que você quer dividir entre os resultados. Aposta em reais redondos chama menos a atenção da casa do que aposta quebrada em centavos."
+          titulo={T.surebet.investir.titulo}
+          descricao={T.surebet.investir.descricao}
         >
           <div className="flex flex-wrap items-start gap-x-5 gap-y-3">
             <div className="w-44 max-w-full">
               <Campo
                 id="surebet-investimento"
-                rotulo="Investimento total (R$)"
+                rotulo={T.surebet.investimento}
                 exemplo="100,00"
                 tipo="reais"
                 valor={surebet.investimento}
@@ -1200,7 +1197,7 @@ export function CalculadoraEV() {
                 id="rotulo-arredondar"
                 className="block text-xs font-bold text-[var(--text)]"
               >
-                Arredondar apostas
+                {T.surebet.arredondar}
               </span>
               {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que chega com borda, margem e padding do navegador; aqui é uma barra de botões, como as outras do site. */}
               <div
@@ -1238,17 +1235,9 @@ export function CalculadoraEV() {
           })
         }
       >
-        <p>
-          Surebet é quando casas diferentes pagam tão bem os resultados de um mesmo
-          mercado que dá para apostar em todos e lucrar saia o que sair. Cada odd vem da
-          casa que paga mais por aquele resultado.
-        </p>
-        <p>
-          A calculadora divide o investimento para o retorno ser igual em qualquer
-          resultado. Arredondado, o retorno varia um pouco de um resultado para outro; o
-          lucro garantido é o menor deles.
-        </p>
-        <p>Exemplo: R$ 100 em mais/menos, com 2,08 numa casa e 2,02 na outra.</p>
+        <p>{T.surebet.ajuda1}</p>
+        <p>{T.surebet.ajuda2}</p>
+        <p>{T.surebet.ajuda3}</p>
       </ComoUsar>
     );
 
@@ -1265,10 +1254,13 @@ export function CalculadoraEV() {
       resumo = (
         <Resumo tom={r.ehSurebet ? "verde" : "vermelho"}>
           {r.ehSurebet
-            ? `Surebet de ${formatarPorcentagem(r.roi * 100)}: ${formatarReais(r.lucro)} garantidos`
+            ? T.surebet.resumo.comLucro({
+                roi: formatarPorcentagem(r.roi * 100),
+                lucro: formatarReais(r.lucro),
+              })
             : r.existe
-              ? "Surebet sem lucro com este arredondamento"
-              : "Não há surebet"}
+              ? T.surebet.resumo.semLucro
+              : T.surebet.resumo.naoHa}
         </Resumo>
       );
     }
@@ -1285,8 +1277,8 @@ export function CalculadoraEV() {
     campos = (
       <>
         <Bloco
-          titulo="Seleções"
-          descricao="Para cada seleção, as odds de todos os resultados do mercado na casa de referência. A primeira é a do resultado que entra na múltipla."
+          titulo={T.multipla.selecoes.titulo}
+          descricao={T.multipla.selecoes.descricao}
         >
           <div className="space-y-3">
             {selecoes.map((s, i) => (
@@ -1297,18 +1289,18 @@ export function CalculadoraEV() {
               >
                 {/* A legenda tem de ser a primeira filha do fieldset para nomear o
                     grupo; a que se vê fica na linha dos controles. */}
-                <legend className="sr-only">Seleção {i + 1}</legend>
+                <legend className="sr-only">{T.multipla.selecao(i + 1)}</legend>
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <span
                     aria-hidden="true"
                     className="text-sm font-bold text-[var(--text)]"
                   >
-                    Seleção {i + 1}
+                    {T.multipla.selecao(i + 1)}
                   </span>
                   <div className="flex items-center gap-2">
                     <SeletorDeResultados
                       id={`multipla-${i + 1}-resultados`}
-                      rotulo={`Resultados do mercado da seleção ${i + 1}`}
+                      rotulo={T.multipla.resultadosDaSelecao(i + 1)}
                       valor={s.resultados}
                       maximo={MAXIMO_DE_RESULTADOS}
                       onChange={(resultados) => mudar(i, { ...s, resultados })}
@@ -1317,7 +1309,7 @@ export function CalculadoraEV() {
                       <button
                         type="button"
                         onClick={() => setSelecoes(selecoes.filter((_, j) => j !== i))}
-                        aria-label={`Remover a seleção ${i + 1}`}
+                        aria-label={T.multipla.remover(i + 1)}
                         className="p-1.5 min-h-[24px] min-w-[24px] rounded-full text-[var(--text-3)] hover:bg-[var(--red-soft)] hover:text-[var(--red)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
@@ -1333,10 +1325,12 @@ export function CalculadoraEV() {
                 />
                 {lidas[i].oddJusta !== null && (
                   <p className="text-right text-xs text-[var(--text-2)]">
-                    Odd justa{" "}
-                    <strong className="font-mono text-[var(--text)]">
-                      {formatarOddJusta(lidas[i].oddJusta as number)}
-                    </strong>
+                    <Frase
+                      partes={T.multipla.oddJustaDaSelecao(
+                        formatarOddJusta(lidas[i].oddJusta as number)
+                      )}
+                      forte="font-mono text-[var(--text)]"
+                    />
                   </p>
                 )}
               </fieldset>
@@ -1349,27 +1343,24 @@ export function CalculadoraEV() {
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-tinta/[0.1] bg-[var(--bg-soft)] text-xs font-bold text-[var(--text)] hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:transform-none transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-                Adicionar seleção
+                {T.multipla.adicionar}
               </button>
             )}
           </div>
         </Bloco>
 
-        <Bloco
-          titulo="Onde você vai apostar"
-          descricao="A odd total que a casa paga pela múltipla. Tem valor quando passa da odd justa, que é a das seleções multiplicadas."
-        >
+        <Bloco titulo={T.onde.titulo} descricao={T.onde.descricaoDaMultipla}>
           <div className="grid grid-cols-2 gap-3 sm:max-w-sm items-start">
             <Campo
               id="multipla-odd"
-              rotulo="Odd da múltipla"
+              rotulo={T.multipla.odd}
               exemplo="4,60"
               destaque
               valor={oddMultipla}
               erro={multipla.erro}
               onChange={setOddMultipla}
             />
-            <OddDeComparacao rotulo="Odd justa" odd={oddJusta} />
+            <OddDeComparacao rotulo={T.mercado.oddJusta} odd={oddJusta} />
           </div>
         </Bloco>
       </>
@@ -1384,18 +1375,9 @@ export function CalculadoraEV() {
           setOddMultipla("4,60");
         }}
       >
-        <p>
-          A calculadora acha a odd justa de cada seleção, como no modo “Odd justa”, e
-          multiplica. Depois compara com a odd que a casa paga pela múltipla.
-        </p>
-        <p>
-          Vale para seleções de jogos diferentes: na mesma partida (criar aposta) os
-          resultados se influenciam, e multiplicar deixa de ser a conta certa.
-        </p>
-        <p>
-          Exemplo: um mais/menos a 1,90 / 1,90 e um 1X2 a 2,00 / 3,40 / 3,60, pagos a
-          4,60.
-        </p>
+        <p>{T.multipla.ajuda1}</p>
+        <p>{T.multipla.ajuda2}</p>
+        <p>{T.multipla.ajuda3}</p>
       </ComoUsar>
     );
 
@@ -1417,16 +1399,19 @@ export function CalculadoraEV() {
             onGestao={mudarGestao}
           />
           <dl className="grid grid-cols-2 gap-2">
-            <Detalhe rotulo="Odd justa" valor={formatarOddJusta(r.oddJusta)} />
-            <Detalhe rotulo="Probabilidade" valor={porcento(r.probabilidadeJusta, 1)} />
+            <Detalhe rotulo={T.detalhes.oddJusta} valor={formatarOddJusta(r.oddJusta)} />
+            <Detalhe
+              rotulo={T.detalhes.probabilidade}
+              valor={porcento(r.probabilidadeJusta, 1)}
+            />
           </dl>
           <ul className="text-xs text-[var(--text-2)] space-y-1">
             {r.oddsJustas.map((o, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: a linha é a seleção na posição dela.
               <li key={i} className="flex justify-between gap-3">
-                <span>Seleção {i + 1}</span>
+                <span>{T.multipla.selecao(i + 1)}</span>
                 <span className="font-mono font-bold text-[var(--text)]">
-                  odd justa {formatarOddJusta(o)}
+                  {T.multipla.oddJustaNaLista(formatarOddJusta(o))}
                 </span>
               </li>
             ))}
@@ -1442,7 +1427,9 @@ export function CalculadoraEV() {
         />
       );
     } else if (oddJusta !== null) {
-      resultado = <FaltaAEncontrada oddJusta={oddJusta} campo="a odd da múltipla" />;
+      resultado = (
+        <FaltaAEncontrada oddJusta={oddJusta} campo={T.faltaAOdd.aDaMultipla} />
+      );
     }
   }
 
@@ -1451,22 +1438,22 @@ export function CalculadoraEV() {
       {/* biome-ignore lint/a11y/useSemanticElements: o que a regra pede no lugar é <fieldset>, que traz borda, margem e padding do navegador; aqui é a barra que troca o modo da tela, como as outras barras de botões do site. */}
       <div
         role="group"
-        aria-label="Modo da calculadora"
+        aria-label={T.ariaDosModos}
         className="grid grid-cols-2 sm:grid-cols-4 gap-1 bg-[var(--bg-soft)] p-1 rounded-2xl border border-tinta/[0.05]"
       >
         {MODOS.map((m) => (
           <button
-            key={m.id}
+            key={m}
             type="button"
-            aria-pressed={modo === m.id}
-            onClick={() => setModo(m.id)}
+            aria-pressed={modo === m}
+            onClick={() => setModo(m)}
             className={`px-3 py-2 text-xs font-bold rounded-xl transition-colors ${
-              modo === m.id
+              modo === m
                 ? "bg-[var(--pilula)] text-[var(--text)] shadow-sm"
                 : "text-[var(--text-2)] hover:text-[var(--accent)]"
             }`}
           >
-            {m.rotulo}
+            {T.modos[m]}
           </button>
         ))}
       </div>
@@ -1481,14 +1468,14 @@ export function CalculadoraEV() {
               id="titulo-dados"
               className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-3)]"
             >
-              Dados da aposta
+              {T.dados.titulo}
             </h2>
             <button
               type="button"
               onClick={limpar}
               className="px-2.5 py-1 -my-1 -mr-2.5 rounded-full text-xs font-bold text-[var(--text-2)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
             >
-              Limpar
+              {T.dados.limpar}
             </button>
           </div>
           {campos}
@@ -1500,12 +1487,12 @@ export function CalculadoraEV() {
             campo fica válido, sem precisar ir procurá-lo. */}
         <section
           id="resultado"
-          aria-label="Resultado"
+          aria-label={T.resultado.titulo}
           aria-live="polite"
           className="scroll-mt-24 bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-5 sm:p-6 shadow-sm lg:sticky lg:top-24"
         >
           <h2 className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-3)] mb-4">
-            Resultado
+            {T.resultado.titulo}
           </h2>
           {resultado ?? <Espera />}
         </section>
