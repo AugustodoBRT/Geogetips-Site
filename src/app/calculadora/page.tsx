@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CalculadoraEV } from "@/components/CalculadoraEV";
+import { textoDaCalculadora } from "@/texto/calculadora";
 import { textoDasRotas } from "@/texto/rotas";
 
 /**
@@ -25,18 +26,14 @@ export default function CalculadoraPage() {
           {textoDasRotas().calculadora.titulo}
         </h1>
         <p className="text-sm text-[var(--text-2)] mt-2 leading-relaxed max-w-2xl">
-          Descubra se uma odd paga mais do que a probabilidade real justifica, e quanto
-          apostar nela. A margem da casa sai da conta, o que sobra é a odd justa, e o
-          critério de Kelly diz a stake em unidades.
+          {textoDaCalculadora().pagina.intro}
         </p>
       </header>
 
       <CalculadoraEV />
 
       <p className="text-[11.5px] text-[var(--text-3)] leading-relaxed max-w-3xl">
-        A calculadora faz conta, não previsão. Valor esperado positivo quer dizer que a
-        odd paga mais do que a probabilidade estimada pela casa de referência, não que a
-        aposta vai dar green. Aposte apenas o que você pode perder.
+        {textoDaCalculadora().pagina.aviso}
       </p>
     </div>
   );

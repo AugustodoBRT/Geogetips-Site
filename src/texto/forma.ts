@@ -78,8 +78,15 @@ export function contagem(n: number, uma: string, varias: string): string {
  * - `recorte`: o intervalo de datas que estreita a frase.
  * - `valor`: um número cujo sinal a tela pinta, e que por isso ela não pode
  *   receber já formatado numa string junto do resto.
+ * - `perda`: um valor que a frase diz que se perde. Nasceu na calculadora, na
+ *   frase que tem dois números destacados — a soma das probabilidades, que sai
+ *   neutra, e o dinheiro que se perderia, que sai em vermelho.
+ *
+ * Frase com um destaque só não precisa de papel: quem desenha é o ponto de
+ * chamada, e ele decide sozinho. O papel existe para a frase que tem **dois**
+ * destaques e os desenha diferente.
  */
-export type Trecho = string | { forte: string; papel?: "recorte" | "valor" };
+export type Trecho = string | { forte: string; papel?: "recorte" | "valor" | "perda" };
 
 /**
  * O período que a tela está olhando, do jeito que `trechoDaAba` o devolve.
