@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { DURACAO, MOLA_CURTA, VEU } from "@/lib/movimento";
 import { Menu, X } from "lucide-react";
 import { BotaoTelegram, IconeTelegram } from "@/components/Telegram";
+import { textoDoTelegram } from "@/texto/telegram";
 import { BotaoTema } from "@/components/BotaoTema";
 import { MarcaG } from "@/components/MarcaG";
 import { TELEGRAM_URL } from "@/lib/constants";
@@ -166,7 +167,7 @@ function Navigation() {
                 com os sete itens dele o botão passava da borda da tela. */}
             <BotaoTelegram
               variante="compacto"
-              rotulo="Grupo grátis"
+              rotulo={textoDoTelegram().botaoCurto}
               className="hidden sm:inline-flex md:hidden lg:inline-flex"
             />
 

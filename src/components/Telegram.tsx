@@ -1,6 +1,7 @@
 import { ArrowUpRight, Table2 } from "lucide-react";
 import { TELEGRAM_URL, PLANILHA_URL } from "@/lib/constants";
 import { grupoDoId, URL_LISTA_DE_ESPERA } from "@/lib/grupos";
+import { textoDoTelegram } from "@/texto/telegram";
 
 /** Logo do X. O lucide não traz ícones de marca. */
 export function IconeX({ className = "w-4 h-4" }: { className?: string }) {
@@ -37,7 +38,7 @@ const ESTILOS = {
 
 export function BotaoTelegram({
   variante = "primario",
-  rotulo = "Entrar no grupo grátis",
+  rotulo = textoDoTelegram().botao,
   className = "",
 }: BotaoTelegramProps) {
   return (
@@ -53,17 +54,13 @@ export function BotaoTelegram({
   );
 }
 
-const BENEFICIOS = [
-  "As entradas chegam no Telegram, na hora em que saem",
-  "Cada aposta vira linha na planilha — inclusive as que dão red",
-  "Entrada gratuita, sem cadastro",
-];
-
 /**
  * Fecho das páginas. O visitante que chegou até aqui já viu os números;
  * é o único momento do site em que pedimos algo dele.
  */
 export function SecaoTelegram() {
+  const T = textoDoTelegram();
+
   // Escura nos dois temas: é a cor da marca, não do tema. Por isso o texto sai
   // de --sobre-marca, e não de --bg, que no escuro também é escuro. No escuro a
   // borda fina separa a faixa do fundo, que ficou quase da mesma cor.
@@ -81,22 +78,23 @@ export function SecaoTelegram() {
       <div className="relative max-w-3xl">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-bold uppercase tracking-wider mb-5">
           <IconeTelegram className="w-3.5 h-3.5" />
-          <span>Grupo gratuito</span>
+          <span>{T.secao.selo}</span>
         </div>
 
+        {/* Duas entradas e um <br> entre elas: a quebra é desenho, e cada
+            idioma decide a sua. Ver o dicionário. */}
         <h2 className="font-serif text-2xl sm:text-3xl tracking-tight leading-tight mb-3">
-          Os números estão abertos.
-          <br />O grupo também.
+          {T.secao.titulo[0]}
+          <br />
+          {T.secao.titulo[1]}
         </h2>
 
         <p className="text-sm text-[color:color-mix(in_srgb,var(--sobre-marca)_70%,transparent)] leading-relaxed mb-7 max-w-xl">
-          Tudo que você vê neste site sai das mesmas entradas que são enviadas no canal.
-          Entre, acompanhe por alguns dias e confira os resultados na planilha antes de
-          decidir qualquer coisa.
+          {T.secao.texto}
         </p>
 
         <ul className="space-y-2.5 mb-8 list-none p-0">
-          {BENEFICIOS.map((b) => (
+          {T.secao.beneficios.map((b) => (
             <li
               key={b}
               className="flex items-start gap-2.5 text-sm text-[color:color-mix(in_srgb,var(--sobre-marca)_85%,transparent)]"
@@ -118,7 +116,7 @@ export function SecaoTelegram() {
             className="inline-flex items-center gap-2 px-7 py-3 bg-[var(--sobre-marca)] text-[var(--marca)] text-sm font-bold rounded-full hover:opacity-90 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white transition-all"
           >
             <IconeTelegram className="w-4 h-4" />
-            <span>Entrar no grupo grátis</span>
+            <span>{T.botao}</span>
             <ArrowUpRight className="w-4 h-4" />
           </a>
 
@@ -129,7 +127,7 @@ export function SecaoTelegram() {
             className="inline-flex items-center gap-2 px-6 py-3 border border-white/25 text-[var(--sobre-marca)] text-sm font-semibold rounded-full hover:bg-white/10 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white transition-all"
           >
             <Table2 className="w-4 h-4" />
-            <span>Conferir a planilha</span>
+            <span>{T.secao.planilha}</span>
             <ArrowUpRight className="w-4 h-4" />
           </a>
         </div>
@@ -139,21 +137,21 @@ export function SecaoTelegram() {
             botões: a chamada desta faixa continua sendo o grupo grátis. */}
         {URL_LISTA_DE_ESPERA && (
           <p className="mt-6 text-sm text-[color:color-mix(in_srgb,var(--sobre-marca)_85%,transparent)]">
-            O {grupoDoId("sigma").nome}, nosso grupo pago, está chegando.{" "}
+            {T.secao.listaDeEspera(grupoDoId("sigma").nome)}{" "}
             <a
               href={URL_LISTA_DE_ESPERA}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 py-[5px] -my-[5px] font-bold text-[var(--sobre-marca)] underline decoration-white/40 underline-offset-4 hover:decoration-white focus-visible:ring-2 focus-visible:ring-white rounded transition-colors"
             >
-              Entrar na lista de espera
+              {T.secao.entrarNaLista}
               <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
             </a>
           </p>
         )}
 
         <p className="text-[11px] text-[color:color-mix(in_srgb,var(--sobre-marca)_60%,transparent)] mt-4">
-          @vemproGeogeTips · planilha aberta em modo somente leitura · 18+
+          {T.secao.rodape}
         </p>
       </div>
     </section>
