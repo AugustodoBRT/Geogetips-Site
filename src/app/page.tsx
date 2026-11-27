@@ -30,6 +30,7 @@ import {
 import { BotaoTelegram, SecaoTelegram } from "@/components/Telegram";
 import { TextoQueCai, Revelar, EntradaSequencial } from "@/components/animacoes";
 import { CarrosselProfundidade } from "@/components/CarrosselProfundidade";
+import { textoDaHome } from "@/texto/home";
 
 // Página de captação: renderizada no servidor para que os números apareçam no
 // HTML inicial (SEO e preview de link). O prazo acompanha o da API e o da
@@ -54,59 +55,46 @@ async function carregarResumo(): Promise<{
   }
 }
 
+const T = textoDaHome();
+
+/**
+ * Os cinco cartões: a ordem, o ícone e a cor, que são desenho.
+ *
+ * O texto de cada um vem do dicionário, pela chave. Separado assim porque as
+ * duas metades têm donos diferentes — a cor do ícone não se traduz, e a frase
+ * não se escolhe por paleta.
+ */
 const FUNCIONALIDADES = [
   {
-    titulo: "Registro automático",
-    texto:
-      "Cada entrada enviada no canal vira uma linha na planilha automaticamente, com partida, mercado, odd e valor. Sem digitação manual e sem esquecer nenhuma.",
+    ...T.funcionalidades.registro,
     icone: <Bot className="w-6 h-6" strokeWidth={1.75} />,
     corIcone: "bg-[var(--accent-soft)] text-[var(--accent)]",
   },
   {
-    titulo: "Planilha Sincronizada",
-    texto:
-      "A planilha no Google Sheets continua viva e é a fonte de tudo que aparece aqui — aberta para conferência linha a linha.",
+    ...T.funcionalidades.planilha,
     icone: <FileSpreadsheet className="w-6 h-6" strokeWidth={1.75} />,
     corIcone: "bg-[var(--green-soft)] text-[var(--green)]",
   },
   {
-    titulo: "Análise por Adm",
-    texto:
-      "Descubra quem realmente coloca dinheiro no seu bolso e quem dá prejuízo, com acerto, volume e ROI de cada um.",
+    ...T.funcionalidades.adms,
     icone: <Target className="w-6 h-6" strokeWidth={1.75} />,
     corIcone: "bg-[var(--amber-soft)] text-[var(--amber)]",
   },
   {
-    titulo: "Gestão de Banca",
-    texto: `Controle por unidades (1u = ${formatarReais(VALOR_UNIDADE)}), com travas de segurança e limites máximos. Ajuste a unidade para a sua banca e veja o histórico na sua escala.`,
+    titulo: T.funcionalidades.banca.titulo,
+    texto: T.funcionalidades.banca.texto(formatarReais(VALOR_UNIDADE)),
     icone: <Landmark className="w-6 h-6" strokeWidth={1.75} />,
     corIcone: "bg-[var(--accent-soft)] text-[var(--accent)]",
   },
   {
-    titulo: "Estatísticas Completas",
-    texto:
-      "Lucro por esporte, casa, odds médias e ROI real — mês a mês, incluindo os meses negativos.",
+    ...T.funcionalidades.estatisticas,
     icone: <BarChart3 className="w-6 h-6" strokeWidth={1.75} />,
     corIcone: "bg-[var(--green-soft)] text-[var(--green)]",
   },
 ];
 
-const PASSOS = [
-  {
-    titulo: "A entrada chega",
-    texto: "O adm envia a aposta no canal do Telegram, com a casa, o mercado e a odd.",
-  },
-  {
-    titulo: "Entra na planilha",
-    texto:
-      "Toda entrada é registrada na hora — green, red ou anulada. Nada fica de fora.",
-  },
-  {
-    titulo: "Você confere",
-    texto:
-      "Os números deste site saem dessa planilha, que fica aberta para consulta a qualquer momento.",
-  },
-];
+/** Os três passos, na ordem em que a página os numera. */
+const PASSOS = [T.passos.entrada, T.passos.registro, T.passos.conferencia];
 
 export default async function HomePage() {
   const { stats, periodo } = await carregarResumo();
@@ -119,7 +107,7 @@ export default async function HomePage() {
         <EntradaSequencial indice={0}>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[var(--accent-soft)] border border-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] rounded-full text-xs font-semibold text-[var(--accent)] mb-7">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Análise · Dados · Apostas · Resultados</span>
+            <span>{T.selo}</span>
           </div>
         </EntradaSequencial>
 
@@ -136,9 +124,7 @@ export default async function HomePage() {
 
         <EntradaSequencial indice={0} base={1.5}>
           <p className="text-base sm:text-lg text-[var(--text-2)] leading-relaxed max-w-xl mx-auto mb-9 font-sans">
-            O GeogeTips transforma dados brutos em decisões inteligentes. Registre,
-            acompanhe e analise cada aposta com a clareza de quem usa números — não
-            achismo.
+            {T.chamada}
           </p>
         </EntradaSequencial>
 
@@ -149,16 +135,14 @@ export default async function HomePage() {
               href="/painel"
               className="px-7 py-3 bg-transparent text-[var(--text)] text-sm font-semibold border border-tinta/15 rounded-full hover:border-[var(--accent)] hover:text-[var(--accent)] active:scale-[0.98] transition-all inline-flex items-center gap-2"
             >
-              <span>Ver os resultados</span>
+              <span>{T.verResultados}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </EntradaSequencial>
 
         <EntradaSequencial indice={2} base={1.5}>
-          <p className="text-xs text-[var(--text-3)] mt-5">
-            Entrada gratuita pelo Telegram · resultados abertos na planilha pública
-          </p>
+          <p className="text-xs text-[var(--text-3)] mt-5">{T.promessa}</p>
         </EntradaSequencial>
       </section>
 
@@ -173,9 +157,7 @@ export default async function HomePage() {
             <span className="font-mono font-bold text-[var(--text-2)] text-sm">
               {formatarInteiro(stats.totalBets)}
             </span>
-            {periodo
-              ? `apostas registradas desde ${periodo.desde}`
-              : "apostas registradas"}
+            {periodo ? T.numeros.apostas(periodo.desde) : T.numeros.apostasSemPeriodo}
           </div>
           {periodo && (
             <>
@@ -184,7 +166,7 @@ export default async function HomePage() {
                 <span className="font-mono font-bold text-[var(--text-2)] text-sm">
                   {formatarInteiro(periodo.diasComAposta)}
                 </span>
-                {periodo.diasComAposta === 1 ? "dia com aposta" : "dias com aposta"}
+                {T.numeros.dias(periodo.diasComAposta)}
               </div>
             </>
           )}
@@ -193,19 +175,21 @@ export default async function HomePage() {
             <span className="font-mono font-bold text-[var(--text-2)] text-sm">
               {formatarTaxa(stats.taxaAcerto)}
             </span>
-            taxa de acerto
+            {T.numeros.acerto}
           </div>
           <div className="w-1 h-1 rounded-full bg-tinta/15 hidden sm:block" />
           <div className="flex items-center gap-2">
             <span className={`font-mono font-bold text-sm ${corDoValor(stats.roi)}`}>
               {formatarPorcentagem(stats.roi)}
             </span>
-            de ROI
+            {T.numeros.roi}
           </div>
           <div className="w-1 h-1 rounded-full bg-tinta/15 hidden sm:block" />
           <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-[var(--text-2)] text-sm">24/7</span>
-            bot automático
+            <span className="font-mono font-bold text-[var(--text-2)] text-sm">
+              {T.numeros.bot}
+            </span>
+            {T.numeros.botRotulo}
           </div>
         </EntradaSequencial>
       )}
@@ -218,13 +202,13 @@ export default async function HomePage() {
             <div className="w-2.5 h-2.5 rounded-full bg-tinta/20" />
             <div className="w-2.5 h-2.5 rounded-full bg-tinta/20" />
             <div className="ml-4 px-3 py-1 bg-[color:color-mix(in_srgb,var(--bg-card)_70%,transparent)] rounded-md text-[11px] font-mono text-[var(--text-2)] border border-tinta/[0.04]">
-              /painel
+              {T.previa.endereco}
             </div>
           </div>
           <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--bg-soft)]">
             <div className="p-5 bg-[var(--bg-card)] rounded-xl border border-tinta/[0.06] shadow-sm">
               <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
-                Lucro Acumulado
+                {T.previa.lucro.titulo}
               </div>
               {/* Sem planilha não há alta nem queda: o traço saía em verde, com
                   a seta para cima, como se o grupo estivesse no lucro. */}
@@ -235,7 +219,9 @@ export default async function HomePage() {
                     : corDoValor(stats.totalLucro)
                 }`}
               >
-                {temNumeros && stats ? formatarReaisComSinal(stats.totalLucro) : "—"}
+                {temNumeros && stats
+                  ? formatarReaisComSinal(stats.totalLucro)
+                  : T.previa.semValor}
               </div>
               <div className="text-xs font-medium text-[var(--text-2)] mt-1.5 flex items-center gap-1">
                 {/* Sem dado o cartão mostra "—", e zero não é ganho: os dois
@@ -249,29 +235,32 @@ export default async function HomePage() {
                 )}
                 <span>
                   {temNumeros && stats
-                    ? `${formatarDecimal(stats.totalUnidades, 2)}u acumuladas`
-                    : "histórico completo"}
+                    ? T.previa.lucro.unidades(formatarDecimal(stats.totalUnidades, 2))
+                    : T.previa.lucro.semDado}
                 </span>
               </div>
             </div>
 
             <div className="p-5 bg-[var(--bg-card)] rounded-xl border border-tinta/[0.06] shadow-sm">
               <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
-                Taxa de Acerto
+                {T.previa.acerto.titulo}
               </div>
               <div className="font-serif text-3xl text-[var(--text)] tracking-tight">
-                {temNumeros && stats ? formatarTaxa(stats.taxaAcerto) : "—"}
+                {temNumeros && stats ? formatarTaxa(stats.taxaAcerto) : T.previa.semValor}
               </div>
               <div className="text-xs font-medium text-[var(--text-2)] mt-1.5">
                 {temNumeros && stats
-                  ? `${formatarInteiro(stats.greens)} green · ${formatarInteiro(stats.reds)} red`
-                  : "sobre apostas finalizadas"}
+                  ? T.previa.acerto.placar({
+                      greens: formatarInteiro(stats.greens),
+                      reds: formatarInteiro(stats.reds),
+                    })
+                  : T.previa.acerto.semDado}
               </div>
             </div>
 
             <div className="p-5 bg-[var(--bg-card)] rounded-xl border border-tinta/[0.06] shadow-sm">
               <div className="text-[11px] font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
-                ROI
+                {T.previa.roi.titulo}
               </div>
               <div
                 className={`font-serif text-3xl tracking-tight ${
@@ -284,12 +273,12 @@ export default async function HomePage() {
                         : "text-[var(--text)]"
                 }`}
               >
-                {temNumeros && stats ? formatarPorcentagem(stats.roi) : "—"}
+                {temNumeros && stats ? formatarPorcentagem(stats.roi) : T.previa.semValor}
               </div>
               <div className="text-xs font-medium text-[var(--text-2)] mt-1.5">
                 {temNumeros && stats
-                  ? `odd média ${formatarOdd(stats.oddMediaGeral)}`
-                  : "lucro sobre o total apostado"}
+                  ? T.previa.roi.oddMedia(formatarOdd(stats.oddMediaGeral))
+                  : T.previa.roi.semDado}
               </div>
             </div>
           </div>
@@ -303,11 +292,14 @@ export default async function HomePage() {
           cabecalho={
             <div className="flex-none">
               <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-3)] mb-2">
-                Funcionalidades
+                {T.funcionalidades.selo}
               </div>
+              {/* Duas entradas e um <br> entre elas: a quebra é desenho, e
+                  cada idioma decide a sua. Ver o dicionário. */}
               <h2 className="font-serif text-3xl md:text-4xl text-[var(--text)] tracking-tight leading-tight">
-                Tudo que você precisa, <br />
-                nada que não precisa.
+                {T.funcionalidades.titulo[0]}
+                <br />
+                {T.funcionalidades.titulo[1]}
               </h2>
             </div>
           }
@@ -324,10 +316,10 @@ export default async function HomePage() {
         <div className="max-w-5xl mx-auto">
           <Revelar>
             <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-3)] mb-3">
-              Como Funciona
+              {T.passos.selo}
             </div>
             <h2 className="font-serif text-3xl md:text-4xl text-[var(--text)] tracking-tight mb-12">
-              Três passos. Sem complicação.
+              {T.passos.titulo}
             </h2>
           </Revelar>
 
@@ -361,7 +353,7 @@ export default async function HomePage() {
               href="/perguntas"
               className="inline-flex items-center gap-2 mt-12 text-sm font-semibold text-[var(--text)] hover:text-[var(--accent)] transition-colors"
             >
-              <span>Outras dúvidas frequentes</span>
+              <span>{T.passos.link}</span>
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </Link>
           </Revelar>
