@@ -216,8 +216,8 @@ describe("texto do painel", () => {
     expect(T.ultimas.vazio(MES)).toBe("Sem apostas neste período.");
     expect(T.ultimas.vazio(COM_INTERVALO)).toBe("Sem apostas 24/08/2026 a 26/08/2026.");
 
-    expect(T.recorteDoRisco(MES)).toBe("Novembro26");
-    expect(T.recorteDoRisco(COM_INTERVALO)).toBe("Novembro26 (24/08/2026 a 26/08/2026)");
+    expect(T.risco.recorte(MES)).toBe("Novembro26");
+    expect(T.risco.recorte(COM_INTERVALO)).toBe("Novembro26 (24/08/2026 a 26/08/2026)");
   });
 
   it("os títulos entre parênteses usam o rótulo curto da aba", () => {
@@ -254,5 +254,187 @@ describe("texto do painel", () => {
     expect(T.grafico.eixo.milhar("1,3")).toBe("R$ 1,3 mil");
     expect(T.grafico.eixo.exato("316")).toBe("R$ 316");
     expect(T.grafico.eixo.zero).toBe("R$ 0");
+  });
+
+  // O bloco Atenção. Os valores de exemplo são os que o Painel escreveu de
+  // verdade, no retrato tirado antes da extração.
+
+  it("o bloco Atenção abre com o recorte da tela na frase", () => {
+    const R = T.risco;
+    expect(R.titulo).toBe("Atenção");
+    expect(R.descricao("Novembro26")).toBe(
+      "Como a banca se comportou durante Novembro26: o tamanho das fases boas e " +
+        "ruins; não só aonde o grupo chegou."
+    );
+    expect(R.descricao("Novembro26 (dia 25/08/2026)")).toBe(
+      "Como a banca se comportou durante Novembro26 (dia 25/08/2026): o tamanho das " +
+        "fases boas e ruins; não só aonde o grupo chegou."
+    );
+    expect(R.vazio).toBe("Sem apostas fechadas neste recorte.");
+  });
+
+  it("a fase da curva é a mesma frase para a queda e para a alta", () => {
+    const F = T.risco.fase;
+    // Queda: do pico ao vale. Medido no Painel em 1440 px.
+    expect(F.entre({ valor: "1,00u", de: "25/08", ate: "26/08" })).toBe(
+      "1,00u, de 25/08 a 26/08"
+    );
+    // Alta: do vale ao pico. A mesma frase, com as pontas trocadas pelo
+    // componente — é o que esta entrada única existe para registrar.
+    expect(F.entre({ valor: "5,11u", de: "23/08", ate: "27/08" })).toBe(
+      "5,11u, de 23/08 a 27/08"
+    );
+    expect(F.doInicio({ valor: "3,35u", ate: "25/08" })).toBe(
+      "3,35u, do início até 25/08"
+    );
+    expect(F.doInicio({ valor: "1,25u", ate: "24/08" })).toBe(
+      "1,25u, do início até 24/08"
+    );
+  });
+
+  it("os oito cartões do bloco têm rótulo e frase de ausência", () => {
+    const R = T.risco;
+    expect(R.queda.rotulo).toBe("Maior queda");
+    expect(R.queda.vazio).toBe("A curva não caiu neste recorte");
+    expect(R.alta.rotulo).toBe("Maior alta");
+    expect(R.alta.vazio).toBe("A curva não subiu neste recorte");
+    expect(R.piorDia).toBe("Pior dia");
+    expect(R.melhorDia).toBe("Melhor dia");
+    expect(R.red.rotulo).toBe("Maior red");
+    expect(R.red.vazio).toBe("Nenhuma red neste recorte");
+    expect(R.green.rotulo).toBe("Maior green");
+    expect(R.green.vazio).toBe("Nenhuma green neste recorte");
+    expect(R.dias.rotulo).toBe("Dias no verde");
+    expect(R.porDia.rotulo).toBe("Apostas por dia");
+    // Uma palavra para as quatro ausências de valor. Ver o topo da seção.
+    expect(R.nenhuma).toBe("Nenhuma");
+    // E uma para os dois cartões que medem uma aposta, não um dia.
+    expect(R.umaAposta).toBe("numa aposta só");
+  });
+
+  it("as contagens do bloco trazem o singular", () => {
+    const R = T.risco;
+    expect(R.apostasDoDia(2)).toBe(" · 2 apostas");
+    expect(R.apostasDoDia(1)).toBe(" · 1 aposta");
+    expect(R.porDia.media(5)).toBe("média em 5 dias com aposta");
+    expect(R.porDia.media(1)).toBe("média em 1 dia com aposta");
+  });
+
+  it("os dias no verde contam o vermelho e, só quando há, o zero", () => {
+    const D = T.risco.dias;
+    expect(D.valor({ verde: "3", total: "5" })).toBe("3 de 5");
+    expect(D.vermelho("2")).toBe("2 no vermelho");
+    expect(D.vermelho("0")).toBe("0 no vermelho");
+    // Este ramo a suíte de tela não alcança: o mock não tem dia que feche
+    // exatamente em zero. A frase foi conferida contra o componente de antes,
+    // que escrevia `, ${formatarInteiro(...)} no zero`.
+    expect(D.zero("1")).toBe(", 1 no zero");
+  });
+
+  // O calendário de lucro por dia.
+
+  it("o calendário abre com o título e a chamada do toque", () => {
+    const C = T.calendario;
+    expect(C.titulo).toBe("Lucro por dia");
+    expect(C.descricao).toBe(
+      "Cada dia do mês, com os ruins à vista. Toque num dia para ver as apostas dele."
+    );
+    expect(C.legenda("agosto de 2026")).toBe("Lucro por dia em agosto de 2026");
+    // Ramos que a suíte de tela não alcança: as setas só existem com dois
+    // meses de aposta, e o vazio só num grupo sem aposta nenhuma. Os três
+    // foram conferidos contra o componente de antes.
+    expect(C.anterior).toBe("Mês anterior");
+    expect(C.proximo).toBe("Próximo mês");
+    expect(C.vazio).toBe("Sem apostas com data neste período.");
+  });
+
+  it("os sete dias da semana trazem a abreviação e o nome, na ordem", () => {
+    expect(T.calendario.semana).toEqual([
+      { curto: "Dom", nome: "domingo" },
+      { curto: "Seg", nome: "segunda-feira" },
+      { curto: "Ter", nome: "terça-feira" },
+      { curto: "Qua", nome: "quarta-feira" },
+      { curto: "Qui", nome: "quinta-feira" },
+      { curto: "Sex", nome: "sexta-feira" },
+      { curto: "Sáb", nome: "sábado" },
+    ]);
+  });
+
+  it("o nome acessível de um dia diz valor, contagem e o que o distingue", () => {
+    const C = T.calendario;
+    expect(C.unidades("0,50u")).toBe("(0,50u)");
+    expect(C.apostas(2)).toBe("2 apostas");
+    expect(C.apostas(1)).toBe("1 aposta");
+
+    const dia = {
+      data: "23/08/2026",
+      reais: "-R$ 50,00",
+      unidades: "(0,50u)",
+      apostas: 2,
+      hoje: false,
+      fora: false,
+    };
+    expect(C.dia(dia)).toBe("23/08/2026: -R$ 50,00 (0,50u) em 2 apostas");
+    expect(C.dia({ ...dia, fora: true })).toBe(
+      "23/08/2026: -R$ 50,00 (0,50u) em 2 apostas, fora do período escolhido"
+    );
+    expect(C.dia({ ...dia, apostas: 1 })).toBe(
+      "23/08/2026: -R$ 50,00 (0,50u) em 1 aposta"
+    );
+    // "hoje" a suíte de tela não alcança: as apostas do mock são de agosto.
+    expect(C.dia({ ...dia, hoje: true })).toBe(
+      "23/08/2026: -R$ 50,00 (0,50u) em 2 apostas, hoje"
+    );
+    expect(C.dia({ ...dia, hoje: true, fora: true })).toBe(
+      "23/08/2026: -R$ 50,00 (0,50u) em 2 apostas, hoje, fora do período escolhido"
+    );
+    // Os dois fins vêm das mesmas entradas que a célula sem link usa.
+    expect(C.hoje).toBe(", hoje");
+    expect(C.fora).toBe(", fora do período escolhido");
+  });
+
+  it("o rodapé do mês destaca o resultado e avisa do intervalo", () => {
+    const total = {
+      mes: "agosto de 2026",
+      reais: "+R$ 461,00",
+      unidades: "(4,61u)",
+      apostas: 11,
+      dias: 5,
+      comIntervalo: false,
+    };
+    expect(corrido(T.calendario.total(total))).toBe(
+      "Total de agosto de 2026: +R$ 461,00 (4,61u) · 11 apostas em 5 dias."
+    );
+    expect(corrido(T.calendario.total({ ...total, comIntervalo: true }))).toBe(
+      "Total de agosto de 2026: +R$ 461,00 (4,61u) · 11 apostas em 5 dias. Os dias " +
+        "fora do período escolhido aparecem sem cor."
+    );
+    expect(corrido(T.calendario.total({ ...total, apostas: 1, dias: 1 }))).toBe(
+      "Total de agosto de 2026: +R$ 461,00 (4,61u) · 1 aposta em 1 dia."
+    );
+    // O destaque é um só, e é o resultado: a tela o pinta pelo sinal.
+    const fortes = T.calendario
+      .total(total)
+      .filter((p) => typeof p !== "string")
+      .map((p) => (typeof p === "string" ? p : p.forte));
+    expect(fortes).toEqual(["+R$ 461,00"]);
+  });
+
+  it("nenhuma entrada de texto começa ou termina com espaço", () => {
+    // As funções ficam de fora: há emenda que precisa do espaço nas pontas,
+    // como `selo.desde` e `risco.apostasDoDia`. O que esta varredura protege é
+    // a entrada fixa, onde espaço sobrando é sempre engano.
+    const sobrando: string[] = [];
+    const varrer = (valor: unknown, caminho: string) => {
+      if (typeof valor === "string") {
+        if (valor !== valor.trim()) sobrando.push(`${caminho}: ${JSON.stringify(valor)}`);
+      } else if (Array.isArray(valor)) {
+        for (const [i, v] of valor.entries()) varrer(v, `${caminho}[${i}]`);
+      } else if (valor && typeof valor === "object") {
+        for (const [k, v] of Object.entries(valor)) varrer(v, `${caminho}.${k}`);
+      }
+    };
+    varrer(T, "painel");
+    expect(sobrando).toEqual([]);
   });
 });
