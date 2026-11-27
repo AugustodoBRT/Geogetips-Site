@@ -16,6 +16,7 @@ import {
   formatarDecimal,
 } from "@/lib/format";
 import { calcularRisco, type DiaFechado } from "@/lib/risco";
+import { textoDoPainel } from "@/texto/painel";
 import type { BetItem } from "@/lib/types";
 
 /** "03/09/2026" → "03/09": o ano está no recorte, e o cartão é estreito. */
@@ -129,6 +130,18 @@ export function BlocoDeRisco({
 }) {
   const risco = useMemo(() => calcularRisco(bets), [bets]);
   const { maiorQueda: queda, maiorAlta: alta } = risco;
+  const T = textoDoPainel().risco;
+  /** Dias com aposta que fecharam exatamente no zero: nem verde, nem vermelho. */
+  const zerados = risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho;
+
+  /** A fase da curva: a mesma frase para a queda e para a alta. */
+  const fase = (valor: number, de: string | null, ate: string | null, vazio: string) => {
+    if (valor <= 0 || !ate) return vazio;
+    const medida = unidades(valor);
+    return de
+      ? T.fase.entre({ valor: medida, de: curta(de), ate: curta(ate) })
+      : T.fase.doInicio({ valor: medida, ate: curta(ate) });
+  };
 
   return (
     <section
@@ -144,12 +157,9 @@ export function BlocoDeRisco({
             id="titulo-risco"
             className="text-base font-bold text-[var(--text)] tracking-tight"
           >
-            Atenção
+            {T.titulo}
           </h2>
-          <p className="text-xs text-[var(--text-3)]">
-            Como a banca se comportou durante {recorte}: o tamanho das fases boas e ruins;
-            não só aonde o grupo chegou.
-          </p>
+          <p className="text-xs text-[var(--text-3)]">{T.descricao(recorte)}</p>
         </div>
       </div>
 
@@ -157,9 +167,7 @@ export function BlocoDeRisco({
         carregando ? (
           <SkeletonLinhas quantidade={2} altura="h-20" />
         ) : (
-          <p className="text-center text-xs text-[var(--text-3)] py-6">
-            Sem apostas fechadas neste recorte.
-          </p>
+          <p className="text-center text-xs text-[var(--text-3)] py-6">{T.vazio}</p>
         )
       ) : (
         // Em pares, o ruim à esquerda e o bom à direita: maior queda e maior
@@ -173,103 +181,92 @@ export function BlocoDeRisco({
               número por "Nenhuma" porque ele arredondou mentiria sobre o
               recorte. Mesma divisão nos seis cartões abaixo. */}
           <Medida
-            rotulo="Maior queda"
+            rotulo={T.queda.rotulo}
             valor={
-              queda.valor > 0 ? formatarReaisComSinal(-converter(queda.valor)) : "Nenhuma"
+              queda.valor > 0 ? formatarReaisComSinal(-converter(queda.valor)) : T.nenhuma
             }
             tom={queda.valor > 0 ? tomDoValor(-converter(queda.valor)) : "neutro"}
           >
-            {queda.valor > 0 && queda.vale
-              ? queda.pico
-                ? `${unidades(queda.valor)}, de ${curta(queda.pico)} a ${curta(queda.vale)}`
-                : `${unidades(queda.valor)}, do início até ${curta(queda.vale)}`
-              : "A curva não caiu neste recorte"}
+            {fase(queda.valor, queda.pico, queda.vale, T.queda.vazio)}
           </Medida>
 
           <Medida
-            rotulo="Maior alta"
+            rotulo={T.alta.rotulo}
             valor={
-              alta.valor > 0 ? formatarReaisComSinal(converter(alta.valor)) : "Nenhuma"
+              alta.valor > 0 ? formatarReaisComSinal(converter(alta.valor)) : T.nenhuma
             }
             tom={alta.valor > 0 ? tomDoValor(converter(alta.valor)) : "neutro"}
           >
-            {alta.valor > 0 && alta.pico
-              ? alta.vale
-                ? `${unidades(alta.valor)}, de ${curta(alta.vale)} a ${curta(alta.pico)}`
-                : `${unidades(alta.valor)}, do início até ${curta(alta.pico)}`
-              : "A curva não subiu neste recorte"}
+            {fase(alta.valor, alta.vale, alta.pico, T.alta.vazio)}
           </Medida>
 
           {risco.piorDia && (
             <Medida
-              rotulo="Pior dia"
+              rotulo={T.piorDia}
               valor={formatarReaisComSinal(converter(risco.piorDia.lucro))}
               tom={tomDoValor(converter(risco.piorDia.lucro))}
             >
-              <LinkDoDia dia={risco.piorDia} aba={aba} grupo={grupo} /> ·{" "}
-              {formatarInteiro(risco.piorDia.apostas)}{" "}
-              {risco.piorDia.apostas === 1 ? "aposta" : "apostas"}
+              <LinkDoDia dia={risco.piorDia} aba={aba} grupo={grupo} />
+              {T.apostasDoDia(risco.piorDia.apostas)}
             </Medida>
           )}
 
           {risco.melhorDia && (
             <Medida
-              rotulo="Melhor dia"
+              rotulo={T.melhorDia}
               valor={formatarReaisComSinal(converter(risco.melhorDia.lucro))}
               tom={tomDoValor(converter(risco.melhorDia.lucro))}
             >
-              <LinkDoDia dia={risco.melhorDia} aba={aba} grupo={grupo} /> ·{" "}
-              {formatarInteiro(risco.melhorDia.apostas)}{" "}
-              {risco.melhorDia.apostas === 1 ? "aposta" : "apostas"}
+              <LinkDoDia dia={risco.melhorDia} aba={aba} grupo={grupo} />
+              {T.apostasDoDia(risco.melhorDia.apostas)}
             </Medida>
           )}
 
           {/* Sem red (ou sem green) no recorte, o cartão diz "Nenhuma", como a
               maior queda: "+R$ 0,00" se lia como uma aposta que empatou. */}
           <Medida
-            rotulo="Maior red"
+            rotulo={T.red.rotulo}
             valor={
               risco.maiorRed < 0
                 ? formatarReaisComSinal(converter(risco.maiorRed))
-                : "Nenhuma"
+                : T.nenhuma
             }
             tom={risco.maiorRed < 0 ? tomDoValor(converter(risco.maiorRed)) : "neutro"}
           >
-            {risco.maiorRed < 0 ? "numa aposta só" : "Nenhuma red neste recorte"}
+            {risco.maiorRed < 0 ? T.umaAposta : T.red.vazio}
           </Medida>
 
           <Medida
-            rotulo="Maior green"
+            rotulo={T.green.rotulo}
             valor={
               risco.maiorGreen > 0
                 ? formatarReaisComSinal(converter(risco.maiorGreen))
-                : "Nenhuma"
+                : T.nenhuma
             }
             tom={
               risco.maiorGreen > 0 ? tomDoValor(converter(risco.maiorGreen)) : "neutro"
             }
           >
-            {risco.maiorGreen > 0 ? "numa aposta só" : "Nenhuma green neste recorte"}
+            {risco.maiorGreen > 0 ? T.umaAposta : T.green.vazio}
           </Medida>
 
           <Medida
-            rotulo="Dias no verde"
-            valor={`${formatarInteiro(risco.diasNoVerde)} de ${formatarInteiro(risco.diasComAposta)}`}
+            rotulo={T.dias.rotulo}
+            valor={T.dias.valor({
+              verde: formatarInteiro(risco.diasNoVerde),
+              total: formatarInteiro(risco.diasComAposta),
+            })}
             tom="verde"
           >
-            {formatarInteiro(risco.diasNoVermelho)} no vermelho
-            {risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho > 0 &&
-              `, ${formatarInteiro(
-                risco.diasComAposta - risco.diasNoVerde - risco.diasNoVermelho
-              )} no zero`}
+            {T.dias.vermelho(formatarInteiro(risco.diasNoVermelho))}
+            {zerados > 0 && T.dias.zero(formatarInteiro(zerados))}
           </Medida>
 
           <Medida
-            rotulo="Apostas por dia"
+            rotulo={T.porDia.rotulo}
             valor={formatarDecimal(risco.mediaDeApostasPorDia, 1)}
           >
-            média em {formatarInteiro(risco.diasComAposta)}{" "}
-            {risco.diasComAposta === 1 ? "dia" : "dias"} com aposta
+            {T.porDia.media(risco.diasComAposta)}
           </Medida>
         </dl>
       )}

@@ -11,7 +11,6 @@ import { reaisParaUnidades } from "@/lib/constants";
 import {
   corDoValor,
   ehZero,
-  formatarInteiro,
   formatarReaisComSinal,
   formatarUnidadesSemSinal,
 } from "@/lib/format";
@@ -25,17 +24,8 @@ import {
   montarMes,
   nomeDoMes,
 } from "@/lib/calendario";
+import { textoDoPainel } from "@/texto/painel";
 import type { BetItem } from "@/lib/types";
-
-const SEMANA = [
-  { curto: "Dom", nome: "domingo" },
-  { curto: "Seg", nome: "segunda-feira" },
-  { curto: "Ter", nome: "terça-feira" },
-  { curto: "Qua", nome: "quarta-feira" },
-  { curto: "Qui", nome: "quinta-feira" },
-  { curto: "Sex", nome: "sexta-feira" },
-  { curto: "Sáb", nome: "sábado" },
-];
 
 /**
  * O resultado em unidades, entre parênteses: "(9,35u)". Sai das reais da
@@ -43,7 +33,9 @@ const SEMANA = [
  * visitante.
  */
 function emUnidades(reais: number): string {
-  return `(${formatarUnidadesSemSinal(reaisParaUnidades(reais))})`;
+  return textoDoPainel().calendario.unidades(
+    formatarUnidadesSemSinal(reaisParaUnidades(reais))
+  );
 }
 
 /**
@@ -96,6 +88,7 @@ export function CalendarioDeLucro({
   converter: (reais: number) => number;
   carregando: boolean;
 }) {
+  const T = textoDoPainel().calendario;
   const meses = useMemo(() => mesesComAposta(bets), [bets]);
   const [escolhido, setEscolhido] = useState<Mes | null>(null);
 
@@ -130,12 +123,9 @@ export function CalendarioDeLucro({
               id="titulo-calendario"
               className="text-base font-bold text-[var(--text)] tracking-tight"
             >
-              Lucro por dia
+              {T.titulo}
             </h2>
-            <p className="text-xs text-[var(--text-3)]">
-              Cada dia do mês, com os ruins à vista. Toque num dia para ver as apostas
-              dele.
-            </p>
+            <p className="text-xs text-[var(--text-3)]">{T.descricao}</p>
           </div>
         </div>
 
@@ -146,7 +136,7 @@ export function CalendarioDeLucro({
                 type="button"
                 onClick={() => setEscolhido(meses[indice - 1])}
                 disabled={indice <= 0}
-                aria-label="Mês anterior"
+                aria-label={T.anterior}
                 className="p-1.5 min-h-[28px] min-w-[28px] rounded-full text-[var(--text-2)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] disabled:opacity-30 disabled:pointer-events-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" aria-hidden="true" />
@@ -167,7 +157,7 @@ export function CalendarioDeLucro({
                 type="button"
                 onClick={() => setEscolhido(meses[indice + 1])}
                 disabled={indice >= meses.length - 1}
-                aria-label="Próximo mês"
+                aria-label={T.proximo}
                 className="p-1.5 min-h-[28px] min-w-[28px] rounded-full text-[var(--text-2)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] disabled:opacity-30 disabled:pointer-events-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors"
               >
                 <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -181,19 +171,17 @@ export function CalendarioDeLucro({
         carregando ? (
           <SkeletonLinhas quantidade={3} altura="h-16" />
         ) : (
-          <p className="text-center text-xs text-[var(--text-3)] py-6">
-            Sem apostas com data neste período.
-          </p>
+          <p className="text-center text-xs text-[var(--text-3)] py-6">{T.vazio}</p>
         )
       ) : (
         <>
           {/* Tabela, e não grade de divs: é o que dá a quem usa leitor de tela
               o dia da semana de cada célula, andando pelas colunas. */}
           <table className="w-full table-fixed border-separate border-spacing-1 sm:border-spacing-1.5">
-            <caption className="sr-only">Lucro por dia em {nomeDoMes(mes)}</caption>
+            <caption className="sr-only">{T.legenda(nomeDoMes(mes))}</caption>
             <thead>
               <tr>
-                {SEMANA.map((d) => (
+                {T.semana.map((d) => (
                   <th
                     key={d.curto}
                     scope="col"
@@ -247,8 +235,7 @@ export function CalendarioDeLucro({
                               </span>
                             </span>
                             <span className="hidden sm:block text-[10px] text-[var(--text-2)] truncate">
-                              {formatarInteiro(dia.apostas)}{" "}
-                              {dia.apostas === 1 ? "aposta" : "apostas"}
+                              {T.apostas(dia.apostas)}
                             </span>
                           </>
                         )}
@@ -272,11 +259,14 @@ export function CalendarioDeLucro({
                               de: dia.iso,
                               ate: dia.iso,
                             })}`}
-                            aria-label={`${dia.data}: ${formatarReaisComSinal(
-                              lucroDoDia
-                            )} ${emUnidades(dia.lucro)} em ${formatarInteiro(dia.apostas)} ${
-                              dia.apostas === 1 ? "aposta" : "apostas"
-                            }${dia.hoje ? ", hoje" : ""}${fora ? ", fora do período escolhido" : ""}`}
+                            aria-label={T.dia({
+                              data: dia.data,
+                              reais: formatarReaisComSinal(lucroDoDia),
+                              unidades: emUnidades(dia.lucro),
+                              apostas: dia.apostas,
+                              hoje: dia.hoje,
+                              fora,
+                            })}
                             className={`${classe} focus-visible:ring-2 focus-visible:ring-[var(--accent)]`}
                           >
                             {conteudo}
@@ -284,7 +274,7 @@ export function CalendarioDeLucro({
                         ) : (
                           <div className={classe}>
                             {conteudo}
-                            {dia.hoje && <span className="sr-only">, hoje</span>}
+                            {dia.hoje && <span className="sr-only">{T.hoje}</span>}
                           </div>
                         )}
                       </td>
@@ -295,16 +285,27 @@ export function CalendarioDeLucro({
             </tbody>
           </table>
 
+          {/* Um destaque só na frase, e por isso sem papel no dicionário:
+              quem decide como ele aparece é esta tela, que o pinta pelo sinal
+              do resultado do mês. */}
           <p className="text-xs text-[var(--text-2)]">
-            Total de {nomeDoMes(mes)}:{" "}
-            <strong className={corDoValor(converter(mes.lucro))}>
-              {formatarReaisComSinal(converter(mes.lucro))}
-            </strong>{" "}
-            {emUnidades(mes.lucro)} · {formatarInteiro(mes.apostas)}{" "}
-            {mes.apostas === 1 ? "aposta" : "apostas"} em{" "}
-            {formatarInteiro(mes.diasComAposta)}{" "}
-            {mes.diasComAposta === 1 ? "dia" : "dias"}
-            {(de || ate) && ". Os dias fora do período escolhido aparecem sem cor"}.
+            {T.total({
+              mes: nomeDoMes(mes),
+              reais: formatarReaisComSinal(converter(mes.lucro)),
+              unidades: emUnidades(mes.lucro),
+              apostas: mes.apostas,
+              dias: mes.diasComAposta,
+              comIntervalo: Boolean(de || ate),
+            }).map((parte, i) =>
+              typeof parte === "string" ? (
+                parte
+              ) : (
+                // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+                <strong key={i} className={corDoValor(converter(mes.lucro))}>
+                  {parte.forte}
+                </strong>
+              )
+            )}
           </p>
         </>
       )}

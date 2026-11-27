@@ -1218,7 +1218,7 @@ export default function PainelPage() {
         converter={converter}
         aba={activeTab}
         grupo={grupo}
-        recorte={T.recorteDoRisco(recorte)}
+        recorte={T.risco.recorte(recorte)}
         carregando={loading}
       />
 
