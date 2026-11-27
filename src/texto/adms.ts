@@ -1,5 +1,5 @@
 import { formatarUnidades } from "@/lib/format";
-import { contagem, type Trecho } from "./forma";
+import { contagem, type Periodo, type Trecho } from "./forma";
 
 /**
  * O texto da tela de Adms.
@@ -23,9 +23,6 @@ import { contagem, type Trecho } from "./forma";
  * mudar nenhuma. Ficam escritas aqui, onde aparecem, em vez de escondidas no
  * meio do JSX.
  */
-
-/** O período dentro da frase, como `trechoDaAba` devolve. */
-type Periodo = { prefixo: string; nome: string };
 
 const ADMS = {
   selo: "Ranking",

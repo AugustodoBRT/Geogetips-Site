@@ -3,9 +3,12 @@ import { formatarInteiro } from "@/lib/format";
 /**
  * Os primitivos da camada de texto (#127).
  *
- * Aqui mora o que mais de uma seção do dicionário precisa. Hoje é um só, e
- * isso é de propósito: o `knip` reclama de export sem consumidor, e essa regra
- * está certa — ela proíbe inventar estrutura antes de haver quem a use.
+ * Aqui mora o que mais de uma seção do dicionário precisa, e **só** depois de
+ * haver mais de uma: o `knip` reclama de export sem consumidor, e essa regra
+ * está certa — ela proíbe inventar estrutura antes de existir quem a use.
+ *
+ * `contagem` nasceu no Histórico, o `Trecho` em Adms, e o `Periodo` subiu para
+ * cá quando a segunda tela precisou do mesmo tipo.
  */
 
 /**
@@ -61,3 +64,15 @@ export function contagem(n: number, uma: string, varias: string): string {
  * Quem decide **como** o trecho forte aparece é a tela, não o dicionário.
  */
 export type Trecho = string | { forte: string };
+
+/**
+ * O período que a tela está olhando, do jeito que `trechoDaAba` o devolve.
+ *
+ * Duas partes, e não uma frase pronta, porque o agregado não é um mês: o
+ * consolidado vira "de todos os meses" e um mês vira "de Novembro26". Quem
+ * monta a frase é cada seção do dicionário.
+ *
+ * Estava escrito à mão em Adms. Subiu para cá na segunda tela que precisou
+ * dele, em vez de virar a terceira cópia do mesmo par de campos.
+ */
+export type Periodo = { prefixo: string; nome: string };
