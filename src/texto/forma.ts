@@ -62,8 +62,24 @@ export function contagem(n: number, uma: string, varias: string): string {
  * que a frase não mudou.
  *
  * Quem decide **como** o trecho forte aparece é a tela, não o dicionário.
+ *
+ * ## O `papel`, e por que ele não é estilo
+ *
+ * Sem papel é o destaque comum da tela — o que `/adms` e `/estatisticas` já
+ * desenham com `font-semibold text-[var(--text)]`.
+ *
+ * O Painel precisou de mais, porque a frase dele tem **dois** trechos
+ * destacados e a tela os desenha diferente: o nome do período com esse mesmo
+ * destaque, e o intervalo de datas dentro de um `<strong>`, que tem outro peso
+ * e outra cor. O `papel` diz **qual trecho é qual**; continua sendo a tela que
+ * decide como cada um aparece. É a diferença entre dizer "isto é ênfase" e
+ * dizer "isto é negrito" — a primeira sobrevive à troca de idioma.
+ *
+ * - `recorte`: o intervalo de datas que estreita a frase.
+ * - `valor`: um número cujo sinal a tela pinta, e que por isso ela não pode
+ *   receber já formatado numa string junto do resto.
  */
-export type Trecho = string | { forte: string };
+export type Trecho = string | { forte: string; papel?: "recorte" | "valor" };
 
 /**
  * O período que a tela está olhando, do jeito que `trechoDaAba` o devolve.

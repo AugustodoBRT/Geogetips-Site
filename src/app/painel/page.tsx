@@ -68,6 +68,7 @@ import {
   Minus,
 } from "lucide-react";
 import Link from "next/link";
+import { textoDoPainel } from "@/texto/painel";
 import { textoDasRotas } from "@/texto/rotas";
 import { SEM_DATA } from "@/lib/padroes";
 
@@ -511,6 +512,17 @@ export default function PainelPage() {
   const recentBets = scopedBets.slice(0, 6);
   const trecho = trechoDaAba(activeTab);
 
+  const T = textoDoPainel();
+  // O recorte que a tela inteira está olhando, montado uma vez: nove frases
+  // mudam com ele, e antes cada uma repetia o mesmo ternário no JSX.
+  const recorte = {
+    aba: trecho,
+    rotulo: rotuloDaAba(activeTab),
+    todasAsAbas: activeTab === ABA_TODOS,
+    comIntervalo: periodoAtivo,
+    intervalo: periodo,
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <BarraDeProgresso ativo={loading} />
@@ -536,24 +548,33 @@ export default function PainelPage() {
                 className="px-2.5 py-0.5 bg-[var(--green-soft)] text-[var(--green)] text-xs font-bold rounded-full"
                 title={
                   lidoEm
-                    ? `Leitura da planilha em ${new Date(lidoEm).toLocaleString("pt-BR")}`
+                    ? T.selo.titulo(new Date(lidoEm).toLocaleString("pt-BR"))
                     : undefined
                 }
               >
-                Atualizado{lidoEm ? ` · ${tempoRelativo(lidoEm, agora)}` : ""}
+                {T.selo.rotulo}
+                {lidoEm ? T.selo.desde(tempoRelativo(lidoEm, agora)) : ""}
               </span>
             )}
           </div>
+          {/* Dois destaques na mesma frase, desenhados diferente: o nome do
+              período com o destaque das outras telas, o intervalo com
+              `<strong>`, que tem outro peso e outra cor. O dicionário diz qual
+              trecho é qual; a diferença é desta tela. */}
           <p className="text-sm text-[var(--text-2)] mt-1 font-sans">
-            Métricas consolidadas, evolução real da banca e atividades {trecho.prefixo}{" "}
-            <span className="font-semibold text-[var(--text)]">{trecho.nome}</span>
-            {periodo && (
-              <span>
-                {" "}
-                (<strong>{periodo}</strong>)
-              </span>
+            {T.escopo(recorte).map((parte, i) =>
+              typeof parte === "string" ? (
+                parte
+              ) : parte.papel === "recorte" ? (
+                // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+                <strong key={i}>{parte.forte}</strong>
+              ) : (
+                // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+                <span key={i} className="font-semibold text-[var(--text)]">
+                  {parte.forte}
+                </span>
+              )
             )}
-            .
           </p>
           <LinkPlanilha className="mt-2" />
         </div>
@@ -604,13 +625,13 @@ export default function PainelPage() {
         // quase uma tela inteira de rolagem antes do gráfico. O quinto ocupa a
         // linha toda até o `lg`, onde a grade fecha em três e depois em cinco.
         <section
-          aria-label="Indicadores do período"
+          aria-label={T.indicadores.aria}
           className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 animate-entrada"
         >
           <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
-                {periodoAtivo ? "Lucro no Período" : "Lucro Acumulado"}
+                {T.indicadores.lucro.titulo(recorte)}
               </span>
               {/* Zero não é alta nem queda: o mês que começa só com pendentes
                   saía com o cartão verde e a seta para cima, ao lado do selo do
@@ -648,17 +669,15 @@ export default function PainelPage() {
               <NumeroAnimado value={totalLucro} format={FORMATO_REAIS_COM_SINAL} />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
-              {periodoAtivo
-                ? `Resultado ${periodo}`
-                : activeTab === ABA_TODOS
-                  ? "Resultado de todos os meses"
-                  : `Resultado total em ${activeTab}`}
+              {T.indicadores.lucro.rodape(recorte)}
             </div>
           </div>
 
           <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
-              <span className="text-[11px] font-bold uppercase tracking-wider">ROI</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider">
+                {T.indicadores.roi.titulo}
+              </span>
               <div className="hidden sm:flex w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] items-center justify-center">
                 <Percent className="w-4 h-4" />
               </div>
@@ -685,7 +704,7 @@ export default function PainelPage() {
                 href="/perguntas#roi"
                 className="inline-block py-[5px] -my-[5px] underline decoration-dotted decoration-tinta/30 underline-offset-2 hover:text-[var(--accent)] hover:decoration-[var(--accent)] transition-colors"
               >
-                Lucro sobre o total apostado
+                {T.indicadores.roi.rodape}
               </Link>
             </div>
           </div>
@@ -693,7 +712,7 @@ export default function PainelPage() {
           <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
-                Total de Apostas
+                {T.indicadores.apostas.titulo}
               </span>
               <div className="hidden sm:flex w-8 h-8 rounded-lg bg-[var(--text-soft)] text-[var(--text)] items-center justify-center">
                 <Layers className="w-4 h-4" />
@@ -708,15 +727,19 @@ export default function PainelPage() {
               <NumeroAnimado value={totalBets} />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
-              {formatarInteiro(greens)} Green · {formatarInteiro(reds)} Red
-              {voids > 0 && ` · ${formatarInteiro(voids)} Void`}
+              {T.indicadores.apostas.rodape({
+                greens: formatarInteiro(greens),
+                reds: formatarInteiro(reds),
+                voids: formatarInteiro(voids),
+                temVoids: voids > 0,
+              })}
             </div>
           </div>
 
           <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
-                Taxa de Acerto
+                {T.indicadores.acerto.titulo}
               </span>
               <div className="hidden sm:flex w-8 h-8 rounded-lg bg-[var(--green-soft)] text-[var(--green)] items-center justify-center">
                 <Activity className="w-4 h-4" />
@@ -726,14 +749,14 @@ export default function PainelPage() {
               <NumeroAnimado value={taxaAcerto} format={FORMATO_TAXA} suffix="%" />
             </div>
             <div className="text-xs font-medium text-[var(--text-2)] pt-1 border-t border-tinta/[0.04]">
-              Das apostas finalizadas
+              {T.indicadores.acerto.rodape}
             </div>
           </div>
 
           <div className="bg-[var(--bg-card)] border border-tinta/[0.07] rounded-2xl p-4 sm:p-5 shadow-sm transition-all space-y-3 min-w-0 col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between text-[var(--text-3)]">
               <span className="text-[11px] font-bold uppercase tracking-wider">
-                Apostas Pendentes
+                {T.indicadores.pendentes.titulo}
               </span>
               <div
                 className={`hidden sm:flex w-8 h-8 rounded-lg items-center justify-center ${
@@ -758,9 +781,7 @@ export default function PainelPage() {
                 pendentes > 0 ? "text-[var(--amber)]" : "text-[var(--text-2)]"
               }`}
             >
-              {pendentes > 0
-                ? "Aguardando resultado oficial"
-                : "Tudo com resultado lançado"}
+              {T.indicadores.pendentes.rodape(pendentes > 0)}
             </div>
           </div>
         </section>
@@ -780,7 +801,7 @@ export default function PainelPage() {
                   id="titulo-evolucao"
                   className="text-base font-bold text-[var(--text)] tracking-tight"
                 >
-                  Evolução da Banca ({rotuloDaAba(activeTab)})
+                  {T.grafico.titulo(recorte)}
                 </h2>
                 {chartData && (
                   <span
@@ -795,8 +816,10 @@ export default function PainelPage() {
                     <NumeroAnimado
                       value={chartData.periodGain}
                       format={FORMATO_REAIS_COM_SINAL}
-                    />{" "}
-                    ({periodoAtivo ? periodo : period})
+                    />
+                    {T.grafico.seloDaJanela(
+                      periodoAtivo ? periodo : T.grafico.janelas[period]
+                    )}
                   </span>
                 )}
                 {/* Maior queda de pico a vale. Lucro e ROI dizem onde a banca
@@ -804,25 +827,38 @@ export default function PainelPage() {
                 {chartData && chartData.drawdown > 0 && (
                   <span
                     className="font-mono text-xs font-bold px-2 py-0.5 rounded-full bg-[var(--text-soft)] text-[var(--text-2)]"
-                    title="Maior queda de um pico até o vale seguinte dentro da janela exibida"
+                    title={T.grafico.tituloDaQueda}
                   >
-                    maior queda {formatarReais(chartData.drawdown)}
+                    {T.grafico.queda(formatarReais(chartData.drawdown))}
                   </span>
                 )}
               </div>
               <p className="text-xs text-[var(--text-3)] mt-0.5">
                 {hoveredPoint ? (
                   <span className="text-[var(--text)] font-medium">
-                    Dia <strong>{hoveredPoint.date}</strong>: Acumulado{" "}
-                    <strong className={corDoValor(hoveredPoint.cumProfit)}>
-                      {formatarReaisComSinal(hoveredPoint.cumProfit)}
-                    </strong>{" "}
-                    ({formatarReaisComSinal(hoveredPoint.dayProfit)} no dia ·{" "}
-                    {formatarInteiro(hoveredPoint.total)}{" "}
-                    {hoveredPoint.total === 1 ? "aposta" : "apostas"})
+                    {T.grafico
+                      .ponto({
+                        dia: hoveredPoint.date,
+                        acumulado: formatarReaisComSinal(hoveredPoint.cumProfit),
+                        noDia: formatarReaisComSinal(hoveredPoint.dayProfit),
+                        apostas: hoveredPoint.total,
+                      })
+                      .map((parte, i) =>
+                        typeof parte === "string" ? (
+                          parte
+                        ) : parte.papel === "valor" ? (
+                          // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+                          <strong key={i} className={corDoValor(hoveredPoint.cumProfit)}>
+                            {parte.forte}
+                          </strong>
+                        ) : (
+                          // biome-ignore lint/suspicious/noArrayIndexKey: a frase é fixa
+                          <strong key={i}>{parte.forte}</strong>
+                        )
+                      )}
                   </span>
                 ) : (
-                  "Curva real calculada a partir de cada aposta registrada"
+                  T.grafico.semPonto
                 )}
               </p>
             </div>
@@ -852,7 +888,7 @@ export default function PainelPage() {
                         : "text-[var(--text-2)] hover:text-[var(--accent)]"
                     }`}
                   >
-                    {p}
+                    {T.grafico.janelas[p]}
                   </button>
                 ))}
               </div>
@@ -866,9 +902,7 @@ export default function PainelPage() {
                 {loading ? (
                   <SkeletonLinhas quantidade={1} altura="h-48" />
                 ) : (
-                  <p className="text-xs text-[var(--text-3)]">
-                    Sem apostas com data neste período.
-                  </p>
+                  <p className="text-xs text-[var(--text-3)]">{T.grafico.vazio}</p>
                 )}
               </div>
             ) : (
@@ -876,11 +910,13 @@ export default function PainelPage() {
                 viewBox={`0 0 ${chartData.width} ${chartData.height}`}
                 className="w-full h-full cursor-crosshair overflow-visible select-none touch-pan-y"
                 role="img"
-                aria-label={`Evolução da banca ${trecho.prefixo} ${trecho.nome}, de ${
-                  chartPoints[0]?.date ?? ""
-                } a ${chartPoints[chartPoints.length - 1]?.date ?? ""}. Resultado do período: ${formatarReaisComSinal(
-                  chartData.periodGain
-                )}. Maior queda: ${formatarReais(chartData.drawdown)}.`}
+                aria-label={T.grafico.aria({
+                  aba: trecho,
+                  primeiroDia: chartPoints[0]?.date ?? "",
+                  ultimoDia: chartPoints[chartPoints.length - 1]?.date ?? "",
+                  resultado: formatarReaisComSinal(chartData.periodGain),
+                  queda: formatarReais(chartData.drawdown),
+                })}
                 onMouseMove={(e) => aproximar(e.currentTarget, e.clientX)}
                 onMouseLeave={() => setHoveredPoint(null)}
                 onTouchStart={(e) => aproximar(e.currentTarget, e.touches[0].clientX)}
@@ -941,8 +977,8 @@ export default function PainelPage() {
                   className="text-[9.5px] font-mono fill-[var(--text-3)]"
                 >
                   {chartData.yMax >= 1000
-                    ? `R$ ${formatarDecimal(chartData.yMax / 1000, 1)} mil`
-                    : `R$ ${Math.round(chartData.yMax)}`}
+                    ? T.grafico.eixo.milhar(formatarDecimal(chartData.yMax / 1000, 1))
+                    : T.grafico.eixo.exato(String(Math.round(chartData.yMax)))}
                 </text>
 
                 {/* Grid line: Zero Baseline */}
@@ -963,7 +999,7 @@ export default function PainelPage() {
                         textAnchor="end"
                         className="text-[9.5px] font-mono font-bold fill-[var(--text-3)]"
                       >
-                        R$ 0
+                        {T.grafico.eixo.zero}
                       </text>
                     </>
                   )}
@@ -1116,13 +1152,13 @@ export default function PainelPage() {
                 id="titulo-esportes"
                 className="text-base font-bold text-[var(--text)] tracking-tight"
               >
-                Top Esportes
+                {T.esportes.titulo}
               </h2>
               <Link
                 href={comAba("/estatisticas", activeTab, grupo)}
                 className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0 py-[5px] -my-[5px]"
               >
-                <span>Detalhes</span>
+                <span>{T.esportes.link}</span>
                 <ArrowUpRight className="w-3 h-3" aria-hidden="true" />
               </Link>
             </div>
@@ -1131,9 +1167,7 @@ export default function PainelPage() {
                 só, e era preciso um texto avisando que ali não seguia o resto
                 da tela. Com intervalo a objeção caiu, e a nota some junto. */}
             <p className="text-xs text-[var(--text-3)] mb-3">
-              {periodoAtivo
-                ? `Distribuição ${periodo}`
-                : "Distribuição por modalidades cadastradas"}
+              {T.esportes.descricao(recorte)}
             </p>
 
             <div className="divide-y divide-tinta/[0.05] max-h-[220px] overflow-y-auto pr-1">
@@ -1143,7 +1177,7 @@ export default function PainelPage() {
                     <SkeletonLinhas quantidade={3} altura="h-9" />
                   ) : (
                     <p className="text-center text-xs text-[var(--text-3)]">
-                      Sem modalidades neste período.
+                      {T.esportes.vazio}
                     </p>
                   )}
                 </div>
@@ -1156,9 +1190,10 @@ export default function PainelPage() {
                     <div className="flex items-center gap-2.5">
                       <SportBadge sport={sport.esporte} />
                       <div className="text-[11px] text-[var(--text-3)]">
-                        {formatarInteiro(sport.apostas)}{" "}
-                        {sport.apostas === 1 ? "aposta" : "apostas"} ·{" "}
-                        {formatarTaxa(sport.taxaAcerto)} acerto
+                        {T.esportes.linha({
+                          apostas: sport.apostas,
+                          acerto: formatarTaxa(sport.taxaAcerto),
+                        })}
                       </div>
                     </div>
                     <div
@@ -1183,7 +1218,7 @@ export default function PainelPage() {
         converter={converter}
         aba={activeTab}
         grupo={grupo}
-        recorte={`${trecho.nome}${periodo ? ` (${periodo})` : ""}`}
+        recorte={T.recorteDoRisco(recorte)}
         carregando={loading}
       />
 
@@ -1223,21 +1258,17 @@ export default function PainelPage() {
               id="titulo-casas"
               className="text-base font-bold text-[var(--text)] tracking-tight"
             >
-              Top Casas
+              {T.casas.titulo}
             </h2>
             <Link
               href={comAba("/estatisticas", activeTab, grupo)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 shrink-0 py-[5px] -my-[5px]"
             >
-              <span>Ver todas</span>
+              <span>{T.casas.link}</span>
               <ArrowUpRight className="w-3 h-3" aria-hidden="true" />
             </Link>
           </div>
-          <p className="text-xs text-[var(--text-3)]">
-            {periodoAtivo
-              ? `As mais usadas ${periodo}`
-              : `As mais usadas em ${trecho.nome}`}
-          </p>
+          <p className="text-xs text-[var(--text-3)]">{T.casas.descricao(recorte)}</p>
         </div>
 
         {casas.length === 0 ? (
@@ -1245,7 +1276,7 @@ export default function PainelPage() {
             <SkeletonLinhas quantidade={4} altura="h-9" />
           ) : (
             <p className="text-center text-xs text-[var(--text-3)] py-6">
-              Sem casas neste período.
+              {T.casas.vazio}
             </p>
           )
         ) : (
@@ -1258,8 +1289,10 @@ export default function PainelPage() {
                 <div className="flex items-center gap-2.5 min-w-0">
                   <BookieBadge bookie={b.casa} />
                   <span className="text-[11px] text-[var(--text-3)] whitespace-nowrap">
-                    {formatarInteiro(b.apostas)} {b.apostas === 1 ? "aposta" : "apostas"}{" "}
-                    · ROI {formatarPorcentagem(b.roi)}
+                    {T.casas.linha({
+                      apostas: b.apostas,
+                      roi: formatarPorcentagem(b.roi),
+                    })}
                   </span>
                 </div>
                 <span
@@ -1288,12 +1321,10 @@ export default function PainelPage() {
                 id="titulo-ultimas"
                 className="text-base font-bold text-[var(--text)] tracking-tight"
               >
-                Últimas Apostas Registradas
+                {T.ultimas.titulo}
               </h2>
               <p className="text-xs text-[var(--text-3)]">
-                {periodoAtivo
-                  ? `Apostas registradas ${periodo}`
-                  : `As entradas mais recentes ${trecho.prefixo} ${trecho.nome}`}
+                {T.ultimas.descricao(recorte)}
               </p>
             </div>
 
@@ -1309,7 +1340,7 @@ export default function PainelPage() {
               })}`}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
-              <span>Ver todas</span>
+              <span>{T.ultimas.link}</span>
               <ArrowUpRight className="w-3 h-3" aria-hidden="true" />
             </Link>
           </div>
@@ -1320,9 +1351,7 @@ export default function PainelPage() {
                 <SkeletonLinhas quantidade={4} altura="h-14" />
               ) : (
                 <p className="text-center text-xs text-[var(--text-3)] py-6">
-                  {periodoAtivo
-                    ? `Sem apostas ${periodo}.`
-                    : "Sem apostas neste período."}
+                  {T.ultimas.vazio(recorte)}
                 </p>
               )
             ) : (
@@ -1374,7 +1403,7 @@ export default function PainelPage() {
                         }`}
                       >
                         {bet.resultado === "PENDENTE" || isVoid
-                          ? "—"
+                          ? T.ultimas.semLucro
                           : formatarReaisComSinal(converter(bet.lucro))}
                       </span>
                     </div>
@@ -1413,12 +1442,10 @@ export default function PainelPage() {
                 id="titulo-ranking"
                 className="text-base font-bold text-[var(--text)] tracking-tight"
               >
-                Ranking de Adms ({rotuloDaAba(activeTab)})
+                {T.ranking.titulo(recorte)}
               </h2>
               <p className="text-xs text-[var(--text-3)]">
-                {periodoAtivo
-                  ? `Quem mais gerou retorno ${periodo}`
-                  : `Quem mais gerou retorno em ${trecho.nome}`}
+                {T.ranking.descricao(recorte)}
               </p>
             </div>
 
@@ -1426,7 +1453,7 @@ export default function PainelPage() {
               href={comAba("/adms", activeTab, grupo)}
               className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1 py-[5px] -my-[5px]"
             >
-              <span>Detalhes</span>
+              <span>{T.ranking.link}</span>
               <ArrowUpRight className="w-3 h-3" />
             </Link>
           </div>
@@ -1437,7 +1464,7 @@ export default function PainelPage() {
                 <SkeletonLinhas quantidade={3} altura="h-14" />
               ) : (
                 <p className="text-center text-xs text-[var(--text-3)] py-6">
-                  Sem adms neste período.
+                  {T.ranking.vazio}
                 </p>
               )
             ) : (
@@ -1453,9 +1480,10 @@ export default function PainelPage() {
                     <div>
                       <div className="text-xs font-bold text-[var(--text)]">{t.nome}</div>
                       <div className="text-[10.5px] text-[var(--text-3)]">
-                        {formatarInteiro(t.totalApostas)}{" "}
-                        {t.totalApostas === 1 ? "aposta" : "apostas"} ·{" "}
-                        {formatarTaxa(t.taxaAcerto)} acerto
+                        {T.ranking.linha({
+                          apostas: t.totalApostas,
+                          acerto: formatarTaxa(t.taxaAcerto),
+                        })}
                       </div>
                     </div>
                   </div>
@@ -1469,7 +1497,7 @@ export default function PainelPage() {
                       {formatarUnidades(t.lucroUnidades)}
                     </div>
                     <div className="text-[10px] text-[var(--text-3)] uppercase tracking-wider">
-                      Unidades
+                      {T.ranking.unidades}
                     </div>
                   </div>
                 </div>
