@@ -3,7 +3,8 @@ import { contagem, type Periodo, type Trecho } from "./forma";
 /**
  * O texto da tela de Estatísticas.
  *
- * Cinquenta entradas em 700 linhas: a rosca de distribuição, as médias de odd,
+ * Quarenta e cinco entradas, tiradas das 708 linhas de
+ * `src/app/estatisticas/page.tsx`: a rosca de distribuição, as médias de odd,
  * os dois cartões de Top, e os dois diálogos de detalhe com uma tabela cada.
  *
  * ## Três inconsistências preservadas de propósito

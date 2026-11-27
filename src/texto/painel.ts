@@ -3,8 +3,9 @@ import { contagem, type Periodo, type Trecho } from "./forma";
 /**
  * O texto da tela do Painel.
  *
- * Quarenta e duas entradas em 1485 linhas de JSX, nove delas montadas por
- * ternário porque a frase muda quando há intervalo de datas na tela.
+ * Quarenta e nove entradas, tiradas das 1513 linhas de
+ * `src/app/painel/page.tsx`, nove delas montadas por ternário porque a frase
+ * muda quando há intervalo de datas na tela.
  *
  * ## O que esta tela tem e as outras não tinham
  *
