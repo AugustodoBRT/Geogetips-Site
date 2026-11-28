@@ -1,5 +1,6 @@
 import type React from "react";
 import { normalizarTexto } from "@/lib/texto";
+import { textoDosSelos } from "@/texto/selos";
 
 interface BookieBadgeProps {
   bookie?: string;
@@ -969,7 +970,7 @@ export function BookieBadge({ bookie = "", className = "" }: BookieBadgeProps) {
     return (
       <span
         className={`${BASE} bg-[var(--bg-tinted)] text-[var(--text)] ${className}`}
-        title={`${nomeCru} — casa ainda não cadastrada`}
+        title={textoDosSelos().casaNaoCadastrada(nomeCru)}
       >
         <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-2)]" />
         <span>{nomeCru}</span>

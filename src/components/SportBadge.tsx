@@ -1,5 +1,6 @@
 import { normalizarTexto } from "@/lib/texto";
 import { ESPORTE_PADRAO } from "@/lib/padroes";
+import { type EsporteDoSelo, textoDosSelos } from "@/texto/selos";
 
 interface SportBadgeProps {
   sport?: string;
@@ -8,7 +9,8 @@ interface SportBadgeProps {
 
 interface RegraEsporte {
   padroes: string[];
-  rotulo: string;
+  /** A chave do rótulo em `src/texto/selos.ts`. O texto mora lá. */
+  chave: EsporteDoSelo;
   estilo: string;
   ponto: string;
 }
@@ -28,35 +30,35 @@ interface RegraEsporte {
 const REGRAS: RegraEsporte[] = [
   {
     padroes: ["corrida de cavalo", "turfe", "jockey", "galope"],
-    rotulo: "Turfe",
+    chave: "turfe",
     estilo:
       "bg-[#92400E]/10 text-[#92400E] border-[#92400E]/25 dark:bg-[#92400E]/[0.16] dark:text-[#BA8767] dark:border-[#92400E]/40",
     ponto: "bg-[#92400E] dark:bg-[#BA8767]",
   },
   {
     padroes: ["futebol americano", "nfl"],
-    rotulo: "NFL",
+    chave: "nfl",
     estilo:
       "bg-[#7F1D1D]/10 text-[#7F1D1D] border-[#7F1D1D]/25 dark:bg-[#7F1D1D]/[0.16] dark:text-[#B78080] dark:border-[#7F1D1D]/40",
     ponto: "bg-[#7F1D1D] dark:bg-[#B78080]",
   },
   {
     padroes: ["futebol", "soccer", "football"],
-    rotulo: "Futebol",
+    chave: "futebol",
     estilo:
       "bg-[#2D8659]/10 text-[#27734C] border-[#2D8659]/25 dark:bg-[#2D8659]/[0.16] dark:text-[#62A483] dark:border-[#2D8659]/40",
     ponto: "bg-[#2D8659] dark:bg-[#62A483]",
   },
   {
     padroes: ["nba", "basquete", "basket", "ncaa"],
-    rotulo: "Basquete",
+    chave: "basquete",
     estilo:
       "bg-[#EA580C]/10 text-[#B24309] border-[#EA580C]/25 dark:bg-[#EA580C]/[0.16] dark:text-[#EE7638] dark:border-[#EA580C]/40",
     ponto: "bg-[#EA580C] dark:bg-[#EE7638]",
   },
   {
     padroes: ["tenis", "tennis", "atp", "wta"],
-    rotulo: "Tênis",
+    chave: "tenis",
     estilo:
       "bg-[#65A30D]/10 text-[#46710E] border-[#65A30D]/25 dark:bg-[#65A30D]/[0.16] dark:text-[#71AA20] dark:border-[#65A30D]/40",
     ponto: "bg-[#65A30D] dark:bg-[#71AA20]",
@@ -73,42 +75,42 @@ const REGRAS: RegraEsporte[] = [
       "valorant",
       "dota",
     ],
-    rotulo: "eSports",
+    chave: "esports",
     estilo:
       "bg-[#7C3AED]/10 text-[#7C3AED] border-[#7C3AED]/25 dark:bg-[#7C3AED]/[0.16] dark:text-[#A97DF3] dark:border-[#7C3AED]/40",
     ponto: "bg-[#7C3AED] dark:bg-[#A97DF3]",
   },
   {
     padroes: ["mma", "ufc", "boxe", "boxing", "luta"],
-    rotulo: "MMA / Luta",
+    chave: "luta",
     estilo:
       "bg-[#DC2626]/10 text-[#C42020] border-[#DC2626]/25 dark:bg-[#DC2626]/[0.16] dark:text-[#E86E6E] dark:border-[#DC2626]/40",
     ponto: "bg-[#DC2626] dark:bg-[#E86E6E]",
   },
   {
     padroes: ["volei", "volleyball"],
-    rotulo: "Vôlei",
+    chave: "volei",
     estilo:
       "bg-[#0284C7]/10 text-[#026BA1] border-[#0284C7]/25 dark:bg-[#0284C7]/[0.16] dark:text-[#3CA0D4] dark:border-[#0284C7]/40",
     ponto: "bg-[#0284C7] dark:bg-[#3CA0D4]",
   },
   {
     padroes: ["hoquei", "hockey", "nhl"],
-    rotulo: "NHL",
+    chave: "nhl",
     estilo:
       "bg-[#0F766E]/10 text-[#0E716A] border-[#0F766E]/25 dark:bg-[#0F766E]/[0.16] dark:text-[#59A09B] dark:border-[#0F766E]/40",
     ponto: "bg-[#0F766E] dark:bg-[#59A09B]",
   },
   {
     padroes: ["beisebol", "baseball", "mlb"],
-    rotulo: "MLB",
+    chave: "mlb",
     estilo:
       "bg-[#1E40AF]/10 text-[#1E40AF] border-[#1E40AF]/25 dark:bg-[#1E40AF]/[0.16] dark:text-[#7A8ED0] dark:border-[#1E40AF]/40",
     ponto: "bg-[#1E40AF] dark:bg-[#7A8ED0]",
   },
   {
     padroes: ["f1", "formula", "nascar", "automobilismo", "corrida"],
-    rotulo: "Fórmula 1",
+    chave: "formula1",
     estilo:
       "bg-[#475569]/10 text-[#334155] border-[#475569]/25 dark:bg-[#475569]/[0.16] dark:text-[#89929F] dark:border-[#475569]/40",
     ponto: "bg-[#334155] dark:bg-[#89929F]",
@@ -122,7 +124,8 @@ export function SportBadge({ sport = ESPORTE_PADRAO, className = "" }: SportBadg
   const alvo = normalizarTexto(nome);
   const regra = REGRAS.find((r) => r.padroes.some((p) => alvo.includes(p)));
 
-  const rotulo = regra?.rotulo ?? nome;
+  // Sem regra, o valor da planilha vai cru para a tela: é dado, e não rótulo.
+  const rotulo = regra ? textoDosSelos().esportes[regra.chave] : nome;
   const estilo =
     regra?.estilo ?? "bg-[var(--text-2-soft)] text-[var(--text)] border-tinta/10";
   const ponto = regra?.ponto ?? "bg-[var(--text-2)]";
